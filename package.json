@@ -2,10 +2,6 @@
   "name": "speak-up-english-practice",
   "version": "1.0.0",
   "description": "English speech practice app with AI topics and picture talk",
-  "scripts": {
-    "dev": "vercel dev",
-    "start": "vercel dev"
-  },
   "devDependencies": {
     "vercel": "^37.0.0"
   }

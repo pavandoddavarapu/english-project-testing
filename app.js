@@ -751,6 +751,7 @@ function showRealAnalysis(data) {
   recordBtn.classList.remove("recording");
   recordBtn.disabled = false;
 }
+window.showRealAnalysis = showRealAnalysis;
 
 function showDemoAnalysis() {
   showRealAnalysis({

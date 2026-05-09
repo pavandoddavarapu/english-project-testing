@@ -2,6 +2,7 @@ const CACHE_NAME = 'speakup-cache-v1';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
+  './practice.html',
   './style.css',
   './app.js',
   './manifest.json',

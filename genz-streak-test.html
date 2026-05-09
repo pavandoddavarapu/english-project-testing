@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="pink">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gen Z Dashboard - Speak Up Style</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&family=Pacifico&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script>
+    (function() {
+      const saved = localStorage.getItem("speakup-theme") || "pink";
+      document.documentElement.setAttribute("data-theme", saved);
+    })();
+  </script>
+  
+  <style>
+    /* Dark mode overrides for GenZ dashboard */
+    [data-theme="dark"] .panel,
+    [data-theme="dark"] .rank,
+    [data-theme="dark"] .heatmap-stats,
+    [data-theme="dark"] .filter-dropdown,
+    [data-theme="dark"] .heatmap-wrapper,
+    [data-theme="dark"] .recent-item,
+    [data-theme="dark"] .circle-inner { 
+      background: rgba(42,42,62,0.95) !important; 
+    }
+    [data-theme="dark"] .stat-row:hover,
+    [data-theme="dark"] .tab:hover { 
+      background: rgba(255,255,255,0.08) !important; 
+    }
+    [data-theme="dark"] .diff-item {
+      background: rgba(255,255,255,0.05) !important;
+    }
+    [data-theme="dark"] .stat-row span:first-child[style] {
+      background: rgba(42,42,62,0.95) !important;
+    }
+    [data-theme="dark"] .badge {
+      background: rgba(42,42,62,0.95) !important;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      position: relative;
+      padding: 40px 20px;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(circle at 15% 20%, rgba(255,110,180,0.12) 0%, transparent 50%),
+        radial-gradient(circle at 85% 80%, rgba(214,51,132,0.10) 0%, transparent 50%),
+        radial-gradient(circle at 50% 50%, rgba(255,218,158,0.08) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .dashboard {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 24px;
+      animation: fadeSlideIn 0.5s ease both;
+    }
+
+    @keyframes fadeSlideIn {
+      0% { opacity: 0; transform: translateY(20px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Panels matching Speak Up style */
+    .panel {
+      background: rgba(255,255,255,0.72);
+      border: 1.5px solid var(--accent2);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: 0 4px 18px var(--shadow);
+      backdrop-filter: blur(6px);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .panel:hover {
+      box-shadow: 0 8px 24px var(--shadow-lg);
+      transform: translateY(-2px);
+    }
+
+    /* Typography */
+    .big-title {
+      font-family: 'Fredoka One', cursive;
+      color: var(--primary);
+      font-size: 1.4rem;
+      margin-bottom: 16px;
+      text-shadow: 2px 2px 0 rgba(214,51,132,0.15);
+      letter-spacing: 0.5px;
+    }
+
+    /* Left Column */
+    .left-col {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .profile-info {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .profile-img {
+      width: 80px;
+      height: 80px;
+      border-radius: 16px;
+      object-fit: cover;
+      border: 3px solid var(--accent2);
+      box-shadow: 0 4px 12px var(--shadow);
+    }
+
+    .profile-names h1 {
+      margin: 0;
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: var(--primary-dark);
+      font-family: 'Fredoka One', cursive;
+      letter-spacing: 0.5px;
+    }
+
+    .profile-names p {
+      margin: 4px 0 0 0;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+
+    .rank {
+      margin-top: 16px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.5);
+      padding: 8px 12px;
+      border-radius: 10px;
+      border: 1.5px solid var(--accent2);
+    }
+    .rank-number {
+      font-weight: 900;
+      color: var(--primary);
+      font-size: 1.1rem;
+    }
+
+    .follow-stats {
+      display: flex;
+      gap: 16px;
+      margin-top: 16px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+    
+    .follow-stats strong {
+      color: var(--text);
+      font-weight: 800;
+    }
+
+    /* Primary button from Speak Up */
+    .follow-btn {
+      width: 100%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: var(--primary);
+      color: var(--white);
+      font-family: 'Nunito', sans-serif;
+      font-weight: 800;
+      font-size: 0.9rem;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      padding: 12px;
+      border-radius: var(--radius-pill);
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 6px 16px var(--shadow-lg), 0 2px 0 var(--primary-dark);
+      transition: all 0.22s ease;
+      margin-top: 24px;
+    }
+
+    .follow-btn:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px var(--shadow-lg), 0 2px 0 var(--primary-dark);
+    }
+
+    .follow-btn:active { transform: translateY(1px); }
+
+    .location {
+      margin-top: 20px;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .section-title {
+      font-size: 0.9rem;
+      color: var(--primary);
+      margin-bottom: 16px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      border-bottom: 1.5px dashed var(--accent2);
+      padding-bottom: 8px;
+    }
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      align-items: center;
+      padding: 6px 10px;
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+    .stat-row:hover {
+      background: rgba(255,255,255,0.5);
+    }
+
+    .stat-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .stat-row span:last-child {
+      color: var(--text);
+      font-weight: 800;
+      background: var(--bg-card);
+      padding: 2px 8px;
+      border-radius: 12px;
+      border: 1px solid var(--accent2);
+    }
+
+    /* Right Column */
+    .right-col {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .top-widgets {
+      display: grid;
+      grid-template-columns: 1fr 1.3fr;
+      gap: 24px;
+    }
+
+    .progress-widget {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .circle-chart {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: conic-gradient(var(--accent) 15%, var(--primary) 35%, rgba(255,179,209,0.3) 0);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      box-shadow: 0 4px 12px var(--shadow);
+    }
+
+    .circle-inner {
+      width: 80px;
+      height: 80px;
+      background: #FFF0F5;
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    .circle-inner span {
+      font-size: 1.2rem;
+      font-weight: 800;
+      font-family: 'Fredoka One', cursive;
+      color: var(--primary);
+    }
+    
+    .circle-inner small {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    .difficulty-stats {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .diff-item {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      font-weight: 700;
+      background: rgba(255,255,255,0.5);
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: 1.5px solid transparent;
+    }
+    
+    .diff-item.easy { color: #52B788; border-color: rgba(82, 183, 136, 0.3); }
+    .diff-item.med { color: #F97316; border-color: rgba(249, 115, 22, 0.3); }
+    .diff-item.hard { color: var(--primary); border-color: rgba(214, 51, 132, 0.3); }
+    
+    .diff-item span:last-child {
+      color: var(--text);
+      font-weight: 800;
+    }
+
+    /* Badges */
+    .badges-panel .section-title {
+      border: none;
+      padding-bottom: 0;
+      margin-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .badges-panel .sub-text {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    .badges-container {
+      display: flex;
+      gap: 12px;
+    }
+
+    .badge {
+      width: 52px;
+      height: 52px;
+      background: rgba(255,255,255,0.8);
+      border: 2px solid var(--accent);
+      border-radius: 12px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 1.4rem;
+      box-shadow: 0 4px 10px var(--shadow);
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      cursor: default;
+    }
+    
+    .badge:hover {
+      transform: translateY(-4px) scale(1.1);
+      box-shadow: 0 8px 15px var(--shadow-lg);
+    }
+
+    /* Heatmap styling */
+    .heatmap-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .heatmap-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+
+    .heatmap-title .highlight {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.6rem;
+      color: var(--primary);
+      text-shadow: 1px 1px 0 var(--accent2);
+    }
+
+    .heatmap-stats {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      display: flex;
+      gap: 12px;
+      background: rgba(255,255,255,0.5);
+      border: 1.5px solid var(--accent2);
+      padding: 6px 12px;
+      border-radius: 8px;
+      align-items: center;
+    }
+    
+    .heatmap-stats span {
+      color: var(--text);
+      font-weight: 800;
+    }
+
+    .filter-dropdown {
+      background: var(--white);
+      border: 1.5px solid var(--accent2);
+      color: var(--text);
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 6px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .heatmap-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      background: rgba(255,255,255,0.4);
+      border: 1.5px solid var(--accent2);
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .heatmap-wrapper::-webkit-scrollbar { height: 6px; }
+    .heatmap-wrapper::-webkit-scrollbar-track { background: rgba(0,0,0,0.05); border-radius: 4px; }
+    .heatmap-wrapper::-webkit-scrollbar-thumb { background: var(--accent2); border-radius: 4px; }
+
+    .heatmap-grid {
+      display: flex;
+      gap: 4px;
+    }
+
+    .heatmap-col {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .heatmap-square {
+      width: 13px;
+      height: 13px;
+      border-radius: 4px;
+      background-color: rgba(214,51,132,0.08); /* Level 0 */
+      transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.2s;
+      cursor: pointer;
+      position: relative;
+      border: 1px solid rgba(214,51,132,0.1);
+    }
+
+    .heatmap-square:hover {
+      transform: scale(1.4);
+      z-index: 10;
+      border-radius: 4px;
+      border-color: var(--primary);
+    }
+
+    .heatmap-square[data-level="1"] { background-color: rgba(214,51,132,0.3); border-color: rgba(214,51,132,0.4); }
+    .heatmap-square[data-level="2"] { background-color: rgba(214,51,132,0.6); border-color: rgba(214,51,132,0.7); }
+    .heatmap-square[data-level="3"] { background-color: var(--primary); border-color: var(--primary-dark); }
+    .heatmap-square[data-level="4"] { background-color: var(--primary-dark); border-color: #7a1548; box-shadow: 0 0 5px var(--shadow-lg); }
+
+    .months {
+      display: flex;
+      justify-content: space-between;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      margin-top: 4px;
+      font-weight: 800;
+      padding-inline: 4px;
+    }
+
+    /* Recent AC */
+    .tabs {
+      display: flex;
+      gap: 16px;
+      border-bottom: 2px solid var(--accent2);
+      margin-bottom: 20px;
+      padding-bottom: 8px;
+    }
+
+    .tab {
+      padding: 8px 12px;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 800;
+      transition: all 0.2s;
+      border-radius: 8px;
+    }
+    
+    .tab:hover {
+      background: rgba(255,255,255,0.5);
+      color: var(--primary);
+    }
+
+    .tab.active {
+      color: var(--white);
+      background: var(--primary);
+      box-shadow: 0 4px 10px var(--shadow);
+    }
+
+    .recent-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .recent-item {
+      background: rgba(255,255,255,0.6);
+      padding: 14px 16px;
+      border-radius: 12px;
+      border: 1.5px solid var(--accent2);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+
+    .recent-item:hover {
+      background: var(--white);
+      border-color: var(--accent);
+      transform: translateX(4px);
+      box-shadow: 0 4px 12px var(--shadow);
+    }
+
+    .recent-name {
+      font-weight: 800;
+      color: var(--primary);
+      font-size: 0.95rem;
+    }
+
+    .recent-time {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    /* Tooltip */
+    .tooltip {
+      position: absolute;
+      bottom: 150%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--primary-dark);
+      color: var(--white);
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      pointer-events: none;
+      opacity: 0;
+      white-space: nowrap;
+      transition: opacity 0.2s;
+      z-index: 20;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      font-weight: 700;
+      font-family: 'Nunito', sans-serif;
+    }
+    
+    .tooltip::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      margin-left: -4px;
+      border-width: 4px;
+      border-style: solid;
+      border-color: var(--primary-dark) transparent transparent transparent;
+    }
+    
+    .heatmap-square:hover .tooltip {
+      opacity: 1;
+    }
+
+    /* Badge New */
+    .badge-new {
+      background: var(--accent3);
+      color: var(--primary-dark);
+      font-size: 0.6rem;
+      font-weight: 900;
+      letter-spacing: 1px;
+      padding: 3px 8px;
+      border-radius: var(--radius-pill);
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+    
+    @media (max-width: 900px) {
+      .dashboard {
+        grid-template-columns: 1fr;
+      }
+      .top-widgets {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- THEME SWITCHER -->
+  <div class="theme-switcher" id="theme-switcher">
+    <button class="theme-toggle-btn" id="theme-toggle-btn" title="Change Theme">
+      <span class="theme-icon">🎨</span>
+      <span class="theme-label">Theme</span>
+      <span class="theme-arrow">▾</span>
+    </button>
+    <div class="theme-dropdown hidden" id="theme-dropdown">
+      <div class="theme-dropdown-title">Choose a Theme</div>
+      <div class="theme-grid">
+        <button class="theme-swatch active" data-theme="pink" title="Blossom Pink" style="--sw:#D63384"><span class="swatch-dot" style="background:#D63384"></span>Blossom</button>
+        <button class="theme-swatch" data-theme="green" title="Forest Green" style="--sw:#2D6A4F"><span class="swatch-dot" style="background:#2D6A4F"></span>Forest</button>
+        <button class="theme-swatch" data-theme="blue" title="Ocean Blue" style="--sw:#1A6FA8"><span class="swatch-dot" style="background:#1A6FA8"></span>Ocean</button>
+        <button class="theme-swatch" data-theme="purple" title="Royal Purple" style="--sw:#7B2FBE"><span class="swatch-dot" style="background:#7B2FBE"></span>Royal</button>
+        <button class="theme-swatch" data-theme="orange" title="Sunset Orange" style="--sw:#D4580A"><span class="swatch-dot" style="background:#D4580A"></span>Sunset</button>
+        <button class="theme-swatch" data-theme="teal" title="Teal Breeze" style="--sw:#0D9488"><span class="swatch-dot" style="background:#0D9488"></span>Teal</button>
+        <button class="theme-swatch" data-theme="dark" title="Midnight Dark" style="--sw:#1E1E2E"><span class="swatch-dot" style="background:#1E1E2E"></span>Dark</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="dashboard">
+    <!-- Left Column -->
+    <div class="left-col">
+      <!-- Profile Panel -->
+      <div class="panel">
+        <div class="profile-info">
+          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix&backgroundColor=b6e3f4" id="profile-img" alt="Profile" class="profile-img">
+          <div class="profile-names">
+            <h1 id="profile-name">Loading...</h1>
+            <p id="profile-email">Please wait</p>
+          </div>
+        </div>
+        
+        <div class="rank">
+          Aura Points <span id="profile-aura" class="rank-number">0</span> ✨
+        </div>
+        
+        <div class="follow-stats">
+          <span><strong>0</strong> Following</span>
+          <span><strong>0</strong> Stans</span>
+        </div>
+        
+        <button class="follow-btn" onclick="window.location.href='index.html'"><span>🎤</span> Practice Speaking</button>
+        <button class="follow-btn" style="background: var(--bg-card); color: var(--primary); margin-top: 10px;" onclick="window.location.href='logout.html'"><span>🚪</span> Logout</button>
+        
+        <div class="location">📍 Spawn Point: India</div>
+      </div>
+
+      <!-- Community Stats -->
+      <div class="panel">
+        <div class="section-title">Community Clout</div>
+        <div class="stat-row">
+          <span>👁️ Peeps Looking</span>
+          <span>2</span>
+        </div>
+        <div class="stat-row">
+          <span>✅ Big Brain Moves</span>
+          <span>2</span>
+        </div>
+        <div class="stat-row">
+          <span>🗣️ Yapping Sessions</span>
+          <span>0</span>
+        </div>
+        <div class="stat-row">
+          <span>⭐ Aura</span>
+          <span>0</span>
+        </div>
+      </div>
+
+      <!-- Languages / Skills -->
+      <div class="panel">
+        <div class="section-title">Dialects Conquered</div>
+        <div class="stat-row">
+          <span style="background: rgba(255, 255, 255, 0.6); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; border: 1px solid var(--accent2);">Slang (C++)</span>
+          <span>354 Ws</span>
+        </div>
+        <div class="stat-row">
+          <span style="background: rgba(255, 255, 255, 0.6); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; border: 1px solid var(--accent2);">Formal (Java)</span>
+          <span>19 Ws</span>
+        </div>
+        <div class="stat-row">
+          <span style="background: rgba(255, 255, 255, 0.6); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; border: 1px solid var(--accent2);">Texting (Python)</span>
+          <span>7 Ws</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column -->
+    <div class="right-col">
+      <div class="top-widgets">
+        <!-- Progress Widget -->
+        <div class="panel progress-widget">
+          <div class="circle-chart">
+            <div class="circle-inner">
+              <span>376</span>
+              <small>/3920</small>
+            </div>
+          </div>
+          <div class="difficulty-stats">
+            <div class="diff-item easy">
+              <span>Noob</span>
+              <span>108/941</span>
+            </div>
+            <div class="diff-item med">
+              <span>Mid</span>
+              <span>204/2050</span>
+            </div>
+            <div class="diff-item hard">
+              <span>Boss</span>
+              <span>64/929</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Badges Widget -->
+        <div class="panel badges-panel">
+          <div class="section-title">
+            <span>Flexes <span class="badge-new">6</span></span>
+          </div>
+          <div class="sub-text">Latest W: 100 Days Streak 2026</div>
+          <div class="badges-container">
+            <div class="badge">🔥</div>
+            <div class="badge" style="border-color: #3B9EDB; color: #1A6FA8;">💎</div>
+            <div class="badge" style="border-color: #52B788; color: #2D6A4F;">👑</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Heatmap Widget -->
+      <div class="panel">
+        <div class="heatmap-header">
+          <div class="heatmap-title">
+            <span class="highlight">1,267</span> yaps this era 🗣️
+          </div>
+          <div class="heatmap-stats">
+            <span>Total active days: <span>259</span></span>
+            <span>Max streak: <span>39</span></span>
+            <select class="filter-dropdown">
+              <option>Current</option>
+              <option>2023</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="heatmap-wrapper">
+          <div class="heatmap-grid" id="heatmap-grid"></div>
+          <div class="months">
+            <span>May</span><span>Jun</span><span>Jul</span><span>Aug</span>
+            <span>Sep</span><span>Oct</span><span>Nov</span><span>Dec</span>
+            <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent AC -->
+      <div class="panel" style="flex: 1;">
+        <div class="tabs">
+          <div class="tab active">Recent Ws</div>
+          <div class="tab">List</div>
+          <div class="tab">Big Brain Moves</div>
+          <div class="tab">Yapping</div>
+        </div>
+        <div class="recent-list">
+          <div class="recent-item">
+            <span class="recent-name">Jump Game IX</span>
+            <span class="recent-time">2 days ago</span>
+          </div>
+          <div class="recent-item">
+            <span class="recent-name">Rotate List</span>
+            <span class="recent-time">4 days ago</span>
+          </div>
+          <div class="recent-item">
+            <span class="recent-name">Rotate Image</span>
+            <span class="recent-time">5 days ago</span>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+
+  <script>
+    // Generate heatmap
+    const grid = document.getElementById('heatmap-grid');
+    const cols = 52;
+    const rows = 7;
+
+    for (let col = 0; col < cols; col++) {
+      const colDiv = document.createElement('div');
+      colDiv.className = 'heatmap-col';
+      
+      for (let row = 0; row < rows; row++) {
+        const square = document.createElement('div');
+        square.className = 'heatmap-square';
+        
+        const activeProbability = 0.2 + (col / cols) * 0.5; 
+        let level = 0;
+        
+        if (Math.random() < activeProbability) {
+          const r = Math.random();
+          if (r > 0.85) level = 4;
+          else if (r > 0.6) level = 3;
+          else if (r > 0.3) level = 2;
+          else level = 1;
+        }
+
+        square.setAttribute('data-level', level);
+
+        const tooltip = document.createElement('div');
+        tooltip.className = 'tooltip';
+        
+        let yapText = "No yaps today 💀";
+        if (level === 1) yapText = "1 yap session 🥱";
+        if (level === 2) yapText = "3 yap sessions 🤔";
+        if (level === 3) yapText = "7 yap sessions 🗣️";
+        if (level === 4) yapText = "15+ yaps! Certified Yapper 👑";
+
+        tooltip.innerText = yapText;
+        square.appendChild(tooltip);
+
+        colDiv.appendChild(square);
+      }
+      grid.appendChild(colDiv);
+    }
+
+    // Theme Switcher Logic
+    document.addEventListener('DOMContentLoaded', () => {
+      const themeToggleBtn = document.getElementById("theme-toggle-btn");
+      const themeDropdown = document.getElementById("theme-dropdown");
+      const themeSwatches = document.querySelectorAll(".theme-swatch");
+      
+      if(themeToggleBtn) {
+        themeToggleBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const isOpen = !themeDropdown.classList.contains("hidden");
+          themeDropdown.classList.toggle("hidden", isOpen);
+          themeToggleBtn.classList.toggle("open", !isOpen);
+        });
+        
+        document.addEventListener("click", (e) => {
+          if (!e.target.closest("#theme-switcher")) {
+            themeDropdown.classList.add("hidden");
+            themeToggleBtn.classList.remove("open");
+          }
+        });
+        
+        themeSwatches.forEach(swatch => {
+          swatch.addEventListener("click", () => {
+            const theme = swatch.dataset.theme;
+            applyTheme(theme);
+            themeSwatches.forEach(s => s.classList.remove("active"));
+            swatch.classList.add("active");
+            setTimeout(() => {
+              themeDropdown.classList.add("hidden");
+              themeToggleBtn.classList.remove("open");
+            }, 220);
+          });
+        });
+        
+        function applyTheme(theme) {
+          document.documentElement.setAttribute("data-theme", theme);
+          localStorage.setItem("speakup-theme", theme);
+          const THEME_COLORS = { pink: "#D63384", green: "#2D6A4F", blue: "#1A6FA8", purple: "#7B2FBE", orange: "#D4580A", teal: "#0D9488", dark: "#C084FC" };
+          const color = THEME_COLORS[theme] || THEME_COLORS.pink;
+          themeToggleBtn.style.borderColor = color + "80";
+        }
+        
+        function initTheme() {
+          const saved = localStorage.getItem("speakup-theme") || "pink";
+          themeSwatches.forEach(s => s.classList.toggle("active", s.dataset.theme === saved));
+          applyTheme(saved);
+        }
+        initTheme();
+      }
+    });
+  </script>
+
+  <!-- FIREBASE INTEGRATION -->
+  <script type="module">
+    import { auth, db } from './firebase-config.js';
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+    import { doc, getDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        // Update avatar to be unique per user
+        document.getElementById('profile-img').src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}&backgroundColor=b6e3f4`;
+        
+        // Fetch user data from Firestore
+        const docRef = doc(db, "users", user.uid);
+        const docSnap = await getDoc(docRef);
+        
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          document.getElementById('profile-name').innerText = data.name || user.displayName || 'Speaker';
+          document.getElementById('profile-email').innerText = data.email || user.email || '';
+          document.getElementById('profile-aura').innerText = data.aura_points !== undefined ? data.aura_points.toLocaleString() : '0';
+        } else {
+          // Fallback if no firestore doc
+          document.getElementById('profile-name').innerText = user.displayName || 'Speaker';
+          document.getElementById('profile-email').innerText = user.email || '';
+          document.getElementById('profile-aura').innerText = '0';
+        }
+      } else {
+        // Not logged in! Redirect to login page
+        window.location.href = 'login.html';
+      }
+    });
+  </script>
+</body>
+</html>

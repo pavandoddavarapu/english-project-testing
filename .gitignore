@@ -1,0 +1,9 @@
+# Environment files (never commit real keys)
+.env.local
+.env
+
+# Vercel
+.vercel
+
+# Node
+node_modules/

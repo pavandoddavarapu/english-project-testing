@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="pink">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Speak Up!</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&family=Pacifico&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script>
+    (function() {
+      const saved = localStorage.getItem("speakup-theme") || "pink";
+      document.documentElement.setAttribute("data-theme", saved);
+    })();
+  </script>
+  
+  <style>
+    .auth-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+      position: relative;
+      z-index: 10;
+    }
+
+    .auth-card {
+      background: rgba(255,255,255,0.75);
+      border: 1.5px solid var(--accent2);
+      border-radius: var(--radius);
+      padding: 40px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 8px 32px var(--shadow-lg);
+      backdrop-filter: blur(12px);
+      text-align: center;
+      animation: bounceIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+    }
+    
+    [data-theme="dark"] .auth-card {
+      background: rgba(42,42,62,0.95) !important;
+    }
+
+    .auth-logo {
+      font-family: 'Pacifico', cursive;
+      color: var(--primary);
+      font-size: 2.2rem;
+      margin-bottom: 10px;
+      text-shadow: 2px 2px 0 var(--accent2);
+    }
+
+    .auth-title {
+      font-family: 'Fredoka One', cursive;
+      color: var(--primary-dark);
+      font-size: 1.5rem;
+      margin-bottom: 30px;
+    }
+
+    .input-group {
+      text-align: left;
+      margin-bottom: 20px;
+    }
+
+    .input-label {
+      display: block;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 8px;
+      font-size: 0.9rem;
+      letter-spacing: 0.5px;
+    }
+
+    .auth-input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 2px solid var(--accent2);
+      border-radius: 12px;
+      background: rgba(255,255,255,0.9);
+      font-family: 'Nunito', sans-serif;
+      font-weight: 600;
+      font-size: 1rem;
+      color: var(--text);
+      transition: all 0.2s;
+      outline: none;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+    }
+    
+    [data-theme="dark"] .auth-input {
+      background: rgba(30,30,46,0.9) !important;
+    }
+
+    .auth-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(214,51,132,0.15), inset 0 2px 4px rgba(0,0,0,0.02);
+    }
+
+    .auth-input::placeholder {
+      color: var(--text-muted);
+      opacity: 0.7;
+    }
+
+    .btn-auth {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      margin-top: 10px;
+      margin-bottom: 0;
+      animation: none; /* override default btn-primary animation */
+    }
+
+    .auth-links {
+      margin-top: 24px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .auth-links a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 800;
+      transition: color 0.2s;
+    }
+
+    .auth-links a:hover {
+      color: var(--primary-dark);
+      text-decoration: underline;
+    }
+    
+    .divider {
+      display: flex;
+      align-items: center;
+      text-align: center;
+      margin: 20px 0;
+      color: var(--text-muted);
+      font-weight: 800;
+      font-size: 0.85rem;
+    }
+    
+    .divider::before,
+    .divider::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1.5px solid var(--accent2);
+    }
+    
+    .divider span {
+      padding: 0 10px;
+    }
+
+    .btn-google {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      background: rgba(255,255,255,0.8);
+      color: var(--text);
+      font-family: 'Nunito', sans-serif;
+      font-weight: 800;
+      font-size: 0.95rem;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1.5px solid var(--accent2);
+      cursor: pointer;
+      box-shadow: 0 4px 10px var(--shadow);
+      transition: all 0.2s ease;
+      margin-bottom: 20px;
+    }
+
+    .btn-google:hover {
+      background: var(--white);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 14px var(--shadow-lg);
+    }
+
+    .google-logo {
+      width: 20px;
+      height: 20px;
+    }
+
+    [data-theme="dark"] .btn-google {
+      background: rgba(42,42,62,0.95) !important;
+      border-color: var(--accent2);
+      color: var(--text);
+    }
+    [data-theme="dark"] .btn-google:hover {
+      background: rgba(255,255,255,0.08) !important;
+    }
+
+    @keyframes bounceIn {
+      0% { opacity: 0; transform: scale(0.9) translateY(20px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    
+    /* Small decor */
+    .decor-dot {
+      position: absolute;
+      border-radius: 50%;
+      background: var(--accent);
+      opacity: 0.6;
+      z-index: -1;
+    }
+    .dot-1 { width: 60px; height: 60px; top: -20px; left: -20px; }
+    .dot-2 { width: 40px; height: 40px; bottom: 30px; right: -15px; background: var(--accent3); }
+  </style>
+</head>
+<body>
+  <!-- THEME SWITCHER -->
+  <div class="theme-switcher" id="theme-switcher">
+    <button class="theme-toggle-btn" id="theme-toggle-btn" title="Change Theme">
+      <span class="theme-icon">🎨</span>
+      <span class="theme-label">Theme</span>
+      <span class="theme-arrow">▾</span>
+    </button>
+    <div class="theme-dropdown hidden" id="theme-dropdown">
+      <div class="theme-dropdown-title">Choose a Theme</div>
+      <div class="theme-grid">
+        <button class="theme-swatch active" data-theme="pink" title="Blossom Pink" style="--sw:#D63384"><span class="swatch-dot" style="background:#D63384"></span>Blossom</button>
+        <button class="theme-swatch" data-theme="green" title="Forest Green" style="--sw:#2D6A4F"><span class="swatch-dot" style="background:#2D6A4F"></span>Forest</button>
+        <button class="theme-swatch" data-theme="blue" title="Ocean Blue" style="--sw:#1A6FA8"><span class="swatch-dot" style="background:#1A6FA8"></span>Ocean</button>
+        <button class="theme-swatch" data-theme="purple" title="Royal Purple" style="--sw:#7B2FBE"><span class="swatch-dot" style="background:#7B2FBE"></span>Royal</button>
+        <button class="theme-swatch" data-theme="orange" title="Sunset Orange" style="--sw:#D4580A"><span class="swatch-dot" style="background:#D4580A"></span>Sunset</button>
+        <button class="theme-swatch" data-theme="teal" title="Teal Breeze" style="--sw:#0D9488"><span class="swatch-dot" style="background:#0D9488"></span>Teal</button>
+        <button class="theme-swatch" data-theme="dark" title="Midnight Dark" style="--sw:#1E1E2E"><span class="swatch-dot" style="background:#1E1E2E"></span>Dark</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="auth-wrapper">
+    <div class="auth-card">
+      <div class="decor-dot dot-1"></div>
+      <div class="decor-dot dot-2"></div>
+      
+      <div class="auth-logo">Speak Up!</div>
+      <div class="auth-title">Welcome Back 🎤</div>
+      
+      <form id="login-form" class="auth-form">
+        <div class="input-group">
+          <div class="input-icon">📧</div>
+          <input type="email" id="email" class="auth-input" placeholder="Email Address" required>
+        </div>
+        
+        <div class="input-group">
+          <div class="input-icon">🔒</div>
+          <input type="password" id="password" class="auth-input" placeholder="Password" required>
+        </div>
+        
+        <button type="submit" class="btn-primary btn-auth">Let's Yap 🗣️</button>
+      </form>
+      
+      <div class="divider">
+        <span>OR</span>
+      </div>
+      
+      <button type="button" id="google-login-btn" class="btn-google">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google Logo" class="google-logo">
+        Continue with Google
+      </button>
+
+      <div class="auth-links">
+        Don't have an account? <a href="#">Sign up here</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const themeToggleBtn = document.getElementById("theme-toggle-btn");
+      const themeDropdown = document.getElementById("theme-dropdown");
+      const themeSwatches = document.querySelectorAll(".theme-swatch");
+      
+      if(themeToggleBtn) {
+        themeToggleBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const isOpen = !themeDropdown.classList.contains("hidden");
+          themeDropdown.classList.toggle("hidden", isOpen);
+          themeToggleBtn.classList.toggle("open", !isOpen);
+        });
+        
+        document.addEventListener("click", (e) => {
+          if (!e.target.closest("#theme-switcher")) {
+            themeDropdown.classList.add("hidden");
+            themeToggleBtn.classList.remove("open");
+          }
+        });
+        
+        themeSwatches.forEach(swatch => {
+          swatch.addEventListener("click", () => {
+            const theme = swatch.dataset.theme;
+            applyTheme(theme);
+            themeSwatches.forEach(s => s.classList.remove("active"));
+            swatch.classList.add("active");
+            setTimeout(() => {
+              themeDropdown.classList.add("hidden");
+              themeToggleBtn.classList.remove("open");
+            }, 220);
+          });
+        });
+        
+        function applyTheme(theme) {
+          document.documentElement.setAttribute("data-theme", theme);
+          localStorage.setItem("speakup-theme", theme);
+          const THEME_COLORS = { pink: "#D63384", green: "#2D6A4F", blue: "#1A6FA8", purple: "#7B2FBE", orange: "#D4580A", teal: "#0D9488", dark: "#C084FC" };
+          const color = THEME_COLORS[theme] || THEME_COLORS.pink;
+          themeToggleBtn.style.borderColor = color + "80";
+        }
+        
+        function initTheme() {
+          const saved = localStorage.getItem("speakup-theme") || "pink";
+          themeSwatches.forEach(s => s.classList.toggle("active", s.dataset.theme === saved));
+          applyTheme(saved);
+        }
+        initTheme();
+      }
+    });
+  </script>
+
+  <script type="module">
+    import { auth, provider } from './firebase-config.js';
+    import { signInWithPopup, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+
+    // If user is already logged in, redirect them directly to the dashboard
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        window.location.href = 'genz-streak-test.html';
+      }
+    });
+
+    // Handle Google Login
+    document.getElementById('google-login-btn').addEventListener('click', async () => {
+      try {
+        await signInWithPopup(auth, provider);
+        // Successful login, redirect to dashboard
+        window.location.href = 'genz-streak-test.html';
+      } catch (error) {
+        console.error("Google Sign-In Error:", error);
+        alert(error.message);
+      }
+    });
+
+    // Handle Email/Password Login
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+        // Successful login, redirect to dashboard
+        window.location.href = 'genz-streak-test.html';
+      } catch (error) {
+        console.error("Email Login Error:", error);
+        alert(error.message);
+      }
+    });
+  </script>
+</body>
+</html>

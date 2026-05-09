@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="pink">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Logged Out - Speak Up!</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&family=Pacifico&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script>
+    (function() {
+      const saved = localStorage.getItem("speakup-theme") || "pink";
+      document.documentElement.setAttribute("data-theme", saved);
+    })();
+  </script>
+  
+  <style>
+    .auth-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+      position: relative;
+      z-index: 10;
+    }
+
+    .auth-card {
+      background: rgba(255,255,255,0.75);
+      border: 1.5px solid var(--accent2);
+      border-radius: var(--radius);
+      padding: 50px 40px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 8px 32px var(--shadow-lg);
+      backdrop-filter: blur(12px);
+      text-align: center;
+      animation: bounceIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+    }
+    
+    [data-theme="dark"] .auth-card {
+      background: rgba(42,42,62,0.95) !important;
+    }
+
+    .logout-icon {
+      font-size: 4.5rem;
+      margin-bottom: 16px;
+      animation: wave 2.5s infinite ease-in-out;
+      display: inline-block;
+      transform-origin: 70% 70%;
+    }
+
+    @keyframes wave {
+      0%, 100% { transform: rotate(0deg); }
+      20% { transform: rotate(-15deg); }
+      40% { transform: rotate(15deg); }
+      60% { transform: rotate(-10deg); }
+      80% { transform: rotate(10deg); }
+    }
+
+    .auth-title {
+      font-family: 'Fredoka One', cursive;
+      color: var(--primary-dark);
+      font-size: 1.8rem;
+      margin-bottom: 12px;
+      letter-spacing: 0.5px;
+    }
+
+    .auth-subtitle {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      font-weight: 700;
+      margin-bottom: 32px;
+      line-height: 1.5;
+    }
+    
+    .auth-subtitle strong {
+      color: var(--primary);
+    }
+
+    .btn-auth {
+      display: flex;
+      justify-content: center;
+      margin: 0 auto;
+      animation: none; /* override default btn-primary animation */
+    }
+
+    @keyframes bounceIn {
+      0% { opacity: 0; transform: scale(0.9) translateY(20px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    /* Small decor */
+    .decor-dot {
+      position: absolute;
+      border-radius: 50%;
+      background: var(--accent);
+      opacity: 0.6;
+      z-index: -1;
+    }
+    .dot-1 { width: 50px; height: 50px; top: -15px; right: -15px; }
+    .dot-2 { width: 70px; height: 70px; bottom: -20px; left: -20px; background: var(--accent3); }
+  </style>
+</head>
+<body>
+  <!-- THEME SWITCHER -->
+  <div class="theme-switcher" id="theme-switcher">
+    <button class="theme-toggle-btn" id="theme-toggle-btn" title="Change Theme">
+      <span class="theme-icon">🎨</span>
+      <span class="theme-label">Theme</span>
+      <span class="theme-arrow">▾</span>
+    </button>
+    <div class="theme-dropdown hidden" id="theme-dropdown">
+      <div class="theme-dropdown-title">Choose a Theme</div>
+      <div class="theme-grid">
+        <button class="theme-swatch active" data-theme="pink" title="Blossom Pink" style="--sw:#D63384"><span class="swatch-dot" style="background:#D63384"></span>Blossom</button>
+        <button class="theme-swatch" data-theme="green" title="Forest Green" style="--sw:#2D6A4F"><span class="swatch-dot" style="background:#2D6A4F"></span>Forest</button>
+        <button class="theme-swatch" data-theme="blue" title="Ocean Blue" style="--sw:#1A6FA8"><span class="swatch-dot" style="background:#1A6FA8"></span>Ocean</button>
+        <button class="theme-swatch" data-theme="purple" title="Royal Purple" style="--sw:#7B2FBE"><span class="swatch-dot" style="background:#7B2FBE"></span>Royal</button>
+        <button class="theme-swatch" data-theme="orange" title="Sunset Orange" style="--sw:#D4580A"><span class="swatch-dot" style="background:#D4580A"></span>Sunset</button>
+        <button class="theme-swatch" data-theme="teal" title="Teal Breeze" style="--sw:#0D9488"><span class="swatch-dot" style="background:#0D9488"></span>Teal</button>
+        <button class="theme-swatch" data-theme="dark" title="Midnight Dark" style="--sw:#1E1E2E"><span class="swatch-dot" style="background:#1E1E2E"></span>Dark</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="auth-wrapper">
+    <div class="auth-card">
+      <div class="decor-dot dot-1"></div>
+      <div class="decor-dot dot-2"></div>
+
+      <div class="logout-icon">👋</div>
+      <div class="auth-title">Catch you later!</div>
+      <div class="auth-subtitle">You have successfully logged out. Remember to come back tomorrow to keep your <strong>streak alive! 🔥</strong></div>
+      
+      <a href="login.html" class="btn-primary btn-auth">Log Back In 🚀</a>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const themeToggleBtn = document.getElementById("theme-toggle-btn");
+      const themeDropdown = document.getElementById("theme-dropdown");
+      const themeSwatches = document.querySelectorAll(".theme-swatch");
+      
+      if(themeToggleBtn) {
+        themeToggleBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const isOpen = !themeDropdown.classList.contains("hidden");
+          themeDropdown.classList.toggle("hidden", isOpen);
+          themeToggleBtn.classList.toggle("open", !isOpen);
+        });
+        
+        document.addEventListener("click", (e) => {
+          if (!e.target.closest("#theme-switcher")) {
+            themeDropdown.classList.add("hidden");
+            themeToggleBtn.classList.remove("open");
+          }
+        });
+        
+        themeSwatches.forEach(swatch => {
+          swatch.addEventListener("click", () => {
+            const theme = swatch.dataset.theme;
+            applyTheme(theme);
+            themeSwatches.forEach(s => s.classList.remove("active"));
+            swatch.classList.add("active");
+            setTimeout(() => {
+              themeDropdown.classList.add("hidden");
+              themeToggleBtn.classList.remove("open");
+            }, 220);
+          });
+        });
+        
+        function applyTheme(theme) {
+          document.documentElement.setAttribute("data-theme", theme);
+          localStorage.setItem("speakup-theme", theme);
+          const THEME_COLORS = { pink: "#D63384", green: "#2D6A4F", blue: "#1A6FA8", purple: "#7B2FBE", orange: "#D4580A", teal: "#0D9488", dark: "#C084FC" };
+          const color = THEME_COLORS[theme] || THEME_COLORS.pink;
+          themeToggleBtn.style.borderColor = color + "80";
+        }
+        
+        function initTheme() {
+          const saved = localStorage.getItem("speakup-theme") || "pink";
+          themeSwatches.forEach(s => s.classList.toggle("active", s.dataset.theme === saved));
+          applyTheme(saved);
+        }
+        initTheme();
+      }
+    });
+  </script>
+  <script type="module">
+    import { auth } from './firebase-config.js';
+    import { signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+
+    // Perform actual Firebase sign out when landing on this page
+    signOut(auth).then(() => {
+      console.log("User successfully signed out.");
+    }).catch((error) => {
+      console.error("Error signing out:", error);
+    });
+  </script>
+</body>
+</html>

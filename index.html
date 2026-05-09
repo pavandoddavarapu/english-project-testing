@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Speak Up! – English Speech Practice</title>
+
+  <!-- SEO & Social Meta Tags -->
+  <meta name="description"
+    content="Practice your English speaking skills with daily AI-generated topics, interview prep, vocabulary learning, and picture description. A fun, interactive speech practice tool." />
+  <meta property="og:title" content="Speak Up! – English Speech Practice" />
+  <meta property="og:description"
+    content="Level up your English fluency with daily AI-generated speaking challenges!" />
+  <meta property="og:image" content="./icon-512.png" />
+  <meta property="og:type" content="website" />
+
+  <!-- PWA Setup -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#D63384" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&family=Pacifico&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+  <!-- NAV -->
+  <nav class="navbar">
+    <div class="nav-tabs">
+      <button class="nav-tab active" data-tab="random" id="tab-random">🎲 Random Topics</button>
+      <button class="nav-tab" data-tab="interview" id="tab-interview">💼 Interview Prep</button>
+      <button class="nav-tab" data-tab="vocab" id="tab-vocab">📖 Learn Vocab</button>
+      <button class="nav-tab nav-tab-picture" data-tab="picture" id="tab-picture">🖼️ Picture Talk</button>
+    </div>
+
+    <!-- THEME SWITCHER -->
+    <div class="theme-switcher" id="theme-switcher">
+      <button class="theme-toggle-btn" id="theme-toggle-btn" title="Change Theme">
+        <span class="theme-icon">🎨</span>
+        <span class="theme-label">Theme</span>
+        <span class="theme-arrow">▾</span>
+      </button>
+      <div class="theme-dropdown hidden" id="theme-dropdown">
+        <div class="theme-dropdown-title">Choose a Theme</div>
+        <div class="theme-grid">
+          <button class="theme-swatch active" data-theme="pink" title="Blossom Pink" style="--sw:#D63384"><span
+              class="swatch-dot" style="background:#D63384"></span>Blossom</button>
+          <button class="theme-swatch" data-theme="green" title="Forest Green" style="--sw:#2D6A4F"><span
+              class="swatch-dot" style="background:#2D6A4F"></span>Forest</button>
+          <button class="theme-swatch" data-theme="blue" title="Ocean Blue" style="--sw:#1A6FA8"><span
+              class="swatch-dot" style="background:#1A6FA8"></span>Ocean</button>
+          <button class="theme-swatch" data-theme="purple" title="Royal Purple" style="--sw:#7B2FBE"><span
+              class="swatch-dot" style="background:#7B2FBE"></span>Royal</button>
+          <button class="theme-swatch" data-theme="orange" title="Sunset Orange" style="--sw:#D4580A"><span
+              class="swatch-dot" style="background:#D4580A"></span>Sunset</button>
+          <button class="theme-swatch" data-theme="teal" title="Teal Breeze" style="--sw:#0D9488"><span
+              class="swatch-dot" style="background:#0D9488"></span>Teal</button>
+          <button class="theme-swatch" data-theme="dark" title="Midnight Dark" style="--sw:#1E1E2E"><span
+              class="swatch-dot" style="background:#1E1E2E"></span>Dark</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-brand">Small Steps to the podium 🎤</div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-layout">
+
+    <!-- LEFT PANEL -->
+    <aside class="left-panel">
+
+      <!-- RANDOM TOPICS PANEL -->
+      <div class="panel-section" id="panel-random">
+        <div class="big-title handwritten">
+          <span class="title-line">Take a</span>
+          <span class="title-line accent">Shot</span>
+        </div>
+        <ol class="instructions">
+          <li>Get <span class="underline-squiggle">random topic</span></li>
+          <li>Set <span class="underline-squiggle">1 min timer</span></li>
+          <li>Record &amp; speak 🎙️</li>
+        </ol>
+        <a href="#" class="btn-primary" id="speech-analysis-btn">
+          GET SPEECH ANALYSIS
+          <span class="badge-new">NEW</span>
+        </a>
+      </div>
+
+      <!-- INTERVIEW PREP PANEL -->
+      <div class="panel-section hidden" id="panel-interview">
+        <div class="big-title handwritten interview-title">
+          <span class="title-line">Interview</span>
+          <span class="title-line accent">Prep</span>
+          <div class="star-decor">⭐ ✨ ⭐</div>
+        </div>
+        <a href="#" class="btn-primary" id="speech-analysis-btn2">
+          GET SPEECH ANALYSIS
+          <span class="badge-new">NEW</span>
+        </a>
+        <div class="frameworks-box">
+          <h3 class="frameworks-heading">Frameworks</h3>
+          <div class="framework-item collapsed" id="fw-star">
+            <div class="framework-title">⭐ STAR ⭐ <span class="toggle-arrow">▼</span></div>
+          </div>
+          <div class="framework-item collapsed" id="fw-prep">
+            <div class="framework-title">🌸 PREP 🌸 <span class="toggle-arrow">▼</span></div>
+          </div>
+          <div class="framework-item collapsed" id="fw-ppf">
+            <div class="framework-title">🌺 PPF 🌺 <span class="toggle-arrow">▼</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VOCAB PANEL -->
+      <div class="panel-section hidden" id="panel-vocab">
+        <div class="big-title handwritten vocab-title">
+          <span class="title-line">LEARN</span>
+          <span class="title-line accent">VOCAB</span>
+          <div class="wave-underline">〰️〰️〰️</div>
+        </div>
+        <ol class="instructions">
+          <li>Get <span class="underline-squiggle">random vocab</span></li>
+          <li>Set <span class="underline-squiggle">30 sec timer</span></li>
+          <li>Use vocab in speech</li>
+        </ol>
+        <a href="#" class="btn-primary" id="speech-analysis-btn3">
+          GET SPEECH ANALYSIS
+          <span class="badge-new">NEW</span>
+        </a>
+        <div class="vocab-card" id="vocab-definition-card">
+          <div class="vocab-word-title" id="vocab-word-display">Pie in the sky <span class="audio-icon">🔊</span></div>
+          <div class="vocab-pos">idiom</div>
+          <div class="vocab-meaning" id="vocab-meaning-display">an unrealistic promise of future reward</div>
+          <div class="vocab-example-label">EXAMPLE SENTENCE:</div>
+          <div class="vocab-example" id="vocab-example-display">Their compensation package is all pie in the sky — no
+            actual guarantees.</div>
+          <div class="vocab-angle-label">SPEAKING ANGLE:</div>
+          <div class="vocab-angle" id="vocab-angle-display">Share a pie-in-the-sky promise you once believed and how you
+            spotted them faster now.</div>
+        </div>
+      </div>
+
+      <!-- PICTURE TALK PANEL -->
+      <div class="panel-section hidden" id="panel-picture">
+        <div class="big-title handwritten picture-title">
+          <span class="title-line">Picture</span>
+          <span class="title-line accent">Talk</span>
+          <div class="picture-decor">📸 🗣️ ✨</div>
+        </div>
+        <ol class="instructions">
+          <li>🌀 <span class="underline-squiggle">Spin</span> for a new image</li>
+          <li>👀 Look &amp; <span class="underline-squiggle">observe</span></li>
+          <li>🎙️ Describe what you see</li>
+        </ol>
+        <a href="#" class="btn-primary" id="speech-analysis-btn4">
+          GET SPEECH ANALYSIS
+          <span class="badge-new">NEW</span>
+        </a>
+        <!-- Speaking tips card -->
+        <div class="picture-tips-card">
+          <div class="tips-heading">💡 What you can say</div>
+          <ul class="tips-list">
+            <li>What do you <strong>see</strong> in the picture?</li>
+            <li>What's the <strong>mood</strong> or feeling?</li>
+            <li>What might be <strong>happening</strong>?</li>
+            <li>What does it <strong>remind</strong> you of?</li>
+          </ul>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- RIGHT PANEL -->
+    <section class="right-panel">
+
+      <!-- FILTERS — shown per tab -->
+      <div class="filters-row" id="filters-random">
+        <!-- Category Dropdown -->
+        <div class="filter-dropdown-container" id="category-dropdown-container">
+          <button class="filter-pill dropdown-toggle" id="category-toggle">
+            <span id="category-label">🎲 Random</span>
+            <span class="arrow" id="category-arrow">▼</span>
+          </button>
+          <div class="filter-dropdown-menu hidden scrollable-menu" id="category-menu">
+            <button class="filter-option active" data-value="random">🎯 Random <span class="check">✓</span></button>
+            <button class="filter-option" data-value="general">💭 General <span class="check hidden">✓</span></button>
+            <button class="filter-option" data-value="tech">💻 Tech <span class="check hidden">✓</span></button>
+            <button class="filter-option" data-value="finance">💰 Finance <span class="check hidden">✓</span></button>
+            <button class="filter-option" data-value="roast">🔥 Roast A Popular Thing <span
+                class="check hidden">✓</span></button>
+            <button class="filter-option" data-value="pitch">💡 One-Minute Pitch <span
+                class="check hidden">✓</span></button>
+            <button class="filter-option" data-value="defend">👿 Defend The Worst Take <span
+                class="check hidden">✓</span></button>
+            <button class="filter-option" data-value="eli5">👶 Explain It Like You're 5 <span
+                class="check hidden">✓</span></button>
+            <button class="filter-option" data-value="conspiracy">👽 Conspiracy Corner <span
+                class="check hidden">✓</span></button>
+            <button class="filter-option" data-value="hottakes">🌶️ Hot Takes <span
+                class="check hidden">✓</span></button>
+            <button class="filter-option" data-value="millennial">🧮 Millennial <span
+                class="check hidden">✓</span></button>
+            <button class="filter-option" data-value="genz">🔋 Gen Z <span class="check hidden">✓</span></button>
+          </div>
+        </div>
+
+        <!-- Difficulty Dropdown -->
+        <div class="filter-dropdown-container" id="difficulty-dropdown-container">
+          <button class="filter-pill dropdown-toggle" id="difficulty-toggle">
+            <span id="difficulty-label">🎲 Random</span>
+            <span class="arrow" id="difficulty-arrow">▼</span>
+          </button>
+          <div class="filter-dropdown-menu hidden" id="difficulty-menu">
+            <button class="filter-option active" data-value="random">🎲 Random <span class="check">✓</span></button>
+            <button class="filter-option" data-value="easy">🟢 Easy <span class="check hidden">✓</span></button>
+            <button class="filter-option" data-value="medium">🟡 Medium <span class="check hidden">✓</span></button>
+            <button class="filter-option" data-value="hard">🔴 Hard <span class="check hidden">✓</span></button>
+          </div>
+        </div>
+      </div>
+
+      <div class="filters-row hidden" id="filters-interview">
+        <div class="filter-pill active-filter">
+          <span>🌟 Top 50 Behavioral</span>
+          <span class="arrow">▼</span>
+        </div>
+      </div>
+
+      <div class="filters-row hidden" id="filters-vocab">
+        <div class="filter-pill">
+          <span>🌸 Random</span>
+          <span class="arrow">▼</span>
+        </div>
+      </div>
+
+      <!-- PICTURE tab filter row — category badge lives inline here -->
+      <div class="filters-row hidden" id="filters-picture">
+        <div class="filter-pill picture-cat-pill" id="picture-cat-pill">
+          <span id="picture-cat-label">📍 Any Category</span>
+        </div>
+      </div>
+
+      <!-- TOPIC SPINNER AREA (random / interview / vocab) -->
+      <div class="topic-area" id="topic-area-words">
+        <div class="topic-above" id="topic-above">Gratitude</div>
+        <div class="topic-main" id="topic-main">
+          Defend that contradiction is a sign of wisdom, not weakness.
+        </div>
+        <div class="topic-below" id="topic-below">The snooze button does more harm than good.</div>
+      </div>
+
+      <!-- PICTURE DISPLAY AREA (picture tab only) -->
+      <div class="picture-display-area hidden" id="picture-display-area">
+        <!-- Skeleton shimmer (shown while loading) -->
+        <div class="picture-skeleton" id="picture-skeleton">
+          <div class="skeleton-shimmer"></div>
+          <div class="skeleton-icon">📷</div>
+          <div class="skeleton-text">Loading image…</div>
+        </div>
+
+        <!-- Crossfade layers -->
+        <div class="picture-img-layer picture-layer-a" id="picture-layer-a"></div>
+        <div class="picture-img-layer picture-layer-b" id="picture-layer-b"></div>
+
+        <!-- Gradient overlay at the bottom for readability -->
+        <div class="picture-gradient-overlay"></div>
+
+        <!-- Prompt shown on top of the image -->
+        <div class="picture-speak-prompt" id="picture-speak-prompt">
+          <span class="prompt-icon">🗣️</span>
+          <span class="prompt-text">Describe what you see…</span>
+        </div>
+      </div>
+
+      <!-- DIAL -->
+      <div class="dial-container">
+        <div class="dial-track">
+          <div class="dial-knob top"></div>
+          <div class="dial-stem"></div>
+          <div class="dial-knob bottom"></div>
+        </div>
+      </div>
+
+      <!-- ACTIONS -->
+      <div class="action-row">
+        <button class="btn-spin" id="spin-btn">🌀 Spin!</button>
+        <button class="btn-timer" id="timer-btn">Start Timer →</button>
+      </div>
+
+      <!-- TIMER DISPLAY -->
+      <div class="timer-display hidden" id="timer-display">
+        <div class="timer-countdown" id="timer-countdown">1:00</div>
+        <button class="btn-stop" id="stop-btn">⏹ Stop</button>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- CONFETTI CANVAS -->
+  <canvas id="confetti-canvas"></canvas>
+
+  <!-- FULL-SCREEN TIMER VIEW -->
+  <div class="timer-screen hidden" id="timer-screen">
+    <!-- Top bar -->
+    <div class="timer-screen-topbar">
+      <button class="timer-back-btn" id="timer-back-btn">
+        <span class="back-arrow">←</span> Back
+      </button>
+      <a href="#" class="btn-primary btn-primary-sm" id="timer-speech-btn">
+        GET SPEECH ANALYSIS <span class="badge-new">NEW</span>
+      </a>
+      <div class="nav-brand">Baby Steps to the Mic 🎤</div>
+    </div>
+
+    <!-- Topic / Image label -->
+    <div class="timer-topic-label" id="timer-topic-label">TOPIC:</div>
+
+    <!-- In picture mode, show a small thumbnail in the timer -->
+    <div class="timer-picture-thumb hidden" id="timer-picture-thumb">
+      <img id="timer-thumb-img" src="" alt="speak about this" />
+    </div>
+
+    <div class="timer-topic-text" id="timer-topic-text">Pie in the sky</div>
+
+    <!-- Circular timer -->
+    <div class="circle-timer-wrapper">
+      <div class="circle-timer" id="circle-timer">
+        <svg class="progress-ring" viewBox="0 0 240 240" id="progress-svg">
+          <circle class="progress-ring-bg" cx="120" cy="120" r="108" />
+          <circle class="progress-ring-fill" cx="120" cy="120" r="108" id="progress-ring-fill" stroke-dasharray="678.6"
+            stroke-dashoffset="0" />
+        </svg>
+        <div class="circle-timer-inner">
+          <div class="circle-countdown" id="circle-countdown">1:00</div>
+          <div class="circle-adjust-btns">
+            <button class="btn-adjust" id="btn-minus">−0:30</button>
+            <button class="btn-adjust" id="btn-plus">+0:30</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Play/Pause & Reset -->
+    <div class="timer-controls">
+      <button class="btn-reset-circle" id="btn-reset-circle" title="Reset">&#8635;</button>
+      <button class="btn-play-pause" id="btn-play-pause" title="Play">
+        <span class="play-icon">▶</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- SPEECH ANALYSIS MODAL -->
+  <div class="modal-overlay hidden" id="modal-overlay">
+    <div class="modal-box">
+      <button class="modal-close" id="modal-close">✕</button>
+      <h2 class="modal-title">🎙️ Speech Analysis</h2>
+      <p class="modal-sub">Click "Start Recording" and speak your topic for analysis.</p>
+      <div class="record-area">
+        <button class="btn-record" id="record-btn">🔴 Start Recording</button>
+        <div class="record-status" id="record-status"></div>
+      </div>
+      <div class="analysis-results hidden" id="analysis-results">
+        <div class="result-card">
+          <div class="result-label">Fluency Score</div>
+          <div class="result-bar">
+            <div class="result-fill" id="fluency-bar"></div>
+          </div>
+          <div class="result-value" id="fluency-val">—</div>
+        </div>
+        <div class="result-card">
+          <div class="result-label">Clarity Score</div>
+          <div class="result-bar">
+            <div class="result-fill" id="clarity-bar"></div>
+          </div>
+          <div class="result-value" id="clarity-val">—</div>
+        </div>
+        <div class="result-card">
+          <div class="result-label">Confidence Score</div>
+          <div class="result-bar">
+            <div class="result-fill" id="confidence-bar"></div>
+          </div>
+          <div class="result-value" id="confidence-val">—</div>
+        </div>
+        <div class="result-card" style="margin-top: 15px;">
+          <div class="result-label">Feedback</div>
+          <div class="result-text" id="feedback-val" style="font-size: 0.9em; margin-top: 5px; line-height: 1.4;">—</div>
+        </div>
+        <div class="result-card" style="margin-top: 10px;">
+          <div class="result-label">What you said (Transcription)</div>
+          <div class="result-text" id="transcription-val" style="font-size: 0.85em; margin-top: 5px; font-style: italic; color: var(--text-color); opacity: 0.8;">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHATBOT UI -->
+  <div class="chatbot-container scroll-hidden" id="chatbot-container">
+    <div class="chatbot-pointer">
+      <span class="pointer-text handwritten">Got a question? Ask<br>Genie!</span>
+      <svg class="pointer-arrow" width="50" height="50" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M10,20 Q60,10 80,70 M50,60 L80,70 L85,40"></path>
+      </svg>
+    </div>
+    <button class="chatbot-toggle" id="chatbot-toggle" title="Ask Genie">
+      <span class="chat-icon">🧞</span>
+    </button>
+    <div class="chatbot-window hidden" id="chatbot-window">
+      <div class="chatbot-header">
+        <div class="chatbot-title">🧞 Genie</div>
+        <button class="chatbot-close" id="chatbot-close">✕</button>
+      </div>
+      <div class="chatbot-messages" id="chatbot-messages">
+        <div class="chat-message bot-message">
+          Greetings. I am Genie, your professional English language assistant. How may I assist you with your grammar or vocabulary today?
+        </div>
+      </div>
+      <div class="chatbot-input-area">
+        <input type="text" id="chatbot-input" placeholder="Type your question..." autocomplete="off" />
+        <button id="chatbot-send">➤</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Smart Cached Image System -->
+  <script src="image-cache.js"></script>
+  <script src="app.js"></script>
+  <!-- PWA Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => console.log('Service Worker registered'))
+          .catch(err => console.error('Service Worker registration failed', err));
+      });
+    }
+  </script>
+</body>
+
+</html>

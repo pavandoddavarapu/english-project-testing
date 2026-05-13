@@ -50,7 +50,7 @@ Return ONLY a valid JSON object in the exact format below (no markdown fences):
       { text: AI_PROMPT },
       {
         inlineData: {
-          mimeType: mimeType || 'audio/webm',
+          mimeType: (mimeType || 'audio/webm').split(';')[0],
           data: audioBase64
         }
       }
@@ -85,6 +85,7 @@ Return ONLY a valid JSON object in the exact format below (no markdown fences):
         body: JSON.stringify({
           contents: [
             {
+              role: "user",
               parts: parts
             }
           ],

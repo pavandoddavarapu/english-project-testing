@@ -98,9 +98,20 @@ Return ONLY a valid JSON object in the exact format below (no markdown fences):
     );
 
     if (!response.ok) {
-      const errorData = await response.text();
-      console.error("Gemini API Error:", errorData);
-      return res.status(response.status).json({ error: "Speech analysis failed at AI provider", details: errorData });
+      const errorText = await response.text();
+      console.error("Gemini API Error:", errorText);
+      let errorMsg = "Speech analysis failed at AI provider";
+      try {
+        const parsed = JSON.parse(errorText);
+        if (parsed.error && parsed.error.message) {
+          errorMsg = `Gemini Error: ${parsed.error.message}`;
+        } else {
+          errorMsg = `Gemini Error: ${errorText.substring(0, 50)}`;
+        }
+      } catch(e) {
+        errorMsg = `Gemini Error: ${errorText.substring(0, 50)}`;
+      }
+      return res.status(response.status).json({ error: errorMsg, details: errorText });
     }
 
     const json = await response.json();

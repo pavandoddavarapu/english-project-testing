@@ -89,7 +89,7 @@ Evaluate their speech and return ONLY a valid JSON object (no markdown, no extra
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'llama3-8b-8192',
+        model: 'llama-3.1-8b-instant',
         messages: [{ role: 'user', content: scoringPrompt }],
         temperature: 0.3,
         max_tokens: 400,

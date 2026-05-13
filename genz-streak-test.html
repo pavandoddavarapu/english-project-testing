@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gen Z Dashboard - Speak Up Style</title>
+  <title>My Progress — Speak Up!</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,7 +17,9 @@
   </script>
   
   <style>
-    /* Dark mode overrides for GenZ dashboard */
+    /* ── Premium Dashboard Overrides ── */
+
+    /* Dark mode */
     [data-theme="dark"] .panel,
     [data-theme="dark"] .rank,
     [data-theme="dark"] .heatmap-stats,
@@ -39,6 +41,13 @@
     }
     [data-theme="dark"] .badge {
       background: rgba(42,42,62,0.95) !important;
+    }
+    [data-theme="dark"] .welcome-banner {
+      background: linear-gradient(135deg, rgba(192,132,252,0.15), rgba(232,121,249,0.10)) !important;
+      border-color: rgba(192,132,252,0.3) !important;
+    }
+    [data-theme="dark"] .section-title {
+      color: var(--primary) !important;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -80,18 +89,18 @@
 
     /* Panels matching Speak Up style */
     .panel {
-      background: rgba(255,255,255,0.72);
+      background: rgba(255,255,255,0.75);
       border: 1.5px solid var(--accent2);
       border-radius: var(--radius);
-      padding: 24px;
+      padding: 22px 24px;
       box-shadow: 0 4px 18px var(--shadow);
-      backdrop-filter: blur(6px);
-      transition: transform 0.2s, box-shadow 0.2s;
+      backdrop-filter: blur(8px);
+      transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease;
     }
     
     .panel:hover {
-      box-shadow: 0 8px 24px var(--shadow-lg);
-      transform: translateY(-2px);
+      box-shadow: 0 10px 32px var(--shadow-lg);
+      transform: translateY(-3px);
     }
 
     /* Typography */
@@ -121,10 +130,40 @@
     .profile-img {
       width: 80px;
       height: 80px;
-      border-radius: 16px;
+      border-radius: 50%;
       object-fit: cover;
       border: 3px solid var(--accent2);
       box-shadow: 0 4px 12px var(--shadow);
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      position: relative;
+    }
+    .profile-img:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 18px var(--shadow-lg);
+    }
+    .profile-img-wrapper {
+      position: relative;
+      width: 80px;
+      height: 80px;
+      flex-shrink: 0;
+    }
+    .avatar-change-hint {
+      position: absolute;
+      bottom: -2px;
+      right: -2px;
+      background: var(--primary);
+      color: white;
+      border-radius: 50%;
+      width: 22px;
+      height: 22px;
+      font-size: 0.7rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid white;
+      cursor: pointer;
+      box-shadow: 0 2px 6px var(--shadow);
     }
 
     .profile-names h1 {
@@ -144,19 +183,35 @@
     }
 
     .rank {
-      margin-top: 16px;
-      font-size: 0.95rem;
+      margin-top: 12px;
+      font-size: 0.85rem;
       font-weight: 700;
       color: var(--text-muted);
       background: rgba(255, 255, 255, 0.5);
       padding: 8px 12px;
       border-radius: 10px;
       border: 1.5px solid var(--accent2);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
     .rank-number {
       font-weight: 900;
       color: var(--primary);
       font-size: 1.1rem;
+    }
+    .streak-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: linear-gradient(135deg, #FF6B35, #FF8E53);
+      color: white;
+      font-size: 0.78rem;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 999px;
+      margin-top: 8px;
+      box-shadow: 0 3px 10px rgba(255,107,53,0.35);
     }
 
     .follow-stats {
@@ -215,26 +270,29 @@
     }
 
     .section-title {
-      font-size: 0.9rem;
+      font-size: 0.78rem;
       color: var(--primary);
       margin-bottom: 16px;
       font-weight: 900;
       text-transform: uppercase;
-      letter-spacing: 1.5px;
-      border-bottom: 1.5px dashed var(--accent2);
-      padding-bottom: 8px;
+      letter-spacing: 2px;
+      padding-left: 10px;
+      border-left: 3px solid var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
 
     .stat-row {
       display: flex;
       justify-content: space-between;
-      margin-bottom: 12px;
-      font-size: 0.9rem;
+      margin-bottom: 10px;
+      font-size: 0.88rem;
       font-weight: 700;
       color: var(--text-muted);
       align-items: center;
-      padding: 6px 10px;
-      border-radius: 8px;
+      padding: 8px 10px;
+      border-radius: 10px;
       transition: background 0.2s;
     }
     .stat-row:hover {
@@ -247,11 +305,14 @@
 
     .stat-row span:last-child {
       color: var(--text);
-      font-weight: 800;
+      font-weight: 900;
       background: var(--bg-card);
-      padding: 2px 8px;
-      border-radius: 12px;
-      border: 1px solid var(--accent2);
+      padding: 3px 10px;
+      border-radius: 20px;
+      border: 1.5px solid var(--accent2);
+      font-size: 0.85rem;
+      min-width: 32px;
+      text-align: center;
     }
 
     /* Right Column */
@@ -624,7 +685,7 @@
 <body>
 
   <nav class="navbar" style="margin-bottom: 20px;">
-    <div class="nav-brand">Small Steps to the podium 🎤</div>
+    <div class="nav-brand">Speak Up! 🎤</div>
     
     <div style="display: flex; gap: 15px; align-items: center;">
       <div class="theme-switcher" id="theme-switcher">
@@ -650,13 +711,46 @@
     </div>
   </nav>
 
+  <!-- Welcome Banner -->
+  <div class="welcome-banner" id="welcome-banner" style="
+    max-width: 1100px;
+    margin: 0 auto 20px auto;
+    padding: 16px 28px;
+    background: linear-gradient(135deg, rgba(214,51,132,0.08), rgba(255,110,180,0.05));
+    border: 1.5px solid var(--accent2);
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    backdrop-filter: blur(6px);
+    animation: fadeSlideIn 0.5s ease both;
+  ">
+    <div>
+      <div style="font-family: 'Fredoka One', cursive; font-size: 1.35rem; color: var(--primary); margin-bottom: 2px;" id="welcome-title">Welcome back! 👋</div>
+      <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 700;">Track your progress, celebrate your growth.</div>
+    </div>
+    <div style="display: flex; gap: 20px; align-items: center;">
+      <div style="text-align: center;">
+        <div style="font-family: 'Fredoka One', cursive; font-size: 1.5rem; color: var(--primary);" id="banner-streak">0</div>
+        <div style="font-size: 0.72rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">🔥 Day Streak</div>
+      </div>
+      <div style="text-align: center;">
+        <div style="font-family: 'Fredoka One', cursive; font-size: 1.5rem; color: var(--primary);" id="banner-aura">0</div>
+        <div style="font-size: 0.72rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">✨ Aura Points</div>
+      </div>
+    </div>
+  </div>
+
   <div class="dashboard">
     <!-- Left Column -->
     <div class="left-col">
       <!-- Profile Panel -->
       <div class="panel">
         <div class="profile-info">
-          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix&backgroundColor=b6e3f4" id="profile-img" alt="Profile" class="profile-img">
+          <div class="profile-img-wrapper" onclick="openAvatarPicker()" title="Change avatar">
+            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix&backgroundColor=b6e3f4" id="profile-img" alt="Profile" class="profile-img">
+            <div class="avatar-change-hint">✏️</div>
+          </div>
           <div class="profile-names">
             <h1 id="profile-name">Loading...</h1>
             <p id="profile-email">Please wait</p>
@@ -664,29 +758,30 @@
         </div>
         
         <div class="rank">
-          Aura Points <span id="profile-aura" class="rank-number">0</span> ✨
+          ✨ Aura Points &nbsp;<span id="profile-aura" class="rank-number">0</span>
         </div>
+        <div class="streak-chip" id="streak-chip">🔥 <span id="streak-count">0</span> day streak</div>
         
         <div class="follow-stats">
           <span><strong>0</strong> Following</span>
-          <span><strong>0</strong> Stans</span>
+          <span><strong>0</strong> Followers</span>
         </div>
         
         <button class="follow-btn" onclick="window.location.href='practice.html'"><span>🎤</span> Practice Speaking</button>
         <button class="follow-btn" style="background: var(--bg-card); color: var(--primary); margin-top: 10px;" onclick="window.location.href='logout.html'"><span>🚪</span> Logout</button>
         
-        <div class="location">📍 Spawn Point: India</div>
+        <div class="location">📍 Based in: India</div>
       </div>
 
       <!-- Community Stats -->
       <div class="panel">
-        <div class="section-title">Community Clout</div>
+        <div class="section-title">My Stats</div>
         <div class="stat-row">
-          <span>🗣️ Yapping Sessions</span>
+          <span>🎙️ Practice Sessions</span>
           <span id="clout-total-yaps">0</span>
         </div>
         <div class="stat-row">
-          <span>🧠 Big Brain Moves</span>
+          <span>🏆 Top Performances</span>
           <span id="clout-big-brain">0</span>
         </div>
         <div class="stat-row">
@@ -701,18 +796,18 @@
 
       <!-- Languages / Skills -->
       <div class="panel">
-        <div class="section-title">Dialects Conquered</div>
+        <div class="section-title">Skills Unlocked</div>
         <div class="stat-row">
-          <span style="background: rgba(255, 255, 255, 0.6); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; border: 1px solid var(--accent2);">Casual Chat</span>
-          <span id="conquered-casual">0 Ws</span>
+          <span style="background: rgba(255, 255, 255, 0.6); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; border: 1px solid var(--accent2);">💬 Casual Chat</span>
+          <span id="conquered-casual">0</span>
         </div>
         <div class="stat-row">
-          <span style="background: rgba(255, 255, 255, 0.6); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; border: 1px solid var(--accent2);">Formal Prep</span>
-          <span id="conquered-formal">0 Ws</span>
+          <span style="background: rgba(255, 255, 255, 0.6); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; border: 1px solid var(--accent2);">🎯 Formal Prep</span>
+          <span id="conquered-formal">0</span>
         </div>
         <div class="stat-row">
-          <span style="background: rgba(255, 255, 255, 0.6); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; border: 1px solid var(--accent2);">Picture Talk</span>
-          <span id="conquered-picture">0 Ws</span>
+          <span style="background: rgba(255, 255, 255, 0.6); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; border: 1px solid var(--accent2);">🖼️ Picture Talk</span>
+          <span id="conquered-picture">0</span>
         </div>
       </div>
     </div>
@@ -760,7 +855,7 @@
       <div class="panel">
         <div class="heatmap-header">
           <div class="heatmap-title">
-            <span class="highlight" id="heatmap-total-yaps">0</span> yaps this era 🗣️
+            <span class="highlight" id="heatmap-total-yaps">0</span> sessions this year 🗣️
           </div>
           <div class="heatmap-stats">
             <span>Total active days: <span id="heatmap-active-days">0</span></span>
@@ -785,17 +880,26 @@
       <!-- Latest Drops -->
       <div class="panel" style="flex: 1;">
         <div class="tabs">
-          <div class="tab active">Latest Drops 🎙️</div>
-          <div class="tab">Big Brain Moves 🧠</div>
-          <div class="tab">Goated Yaps 🐐</div>
+          <div class="tab active">Recent Sessions 🎙️</div>
+          <div class="tab">Top Performances 🏆</div>
+          <div class="tab">Best Moments 🌟</div>
         </div>
         <div class="recent-list" id="recent-sessions-list">
           <div class="recent-item" style="color: var(--text-muted); text-align: center; justify-content: center; padding: 20px;">
-            No recent sessions yet. Time to yap! 🎤
+            No sessions yet — start your first practice! 🎤
           </div>
         </div>
       </div>
-      
+    </div>
+  </div>
+
+  <!-- Avatar Picker Modal -->
+  <div id="avatar-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px);" onclick="closeAvatarPicker(event)">
+    <div style="background:var(--bg); border:1.5px solid var(--accent2); border-radius:var(--radius); padding:28px; max-width:380px; width:90%; box-shadow:0 20px 60px rgba(0,0,0,0.3); animation: fadeSlideIn 0.3s ease both;" onclick="event.stopPropagation()">
+      <div style="font-family:'Fredoka One',cursive; color:var(--primary); font-size:1.2rem; margin-bottom:4px;">Choose Your Avatar</div>
+      <div style="font-size:0.8rem; color:var(--text-muted); font-weight:700; margin-bottom:18px;">Pick an avatar that represents you</div>
+      <div id="avatar-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:20px;"></div>
+      <button onclick="closeAvatarPicker()" style="width:100%; padding:10px; background:var(--primary); color:white; border:none; border-radius:999px; font-family:'Nunito',sans-serif; font-weight:800; cursor:pointer; font-size:0.9rem;">Done ✓</button>
     </div>
   </div>
 
@@ -851,11 +955,57 @@
     });
   </script>
 
+  <script>
+    // Avatar picker logic
+    var _currentAvatarSeed = 'Felix';
+    var _currentAvatarBg = 'b6e3f4';
+    var _currentUserGender = 'prefer_not';
+
+    var AVATAR_SEEDS_MALE   = ['Felix','Aaron','Ryan','Marcus','Alex','Jordan'];
+    var AVATAR_SEEDS_FEMALE = ['Zoe','Sarah','Emma','Lily','Ava','Grace'];
+    var AVATAR_SEEDS_ANY    = ['Sam','Casey','Riley','Jamie','Morgan','Charlie'];
+
+    function getAvatarSeeds(gender) {
+      if (gender === 'female') return AVATAR_SEEDS_FEMALE;
+      if (gender === 'male')   return AVATAR_SEEDS_MALE;
+      return AVATAR_SEEDS_ANY;
+    }
+
+    function openAvatarPicker() {
+      var modal = document.getElementById('avatar-modal');
+      var grid  = document.getElementById('avatar-grid');
+      modal.style.display = 'flex';
+      grid.innerHTML = '';
+      var seeds = getAvatarSeeds(_currentUserGender);
+      seeds.forEach(function(seed) {
+        var card = document.createElement('div');
+        var saved = localStorage.getItem('speakup-avatar-seed') || _currentAvatarSeed;
+        var isActive = seed === saved;
+        card.style.cssText = 'cursor:pointer; border-radius:12px; overflow:hidden; border:3px solid ' + (isActive ? 'var(--primary)' : 'var(--accent2)') + '; transition:all 0.2s; padding:6px; background:rgba(255,255,255,0.6); text-align:center;';
+        card.innerHTML = '<img src="https://api.dicebear.com/7.x/avataaars/svg?seed=' + seed + '&backgroundColor=' + _currentAvatarBg + '" style="width:70px;height:70px;" alt="' + seed + '">';
+        card.addEventListener('click', function() {
+          localStorage.setItem('speakup-avatar-seed', seed);
+          _currentAvatarSeed = seed;
+          document.getElementById('profile-img').src = 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + seed + '&backgroundColor=' + _currentAvatarBg;
+          grid.querySelectorAll('div').forEach(function(c) { c.style.borderColor = 'var(--accent2)'; });
+          card.style.borderColor = 'var(--primary)';
+        });
+        grid.appendChild(card);
+      });
+    }
+
+    function closeAvatarPicker(event) {
+      if (!event || event.target === document.getElementById('avatar-modal')) {
+        document.getElementById('avatar-modal').style.display = 'none';
+      }
+    }
+  </script>
+
   <!-- FIREBASE INTEGRATION -->
   <script type="module">
     import { auth, db } from './firebase-config.js';
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
-    import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+    import { doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
     // Helpers for Heatmap and Badges
     function renderHeatmap(practiceDates = [], totalYaps = 0) {
@@ -900,11 +1050,11 @@
           const tooltip = document.createElement('div');
           tooltip.className = 'tooltip';
           
-          let yapText = "No yaps today 💀";
-          if (level === 1) yapText = "1 yap session 🥱";
-          if (level === 2) yapText = "3 yap sessions 🤔";
-          if (level === 3) yapText = "7 yap sessions 🗣️";
-          if (level === 4) yapText = count + " yaps! Certified Yapper 👑";
+          let yapText = "No practice today";
+          if (level === 1) yapText = "1 session ✅";
+          if (level === 2) yapText = "3 sessions 🔥";
+          if (level === 3) yapText = "7 sessions 🚀";
+          if (level === 4) yapText = count + " sessions — on a roll! 👑";
 
           tooltip.innerText = yapText + ` (${dateStr})`;
           square.appendChild(tooltip);
@@ -956,22 +1106,22 @@
       const uniqueDays = new Set(practiceDates.map(d => d.split('T')[0])).size;
 
       if (uniqueDays >= 1) {
-        badges.push({ emoji: '🌱', title: 'First Yap', color: '#52B788', text: 'Started the journey' });
+        badges.push({ emoji: '🌱', title: 'First Step', color: '#52B788', text: 'Started the journey' });
       }
       if (uniqueDays >= 7) {
-        badges.push({ emoji: '🔥', title: '7 Days Active', color: '#F97316', text: 'On a roll!' });
+        badges.push({ emoji: '🔥', title: '7 Day Streak', color: '#F97316', text: 'Momentum is building!' });
       }
       if (uniqueDays >= 30) {
-        badges.push({ emoji: '👑', title: '30 Days Master', color: '#D63384', text: 'Consistency is key' });
+        badges.push({ emoji: '👑', title: '30 Day Champion', color: '#D63384', text: 'Consistency wins' });
       }
       if (auraPoints >= 100) {
-        badges.push({ emoji: '💎', title: 'Aura Master', color: '#1A6FA8', text: 'Reached 100 Aura' });
+        badges.push({ emoji: '💎', title: 'Aura Elite', color: '#1A6FA8', text: 'Reached 100 Aura Points' });
       }
 
       countEl.innerText = badges.length;
       
       if (badges.length > 0) {
-        latestText.innerText = 'Latest W: ' + badges[badges.length - 1].title;
+        latestText.innerText = 'Latest achievement: ' + badges[badges.length - 1].title;
         badges.forEach(b => {
           const badgeDiv = document.createElement('div');
           badgeDiv.className = 'badge';
@@ -991,7 +1141,7 @@
       listEl.innerHTML = '';
 
       if (sessions.length === 0) {
-        listEl.innerHTML = '<div class="recent-item" style="color: var(--text-muted); text-align: center; justify-content: center; padding: 20px;">No recent sessions yet. Time to yap! 🎤</div>';
+        listEl.innerHTML = '<div class="recent-item" style="color: var(--text-muted); text-align: center; justify-content: center; padding: 20px;">No sessions yet — start your first practice! 🎤</div>';
         return;
       }
 
@@ -1011,7 +1161,7 @@
            
            const scoreBadge = document.createElement('span');
            scoreBadge.style.cssText = `background: ${scoreColor}20; color: ${scoreColor}; font-size: 0.75rem; padding: 2px 8px; border-radius: 12px; margin-left: 10px; border: 1px solid ${scoreColor}40;`;
-           scoreBadge.innerText = `${session.score} Score`;
+           scoreBadge.innerText = `Score: ${session.score}`;
            nameSpan.appendChild(scoreBadge);
         }
 
@@ -1047,10 +1197,14 @@
       const bigBrainCount = sessions.filter(s => s.score >= 80).length;
       document.getElementById('clout-big-brain').innerText = bigBrainCount;
 
-      // Update Dialects Conquered (Simple logic for now)
-      document.getElementById('conquered-casual').innerText = `${Math.floor(totalYaps * 0.6)} Ws`;
-      document.getElementById('conquered-formal').innerText = `${Math.floor(totalYaps * 0.3)} Ws`;
-      document.getElementById('conquered-picture').innerText = `${Math.floor(totalYaps * 0.1)} Ws`;
+      // Update Skills Unlocked counts based on actual session mode
+      const casualCount = sessions.filter(s => s.mode === 'random').length;
+      const formalCount = sessions.filter(s => s.mode === 'interview').length;
+      const pictureCount = sessions.filter(s => s.mode === 'picture').length;
+      
+      document.getElementById('conquered-casual').innerText = casualCount;
+      document.getElementById('conquered-formal').innerText = formalCount;
+      document.getElementById('conquered-picture').innerText = pictureCount;
     }
 
     function renderSkillsProfile(sessions = []) {
@@ -1095,56 +1249,87 @@
         document.getElementById('profile-name').innerText = user.displayName || 'Speaker';
         document.getElementById('profile-email').innerText = user.email || '';
         
-        // Fetch user data from Firestore in the background
+        // Fetch user data from Firestore in the background using onSnapshot
+        // onSnapshot with local cache enabled in firebase-config.js provides instant loads
         try {
           const docRef = doc(db, "users", user.uid);
-          const docSnap = await getDoc(docRef);
           
-          if (docSnap.exists()) {
-            const userData = docSnap.data();
-            // Update name in case they have a custom one in DB
-            if (userData.name) {
-              document.getElementById('profile-name').innerText = userData.name;
+          onSnapshot(docRef, { includeMetadataChanges: true }, (docSnap) => {
+            if (docSnap.exists()) {
+              const userData = docSnap.data();
+              
+              // Set global avatar variables so the picker works
+              _currentUserGender = userData.gender || 'prefer_not';
+              _currentAvatarBg = userData.avatar_bg || 'b6e3f4';
+              
+              // Initialize seed if not already picked
+              var savedSeed = localStorage.getItem('speakup-avatar-seed');
+              if (!savedSeed) {
+                const seeds = getAvatarSeeds(_currentUserGender);
+                savedSeed = seeds[0];
+                localStorage.setItem('speakup-avatar-seed', savedSeed);
+              }
+              _currentAvatarSeed = savedSeed;
+              
+              // Render Avatar
+              document.getElementById('profile-img').src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${_currentAvatarSeed}&backgroundColor=${_currentAvatarBg}`;
+
+              // Update name in case they have a custom one in DB
+              const displayName = userData.name || user.displayName || 'Speaker';
+              const firstName = displayName.split(' ')[0];
+              document.getElementById('profile-name').innerText = displayName;
+              document.getElementById('welcome-title').innerText = `Welcome back, ${firstName}! 👋`;
+              
+              const auraPoints = userData.aura_points || 0;
+              const streak = userData.streak || 0;
+              
+              document.getElementById('profile-aura').innerText = auraPoints.toLocaleString();
+              document.getElementById('banner-aura').innerText = auraPoints.toLocaleString();
+              document.getElementById('banner-streak').innerText = streak;
+              document.getElementById('streak-count').innerText = streak;
+              
+              // Render heatmap, badges, skills profile, clout and recent sessions
+              renderHeatmap(userData.practice_dates || [], userData.total_yaps || 0);
+              renderBadges(userData.practice_dates || [], userData.aura_points || 0);
+              renderSkillsProfile(userData.recent_sessions || []);
+              renderCloutAndDialects(userData);
+              renderRecentSessions(userData.recent_sessions || []);
+            } else {
+              // No doc found, user is new. Render 0s immediately.
+              document.getElementById('profile-aura').innerText = '0';
+              renderHeatmap([], 0);
+              renderBadges([], 0);
+              renderSkillsProfile([]);
+              renderCloutAndDialects({});
+              renderRecentSessions([]);
+              
+              // Auto-create firestore doc for new users in the background
+              if (!docSnap.metadata.fromCache) {
+                const userData = {
+                  name: user.displayName || 'Speaker',
+                  email: user.email || '',
+                  aura_points: 0,
+                  streak: 0,
+                  practice_dates: [],
+                  created_at: new Date()
+                };
+                setDoc(docRef, userData).catch(err => {
+                  console.error("Failed to auto-create user doc:", err);
+                });
+              }
             }
-            document.getElementById('profile-aura').innerText = userData.aura_points !== undefined ? userData.aura_points.toLocaleString() : '0';
-            
-            // Render heatmap, badges, skills profile, clout and recent sessions
-            renderHeatmap(userData.practice_dates || [], userData.total_yaps || 0);
-            renderBadges(userData.practice_dates || [], userData.aura_points || 0);
-            renderSkillsProfile(userData.recent_sessions || []);
-            renderCloutAndDialects(userData);
-            renderRecentSessions(userData.recent_sessions || []);
-          } else {
-            // No doc found, user is new. Render 0s immediately.
+          }, (error) => {
+            console.error("Error listening to user data:", error);
+            // Fallback if firestore rules block access or other error
             document.getElementById('profile-aura').innerText = '0';
-            renderHeatmap([], 0);
+            renderHeatmap([]);
             renderBadges([], 0);
             renderSkillsProfile([]);
             renderCloutAndDialects({});
             renderRecentSessions([]);
-            
-            // Auto-create firestore doc for new users in the background (no await blocking UI)
-            const userData = {
-              name: user.displayName || 'Speaker',
-              email: user.email || '',
-              aura_points: 0,
-              streak: 0,
-              practice_dates: [],
-              created_at: new Date()
-            };
-            setDoc(docRef, userData).catch(err => {
-              console.error("Failed to auto-create user doc:", err);
-            });
-          }
+          });
         } catch (error) {
-          console.error("Error fetching user data:", error);
-          // Fallback if firestore rules block access or other error
-          document.getElementById('profile-aura').innerText = '0';
-          renderHeatmap([]);
-          renderBadges([], 0);
-          renderSkillsProfile([]);
-          renderCloutAndDialects({});
-          renderRecentSessions([]);
+          console.error("Error setting up snapshot:", error);
         }
       } else {
         // Not logged in! Redirect to login page

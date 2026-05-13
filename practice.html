@@ -458,53 +458,72 @@
   <script type="module">
     import { auth, db } from './firebase-config.js';
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
-    import { doc, getDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+    import { doc, getDoc, updateDoc, setDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
     onAuthStateChanged(auth, (user) => {
       if (user) {
-        // Intercept showRealAnalysis to track practice sessions
         const originalShowRealAnalysis = window.showRealAnalysis;
         if (originalShowRealAnalysis && !window._analysisIntercepted) {
           window._analysisIntercepted = true;
           window.showRealAnalysis = async function(data) {
             originalShowRealAnalysis.apply(this, arguments);
-            // Save practice session to Firestore
             try {
               const userRef = doc(db, "users", user.uid);
-              const today = new Date().toISOString(); 
-              
+              const now = new Date();
+              const todayISO = now.toISOString();
+              const todayDateStr = todayISO.split('T')[0];
+
               const userDoc = await getDoc(userRef);
+              const currentData = userDoc.exists() ? userDoc.data() : {};
+
+              // Topic & tab mode
+              const topicEl = document.getElementById('topic-main');
+              const topicText = topicEl ? topicEl.innerText.trim() : "General Practice";
+              const activeTab = document.querySelector('.nav-tab.active');
+              const tabMode = activeTab ? (activeTab.dataset.tab || 'random') : 'random';
+
+              // Scores
+              const fluency    = Math.min(100, Math.max(0, data && data.fluency    ? data.fluency    : 0));
+              const clarity    = Math.min(100, Math.max(0, data && data.clarity    ? data.clarity    : 0));
+              const confidence = Math.min(100, Math.max(0, data && data.confidence ? data.confidence : 0));
+              const avgScore   = Math.round((fluency + clarity + confidence) / 3);
+
+              // ── Streak calculation ───────────────────────────
+              const existingDates = currentData.practice_dates || [];
+              const uniqueDateStrs = [...new Set(existingDates.map(function(d) {
+                return typeof d === 'string' ? d.split('T')[0] : '';
+              }))].filter(Boolean).sort();
+
+              let newStreak = currentData.streak || 0;
+              if (!uniqueDateStrs.includes(todayDateStr)) {
+                if (uniqueDateStrs.length === 0) {
+                  newStreak = 1;
+                } else {
+                  const lastDateStr = uniqueDateStrs[uniqueDateStrs.length - 1];
+                  const lastDate = new Date(lastDateStr + 'T00:00:00Z');
+                  const todayMidnight = new Date(todayDateStr + 'T00:00:00Z');
+                  const diffDays = Math.round((todayMidnight - lastDate) / (1000 * 60 * 60 * 24));
+                  newStreak = diffDays === 1 ? (currentData.streak || 0) + 1 : 1;
+                }
+              }
+
+              // ── Sessions list ─────────────────────────────────
+              var sessions = Array.isArray(currentData.recent_sessions) ? currentData.recent_sessions.slice() : [];
+              sessions.unshift({ date: todayISO, topic: topicText, mode: tabMode, score: avgScore, fluency: fluency, clarity: clarity, confidence: confidence });
+              if (sessions.length > 10) sessions = sessions.slice(0, 10);
+
+              var updatePayload = {
+                practice_dates: arrayUnion(todayISO),
+                aura_points: (currentData.aura_points || 0) + 10,
+                total_yaps: (currentData.total_yaps || 0) + 1,
+                streak: newStreak,
+                recent_sessions: sessions
+              };
+
               if (userDoc.exists()) {
-                const currentData = userDoc.data();
-                
-                // Get topic from the UI
-                const topicEl = document.getElementById('topic-main');
-                const topicText = topicEl ? topicEl.innerText : "General Practice";
-                
-                // Calculate average score
-                const fluency = data && data.fluency ? data.fluency : 0;
-                const clarity = data && data.clarity ? data.clarity : 0;
-                const confidence = data && data.confidence ? data.confidence : 0;
-                const avgScore = Math.round((fluency + clarity + confidence) / 3);
-
-                // Update recent sessions
-                let sessions = currentData.recent_sessions || [];
-                sessions.unshift({
-                  date: today,
-                  topic: topicText,
-                  score: avgScore,
-                  fluency: fluency,
-                  clarity: clarity,
-                  confidence: confidence
-                });
-                if (sessions.length > 5) sessions = sessions.slice(0, 5);
-
-                await updateDoc(userRef, {
-                  practice_dates: arrayUnion(today),
-                  aura_points: (currentData.aura_points || 0) + 10,
-                  total_yaps: (currentData.total_yaps || 0) + 1,
-                  recent_sessions: sessions
-                });
+                await updateDoc(userRef, updatePayload);
+              } else {
+                await setDoc(userRef, Object.assign({ name: user.displayName || 'Speaker', email: user.email || '', gender: 'prefer_not', avatar_bg: 'b6e3f4', created_at: now }, updatePayload));
               }
             } catch (err) {
               console.error("Failed to track practice session:", err);

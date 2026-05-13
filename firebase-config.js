@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
 import { getAuth, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
-import { getFirestore } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyA-LXQhlPLmrzx_oOhWjo5skg6PnslE_m4",
@@ -15,9 +15,18 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Initialize Firebase Auth & Firestore
+// Initialize Firebase Auth
 const auth = getAuth(app);
-const db = getFirestore(app);
+
+// Initialize Firestore with a STRICT cache limit (3 MB) to prevent browser bloat.
+// The garbage collector will aggressively clean up old data if it hits this limit.
+const db = initializeFirestore(app, {
+  localCache: persistentLocalCache({
+    tabManager: persistentMultipleTabManager(),
+    cacheSizeBytes: 3145728 // 3 MB (default is 40 MB)
+  })
+});
+
 const provider = new GoogleAuthProvider();
 
 export { auth, db, provider };

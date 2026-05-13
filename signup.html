@@ -71,6 +71,47 @@
       gap: 15px;
     }
 
+    /* Gender Selector */
+    .gender-group {
+      text-align: left;
+      margin-bottom: 18px;
+    }
+    .gender-label-title {
+      display: block;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 10px;
+      font-size: 0.85rem;
+      letter-spacing: 0.5px;
+    }
+    .gender-options {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .gender-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border: 2px solid var(--accent2);
+      border-radius: 999px;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      background: rgba(255,255,255,0.6);
+      transition: all 0.2s;
+    }
+    .gender-pill input[type="radio"] { display: none; }
+    .gender-pill:has(input:checked) {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+      box-shadow: 0 4px 12px var(--shadow);
+    }
+
     .input-label {
       display: block;
       font-weight: 800;
@@ -268,6 +309,24 @@
             <input type="password" id="confirm-password" class="auth-input" placeholder="Confirm Password" required>
           </div>
         </div>
+
+        <div class="gender-group">
+          <span class="gender-label-title">👤 I identify as</span>
+          <div class="gender-options">
+            <label class="gender-pill">
+              <input type="radio" name="gender" value="male"> 🧑 Male
+            </label>
+            <label class="gender-pill">
+              <input type="radio" name="gender" value="female"> 👩 Female
+            </label>
+            <label class="gender-pill">
+              <input type="radio" name="gender" value="nonbinary"> 🌈 Non-binary
+            </label>
+            <label class="gender-pill">
+              <input type="radio" name="gender" value="prefer_not"> 🤐 Prefer not to say
+            </label>
+          </div>
+        </div>
         
         <button type="submit" class="btn-primary btn-auth">Create Account 🚀</button>
       </form>
@@ -352,16 +411,25 @@
     });
 
     // Helper to create a user document in Firestore if it doesn't exist
-    async function initializeUserProfile(user, name) {
+    async function initializeUserProfile(user, name, gender) {
       const userRef = doc(db, "users", user.uid);
       const userSnap = await getDoc(userRef);
+      
+      // Pick a gender-appropriate DiceBear avatar style
+      const avatarStyle = gender === 'female' ? 'avataaars' : gender === 'male' ? 'avataaars' : 'avataaars';
+      const avatarBg = gender === 'female' ? 'ffdfbf' : gender === 'male' ? 'b6e3f4' : 'd1d4f9';
       
       if (!userSnap.exists()) {
         await setDoc(userRef, {
           name: name || user.displayName || "New Speaker",
           email: user.email,
+          gender: gender || 'prefer_not',
+          avatar_bg: avatarBg,
           aura_points: 0,
           streak: 0,
+          total_yaps: 0,
+          practice_dates: [],
+          recent_sessions: [],
           created_at: new Date()
         });
       }
@@ -371,7 +439,8 @@
     document.getElementById('google-signup-btn').addEventListener('click', async () => {
       try {
         const result = await signInWithPopup(auth, provider);
-        await initializeUserProfile(result.user, result.user.displayName);
+        const gender = document.querySelector('input[name="gender"]:checked')?.value || 'prefer_not';
+        await initializeUserProfile(result.user, result.user.displayName, gender);
         window.location.href = 'genz-streak-test.html';
       } catch (error) {
         console.error("Google Sign-Up Error:", error);
@@ -386,6 +455,7 @@
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
       const confirmPassword = document.getElementById('confirm-password').value;
+      const gender = document.querySelector('input[name="gender"]:checked')?.value || 'prefer_not';
 
       if (password !== confirmPassword) {
         alert("Passwords do not match!");
@@ -395,7 +465,7 @@
       try {
         const result = await createUserWithEmailAndPassword(auth, email, password);
         await updateProfile(result.user, { displayName: name });
-        await initializeUserProfile(result.user, name);
+        await initializeUserProfile(result.user, name, gender);
         window.location.href = 'genz-streak-test.html';
       } catch (error) {
         console.error("Email Sign-Up Error:", error);

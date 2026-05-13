@@ -90,8 +90,7 @@ Return ONLY a valid JSON object in the exact format below (no markdown fences):
             }
           ],
           generationConfig: {
-            temperature: 0.1,
-            responseMimeType: "application/json"
+            temperature: 0.1
           }
         })
       }

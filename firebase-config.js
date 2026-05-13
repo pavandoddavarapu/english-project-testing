@@ -22,10 +22,9 @@ const auth = getAuth(app);
 // The garbage collector will aggressively clean up old data if it hits this limit.
 const db = initializeFirestore(app, {
   localCache: persistentLocalCache({
-    cacheSizeBytes: 3 * 1024 * 1024,
     tabManager: persistentMultipleTabManager(),
-  }),
-  experimentalForceLongPolling: true,
+    cacheSizeBytes: 3145728 // 3 MB (default is 40 MB)
+  })
 });
 
 const provider = new GoogleAuthProvider();

@@ -6,6 +6,8 @@ export const config = {
   },
 };
 
+export const maxDuration = 60; // Prevents Vercel 504 Gateway Timeout
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -31,17 +33,17 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: "Missing Gemini API key" });
     }
 
-    const AI_PROMPT = `You are an expert English speech analyst. 
+    const AI_PROMPT = `You are an expert, encouraging English speech coach. 
 Listen to the user's speech responding to the topic: "${topic || 'General speaking practice'}".
-If an image is attached, also evaluate how well the user's speech describes or relates to the visual content.
-Evaluate their English speaking skills.
-Return ONLY a valid JSON object in the following format (no markdown fences):
+Your core philosophy is to build confidence, encourage natural improvisation, and reduce the fear of judgment. Do not demand "perfect English". Instead, focus on their ability to express thoughts comfortably.
+If an image is attached, also evaluate how well their speech describes the visual content.
+Return ONLY a valid JSON object in the exact format below (no markdown fences):
 {
-  "fluency": <number 0-100, how smooth and continuous the speech is>,
-  "clarity": <number 0-100, pronunciation and articulation>,
-  "confidence": <number 0-100, tone and pacing>,
-  "feedback": "<A short, encouraging sentence or two explaining the scores and giving a specific tip for improvement>",
-  "transcription": "<The text of what the user actually said>"
+  "fluency": <number 0-100, reward them for keeping the flow going even if they use simple words>,
+  "clarity": <number 0-100, focus on comprehensibility rather than perfect native pronunciation>,
+  "confidence": <number 0-100, reward them for trying and expressing themselves without over-worrying>,
+  "feedback": "<A highly encouraging, personalized 2-sentence feedback. Praise their effort, show them their progress, and give one gentle tip to help them improvise or frame thoughts better next time. Make them feel progress rather than pressure.>",
+  "transcription": "<The text of what they actually said>"
 }`;
 
     const parts = [

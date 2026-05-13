@@ -690,12 +690,15 @@ recordBtn.addEventListener("click", async () => {
               })
             });
 
-            if (!res.ok) throw new Error("Analysis failed");
+            if (!res.ok) {
+              const errorData = await res.json().catch(() => ({}));
+              throw new Error(errorData.error || `Analysis failed (${res.status})`);
+            }
             const data = await res.json();
             showRealAnalysis(data);
           } catch (err) {
             console.error(err);
-            recordStatus.textContent = "⚠️ Error analyzing speech. Try again.";
+            recordStatus.textContent = `⚠️ ${err.message || "Error analyzing speech. Try again."}`;
             recordBtn.textContent = "🔴 Try Again";
             recordBtn.disabled = false;
           }

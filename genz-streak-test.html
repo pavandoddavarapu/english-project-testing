@@ -166,6 +166,11 @@
       box-shadow: 0 2px 6px var(--shadow);
     }
 
+    .profile-names {
+      min-width: 0;
+      overflow: hidden;
+    }
+
     .profile-names h1 {
       margin: 0;
       font-size: 1.3rem;
@@ -173,6 +178,9 @@
       color: var(--primary-dark);
       font-family: 'Fredoka One', cursive;
       letter-spacing: 0.5px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .profile-names p {
@@ -180,6 +188,9 @@
       color: var(--text-muted);
       font-size: 0.9rem;
       font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .rank {
@@ -672,6 +683,52 @@
       vertical-align: middle;
     }
     
+    /* Hamburger Menu */
+    .hamburger-btn {
+      background: rgba(255, 255, 255, 0.7);
+      border: 1.5px solid var(--accent2);
+      border-radius: var(--radius-pill);
+      padding: 8px 12px;
+      font-size: 1.1rem;
+      color: var(--text);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      box-shadow: 0 3px 8px var(--shadow);
+    }
+    .hamburger-btn:hover {
+      background: var(--bg-card);
+      transform: translateY(-1px);
+    }
+    .hamburger-dropdown {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      margin-top: 10px;
+      background: var(--bg);
+      border: 1.5px solid var(--accent2);
+      border-radius: 12px;
+      padding: 8px 0;
+      box-shadow: 0 10px 24px var(--shadow-lg);
+      z-index: 1000;
+      min-width: 150px;
+    }
+    .hamburger-dropdown a {
+      display: block;
+      padding: 10px 16px;
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.95rem;
+      transition: background 0.2s;
+    }
+    .hamburger-dropdown a:hover {
+      background: var(--accent2);
+      color: var(--primary);
+    }
+    
     @media (max-width: 900px) {
       .dashboard {
         grid-template-columns: 1fr;
@@ -708,6 +765,14 @@
         </div>
       </div>
       <a href="practice.html" style="text-decoration: none; font-weight: 800; font-family: 'Nunito', sans-serif; background: var(--primary); color: white; padding: 8px 18px; border-radius: 20px; font-size: 0.9rem; transition: all 0.2s; box-shadow: 0 4px 12px var(--shadow);">Practice Now 🎤</a>
+      
+      <!-- Hamburger Menu for Settings/Logout -->
+      <div style="position: relative;" id="hamburger-menu">
+        <button class="hamburger-btn" id="hamburger-btn" title="Menu">☰</button>
+        <div class="hamburger-dropdown hidden" id="hamburger-dropdown">
+          <a href="logout.html">🚪 Logout</a>
+        </div>
+      </div>
     </div>
   </nav>
 
@@ -748,7 +813,7 @@
       <div class="panel">
         <div class="profile-info">
           <div class="profile-img-wrapper" onclick="openAvatarPicker()" title="Change avatar">
-            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix&backgroundColor=b6e3f4" id="profile-img" alt="Profile" class="profile-img">
+            <img src="https://api.dicebear.com/7.x/notionists/svg?seed=Felix&backgroundColor=b6e3f4" id="profile-img" alt="Profile" class="profile-img">
             <div class="avatar-change-hint">✏️</div>
           </div>
           <div class="profile-names">
@@ -768,7 +833,6 @@
         </div>
         
         <button class="follow-btn" onclick="window.location.href='practice.html'"><span>🎤</span> Practice Speaking</button>
-        <button class="follow-btn" style="background: var(--bg-card); color: var(--primary); margin-top: 10px;" onclick="window.location.href='logout.html'"><span>🚪</span> Logout</button>
         
         <div class="location">📍 Based in: India</div>
       </div>
@@ -894,7 +958,7 @@
   </div>
 
   <!-- Avatar Picker Modal -->
-  <div id="avatar-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px);" onclick="closeAvatarPicker(event)">
+  <div id="avatar-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(4px);" onclick="closeAvatarPicker(event)">
     <div style="background:var(--bg); border:1.5px solid var(--accent2); border-radius:var(--radius); padding:28px; max-width:380px; width:90%; box-shadow:0 20px 60px rgba(0,0,0,0.3); animation: fadeSlideIn 0.3s ease both;" onclick="event.stopPropagation()">
       <div style="font-family:'Fredoka One',cursive; color:var(--primary); font-size:1.2rem; margin-bottom:4px;">Choose Your Avatar</div>
       <div style="font-size:0.8rem; color:var(--text-muted); font-weight:700; margin-bottom:18px;">Pick an avatar that represents you</div>
@@ -922,7 +986,20 @@
             themeDropdown.classList.add("hidden");
             themeToggleBtn.classList.remove("open");
           }
+          if (!e.target.closest("#hamburger-menu")) {
+            const hamburgerDropdown = document.getElementById("hamburger-dropdown");
+            if(hamburgerDropdown) hamburgerDropdown.classList.add("hidden");
+          }
         });
+        
+        const hamburgerBtn = document.getElementById("hamburger-btn");
+        const hamburgerDropdown = document.getElementById("hamburger-dropdown");
+        if (hamburgerBtn && hamburgerDropdown) {
+          hamburgerBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            hamburgerDropdown.classList.toggle("hidden");
+          });
+        }
         
         themeSwatches.forEach(swatch => {
           swatch.addEventListener("click", () => {
@@ -982,11 +1059,11 @@
         var saved = localStorage.getItem('speakup-avatar-seed') || _currentAvatarSeed;
         var isActive = seed === saved;
         card.style.cssText = 'cursor:pointer; border-radius:12px; overflow:hidden; border:3px solid ' + (isActive ? 'var(--primary)' : 'var(--accent2)') + '; transition:all 0.2s; padding:6px; background:rgba(255,255,255,0.6); text-align:center;';
-        card.innerHTML = '<img src="https://api.dicebear.com/7.x/avataaars/svg?seed=' + seed + '&backgroundColor=' + _currentAvatarBg + '" style="width:70px;height:70px;" alt="' + seed + '">';
+        card.innerHTML = '<img src="https://api.dicebear.com/7.x/notionists/svg?seed=' + seed + '&backgroundColor=' + _currentAvatarBg + '" style="width:70px;height:70px;" alt="' + seed + '">';
         card.addEventListener('click', function() {
           localStorage.setItem('speakup-avatar-seed', seed);
           _currentAvatarSeed = seed;
-          document.getElementById('profile-img').src = 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + seed + '&backgroundColor=' + _currentAvatarBg;
+          document.getElementById('profile-img').src = 'https://api.dicebear.com/7.x/notionists/svg?seed=' + seed + '&backgroundColor=' + _currentAvatarBg;
           grid.querySelectorAll('div').forEach(function(c) { c.style.borderColor = 'var(--accent2)'; });
           card.style.borderColor = 'var(--primary)';
         });
@@ -1272,7 +1349,7 @@
               _currentAvatarSeed = savedSeed;
               
               // Render Avatar
-              document.getElementById('profile-img').src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${_currentAvatarSeed}&backgroundColor=${_currentAvatarBg}`;
+              document.getElementById('profile-img').src = `https://api.dicebear.com/7.x/notionists/svg?seed=${_currentAvatarSeed}&backgroundColor=${_currentAvatarBg}`;
 
               // Update name in case they have a custom one in DB
               const displayName = userData.name || user.displayName || 'Speaker';

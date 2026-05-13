@@ -63,7 +63,7 @@ const PictureTalk = (() => {
     const controller = new AbortController();
     const tid = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
     try {
-      const res = await fetch('/api/images', { signal: controller.signal });
+      const res = await fetch(`/api/images?t=${Date.now()}`, { signal: controller.signal });
       clearTimeout(tid);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       return await res.json();
@@ -141,7 +141,7 @@ const PictureTalk = (() => {
     const activeEl  = activeLayer === 'a' ? layerA : layerB;
 
     // Set the background on the incoming layer BEFORE fading it in
-    nextEl.style.backgroundImage = `url(${imgData.url})`;
+    nextEl.style.backgroundImage = `url("${imgData.url}")`;
     // Small tick delay so the browser paints the background first
     requestAnimationFrame(() => {
       nextEl.classList.add('visible');

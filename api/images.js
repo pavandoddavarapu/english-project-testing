@@ -185,7 +185,7 @@ const FALLBACK_IMAGES = [
   { url: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=1200&h=800&fit=crop&auto=format&q=80', alt: 'musician playing guitar', category: 'Situation', color: '#8e44ad' }
 ];
 
-let globalFallbackIdx = 0;
+let globalFallbackIdx = Math.floor(Math.random() * FALLBACK_IMAGES.length);
 
 // ─── HANDLER ────────────────────────────────────────────────────────────────
 

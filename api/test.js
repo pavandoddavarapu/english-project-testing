@@ -32,11 +32,38 @@ export default async function handler(req, res) {
     const modelNames = (data.models || []).map(m => m.name);
     const hasFlash = modelNames.some(n => n.includes('flash'));
 
+    // --- Test Groq ---
+    const GROQ_KEY = process.env.GROQ_API_KEY;
+    let groqStatus = "NOT_SET";
+    let groqModels = [];
+    if (GROQ_KEY) {
+      try {
+        const gRes = await fetch('https://api.groq.com/openai/v1/models', {
+          headers: { 'Authorization': `Bearer ${GROQ_KEY}` }
+        });
+        if (gRes.ok) {
+          const gData = await gRes.json();
+          groqStatus = "VALID";
+          groqModels = (gData.data || []).map(m => m.id);
+        } else {
+          groqStatus = "INVALID (" + gRes.status + ")";
+        }
+      } catch (e) {
+        groqStatus = "FETCH_ERROR: " + e.message;
+      }
+    }
+
     return res.status(200).json({
-      status: "KEY_VALID",
-      keyPreview: maskedKey,
-      availableModels: modelNames,
-      gemini15FlashAvailable: hasFlash
+      status: "DIAGNOSTIC_COMPLETE",
+      gemini: {
+        status: "KEY_VALID",
+        keyPreview: maskedKey,
+        availableModels: modelNames,
+      },
+      groq: {
+        status: groqStatus,
+        availableModels: groqModels
+      }
     });
 
   } catch (err) {

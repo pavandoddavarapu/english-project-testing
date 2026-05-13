@@ -99,7 +99,14 @@ Evaluate their speech and return ONLY a valid JSON object (no markdown, no extra
     if (!chatRes.ok) {
       const errText = await chatRes.text();
       console.error('Groq chat error:', errText);
-      return res.status(500).json({ error: 'AI scoring failed', details: errText });
+      let errorMsg = "AI scoring failed";
+      try {
+        const parsed = JSON.parse(errText);
+        if (parsed.error && parsed.error.message) {
+          errorMsg = `Groq Error: ${parsed.error.message}`;
+        }
+      } catch(e) {}
+      return res.status(chatRes.status).json({ error: errorMsg, details: errText });
     }
 
     const chatData = await chatRes.json();

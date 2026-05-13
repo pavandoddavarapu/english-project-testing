@@ -460,80 +460,176 @@
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
     import { doc, getDoc, updateDoc, setDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
+    // ── Core: save one practice session to Firestore ──────────────────────────
+    async function savePracticeSession(user, data) {
+      try {
+        const userRef = doc(db, 'users', user.uid);
+        const now = new Date();
+        const todayISO = now.toISOString();
+        const todayDateStr = todayISO.split('T')[0];
+
+        const userDoc = await getDoc(userRef);
+        const currentData = userDoc.exists() ? userDoc.data() : {};
+
+        // Determine topic & mode from visible UI
+        const topicEl = document.getElementById('topic-main');
+        const topicText = topicEl ? topicEl.innerText.trim() : 'General Practice';
+        const activeTab = document.querySelector('.nav-tab.active');
+        const tabMode = activeTab ? (activeTab.dataset.tab || 'random') : 'random';
+
+        // Scores (0 if this is a timer-only session with no speech analysis)
+        const fluency    = Math.min(100, Math.max(0, (data && data.fluency)    ? data.fluency    : 0));
+        const clarity    = Math.min(100, Math.max(0, (data && data.clarity)    ? data.clarity    : 0));
+        const confidence = Math.min(100, Math.max(0, (data && data.confidence) ? data.confidence : 0));
+        const avgScore   = Math.round((fluency + clarity + confidence) / 3);
+
+        // ── Streak calculation ─────────────────────────────────────────────────
+        const existingDates = currentData.practice_dates || [];
+        const uniqueDateStrs = [
+          ...new Set(existingDates.map(d => (typeof d === 'string' ? d.split('T')[0] : '')))
+        ].filter(Boolean).sort();
+
+        let newStreak = currentData.streak || 0;
+        if (!uniqueDateStrs.includes(todayDateStr)) {
+          if (uniqueDateStrs.length === 0) {
+            newStreak = 1;
+          } else {
+            const lastDateStr = uniqueDateStrs[uniqueDateStrs.length - 1];
+            const lastDate    = new Date(lastDateStr + 'T00:00:00Z');
+            const todayMidnight = new Date(todayDateStr + 'T00:00:00Z');
+            const diffDays = Math.round((todayMidnight - lastDate) / (1000 * 60 * 60 * 24));
+            newStreak = diffDays === 1 ? (currentData.streak || 0) + 1 : 1;
+          }
+        }
+
+        // ── Sessions list (cap at 20 most recent) ─────────────────────────────
+        const sessions = Array.isArray(currentData.recent_sessions)
+          ? currentData.recent_sessions.slice()
+          : [];
+        sessions.unshift({
+          date:       todayISO,
+          topic:      tabMode === 'picture' ? 'Picture Talk' : topicText,
+          mode:       tabMode,
+          score:      avgScore,
+          fluency:    fluency,
+          clarity:    clarity,
+          confidence: confidence
+        });
+        const trimmedSessions = sessions.slice(0, 20);
+
+        // ── WRITE 1: scalar fields + arrayUnion for practice_dates ────────────
+        // NOTE: arrayUnion is a Firestore FieldValue sentinel.
+        // We MUST NOT mix it with a plain-array field (recent_sessions) in the
+        // same updateDoc call — that causes silent failures in some SDK builds.
+        const scalarPayload = {
+          aura_points:    (currentData.aura_points || 0) + 10,
+          total_yaps:     (currentData.total_yaps  || 0) + 1,
+          streak:          newStreak,
+          practice_dates:  arrayUnion(todayISO)
+        };
+
+        if (userDoc.exists()) {
+          await updateDoc(userRef, scalarPayload);
+        } else {
+          await setDoc(userRef, Object.assign(
+            {
+              name:            user.displayName || 'Speaker',
+              email:           user.email       || '',
+              gender:          'prefer_not',
+              avatar_bg:       'b6e3f4',
+              created_at:      now,
+              recent_sessions: []
+            },
+            scalarPayload
+          ));
+        }
+
+        // ── WRITE 2: recent_sessions as a plain array (separate write) ────────
+        await updateDoc(userRef, { recent_sessions: trimmedSessions });
+
+        console.log('Session saved! Mode:', tabMode, '| Score:', avgScore, '| Streak:', newStreak);
+      } catch (err) {
+        console.error('savePracticeSession failed:', err);
+      }
+    }
+
+    // ── Intercept window.showRealAnalysis with a polling approach ─────────────
+    // app.js is a sync script that runs first, but we poll just to be safe.
+    function interceptAnalysis(user) {
+      // Tear down any previous interception first
+      if (typeof window._speakup_unwrap === 'function') window._speakup_unwrap();
+
+      function tryIntercept() {
+        if (typeof window.showRealAnalysis !== 'function') {
+          setTimeout(tryIntercept, 100);
+          return;
+        }
+        // Grab the clean original (never the already-wrapped version)
+        const originalFn = window._speakup_original_showRealAnalysis || window.showRealAnalysis;
+        window._speakup_original_showRealAnalysis = originalFn;
+
+        window.showRealAnalysis = async function(data) {
+          // 1. Show scores in the UI immediately (original behavior)
+          originalFn.apply(this, arguments);
+          // 2. Persist to Firebase in the background
+          savePracticeSession(user, data);
+        };
+
+        // Expose a clean-up function so re-auth replaces cleanly
+        window._speakup_unwrap = function() {
+          if (window._speakup_original_showRealAnalysis) {
+            window.showRealAnalysis = window._speakup_original_showRealAnalysis;
+          }
+          window._speakup_original_showRealAnalysis = null;
+          window._speakup_unwrap = null;
+        };
+
+        console.log('Speech analysis tracker armed for:', user.email);
+      }
+
+      tryIntercept();
+    }
+
+    // ── Save session when the circular timer reaches "Done!" ──────────────────
+    let _timerObserver = null;
+
+    function watchTimerCompletion(user) {
+      if (_timerObserver) { _timerObserver.disconnect(); _timerObserver = null; }
+
+      const countdownEl = document.getElementById('circle-countdown');
+      if (!countdownEl) return;
+
+      let _savedThisRound = false;
+
+      _timerObserver = new MutationObserver(() => {
+        const txt = countdownEl.textContent.trim();
+        if (txt.startsWith('Done') && !_savedThisRound) {
+          _savedThisRound = true;
+          console.log('Timer completed - saving session to dashboard');
+          savePracticeSession(user, { fluency: 0, clarity: 0, confidence: 0 });
+        }
+        // Reset guard when a new round begins
+        if (/^\d:\d\d$/.test(txt)) {
+          _savedThisRound = false;
+        }
+      });
+
+      _timerObserver.observe(countdownEl, { childList: true, characterData: true, subtree: true });
+    }
+
+    // ── Auth listener — wire everything up once user identity is known ─────────
     onAuthStateChanged(auth, (user) => {
       if (user) {
-        const originalShowRealAnalysis = window.showRealAnalysis;
-        if (originalShowRealAnalysis && !window._analysisIntercepted) {
-          window._analysisIntercepted = true;
-          window.showRealAnalysis = async function(data) {
-            originalShowRealAnalysis.apply(this, arguments);
-            try {
-              const userRef = doc(db, "users", user.uid);
-              const now = new Date();
-              const todayISO = now.toISOString();
-              const todayDateStr = todayISO.split('T')[0];
-
-              const userDoc = await getDoc(userRef);
-              const currentData = userDoc.exists() ? userDoc.data() : {};
-
-              // Topic & tab mode
-              const topicEl = document.getElementById('topic-main');
-              const topicText = topicEl ? topicEl.innerText.trim() : "General Practice";
-              const activeTab = document.querySelector('.nav-tab.active');
-              const tabMode = activeTab ? (activeTab.dataset.tab || 'random') : 'random';
-
-              // Scores
-              const fluency    = Math.min(100, Math.max(0, data && data.fluency    ? data.fluency    : 0));
-              const clarity    = Math.min(100, Math.max(0, data && data.clarity    ? data.clarity    : 0));
-              const confidence = Math.min(100, Math.max(0, data && data.confidence ? data.confidence : 0));
-              const avgScore   = Math.round((fluency + clarity + confidence) / 3);
-
-              // ── Streak calculation ───────────────────────────
-              const existingDates = currentData.practice_dates || [];
-              const uniqueDateStrs = [...new Set(existingDates.map(function(d) {
-                return typeof d === 'string' ? d.split('T')[0] : '';
-              }))].filter(Boolean).sort();
-
-              let newStreak = currentData.streak || 0;
-              if (!uniqueDateStrs.includes(todayDateStr)) {
-                if (uniqueDateStrs.length === 0) {
-                  newStreak = 1;
-                } else {
-                  const lastDateStr = uniqueDateStrs[uniqueDateStrs.length - 1];
-                  const lastDate = new Date(lastDateStr + 'T00:00:00Z');
-                  const todayMidnight = new Date(todayDateStr + 'T00:00:00Z');
-                  const diffDays = Math.round((todayMidnight - lastDate) / (1000 * 60 * 60 * 24));
-                  newStreak = diffDays === 1 ? (currentData.streak || 0) + 1 : 1;
-                }
-              }
-
-              // ── Sessions list ─────────────────────────────────
-              var sessions = Array.isArray(currentData.recent_sessions) ? currentData.recent_sessions.slice() : [];
-              sessions.unshift({ date: todayISO, topic: topicText, mode: tabMode, score: avgScore, fluency: fluency, clarity: clarity, confidence: confidence });
-              if (sessions.length > 10) sessions = sessions.slice(0, 10);
-
-              var updatePayload = {
-                practice_dates: arrayUnion(todayISO),
-                aura_points: (currentData.aura_points || 0) + 10,
-                total_yaps: (currentData.total_yaps || 0) + 1,
-                streak: newStreak,
-                recent_sessions: sessions
-              };
-
-              if (userDoc.exists()) {
-                await updateDoc(userRef, updatePayload);
-              } else {
-                await setDoc(userRef, Object.assign({ name: user.displayName || 'Speaker', email: user.email || '', gender: 'prefer_not', avatar_bg: 'b6e3f4', created_at: now }, updatePayload));
-              }
-            } catch (err) {
-              console.error("Failed to track practice session:", err);
-            }
-          };
-        }
+        interceptAnalysis(user);
+        watchTimerCompletion(user);
+      } else {
+        if (typeof window._speakup_unwrap === 'function') window._speakup_unwrap();
+        if (_timerObserver) { _timerObserver.disconnect(); _timerObserver = null; }
       }
     });
   </script>
-  <!-- PWA Service Worker Registration -->
+
+    <!-- PWA Service Worker Registration -->
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {

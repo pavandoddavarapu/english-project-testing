@@ -78,7 +78,7 @@ Return ONLY a valid JSON object in the exact format below (no markdown fences):
     }
 
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -90,7 +90,8 @@ Return ONLY a valid JSON object in the exact format below (no markdown fences):
             }
           ],
           generationConfig: {
-            temperature: 0.1
+            temperature: 0.1,
+            responseMimeType: "application/json"
           }
         })
       }

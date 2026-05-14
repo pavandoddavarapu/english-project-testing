@@ -454,109 +454,119 @@
   <script src="image-cache.js"></script>
   <script src="app.js"></script>
   
-  <!-- Practice Session Tracker -->
+  <!-- Practice Session Tracker v2 — backend proxy + Firestore fallback -->
   <script type="module">
     import { auth, db } from './firebase-config.js';
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
     import { doc, getDoc, updateDoc, setDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
-    // ── Core: save one practice session to Firestore ──────────────────────────
-    async function savePracticeSession(user, data) {
-      try {
-        const userRef = doc(db, 'users', user.uid);
-        const now = new Date();
-        const todayISO = now.toISOString();
-        const todayDateStr = todayISO.split('T')[0];
+    // ── PRIMARY: save via backend proxy (never blocked by ad blockers) ─────────
+    async function saveViaBackend(user, sessionData) {
+      const idToken = await user.getIdToken(true); // force-refresh token
+      const res = await fetch('/api/save-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken, uid: user.uid, sessionData })
+      });
+      if (!res.ok) {
+        const txt = await res.text();
+        throw new Error(`Backend ${res.status}: ${txt.slice(0, 120)}`);
+      }
+      const result = await res.json();
+      console.log('[Tracker] Backend save OK. Streak:', result.streak, '| Aura:', result.aura);
+      return result;
+    }
 
-        const userDoc = await getDoc(userRef);
-        const currentData = userDoc.exists() ? userDoc.data() : {};
+    // ── FALLBACK: direct Firestore write (works when ad blocker is off) ────────
+    async function saveViaFirestore(user, sessionData, now, todayISO, todayDateStr) {
+      const userRef = doc(db, 'users', user.uid);
+      const userDoc = await getDoc(userRef);
+      const cur = userDoc.exists() ? userDoc.data() : {};
 
-        // Determine topic & mode from visible UI
-        const topicEl = document.getElementById('topic-main');
-        const topicText = topicEl ? topicEl.innerText.trim() : 'General Practice';
-        const activeTab = document.querySelector('.nav-tab.active');
-        const tabMode = activeTab ? (activeTab.dataset.tab || 'random') : 'random';
+      const fluency    = Math.min(100, Math.max(0, Number(sessionData.fluency)    || 0));
+      const clarity    = Math.min(100, Math.max(0, Number(sessionData.clarity)    || 0));
+      const confidence = Math.min(100, Math.max(0, Number(sessionData.confidence) || 0));
+      const avgScore   = Math.round((fluency + clarity + confidence) / 3);
 
-        // Scores (0 if this is a timer-only session with no speech analysis)
-        const fluency    = Math.min(100, Math.max(0, (data && data.fluency)    ? data.fluency    : 0));
-        const clarity    = Math.min(100, Math.max(0, (data && data.clarity)    ? data.clarity    : 0));
-        const confidence = Math.min(100, Math.max(0, (data && data.confidence) ? data.confidence : 0));
-        const avgScore   = Math.round((fluency + clarity + confidence) / 3);
-
-        // ── Streak calculation ─────────────────────────────────────────────────
-        const existingDates = currentData.practice_dates || [];
-        const uniqueDateStrs = [
-          ...new Set(existingDates.map(d => (typeof d === 'string' ? d.split('T')[0] : '')))
-        ].filter(Boolean).sort();
-
-        let newStreak = currentData.streak || 0;
-        if (!uniqueDateStrs.includes(todayDateStr)) {
-          if (uniqueDateStrs.length === 0) {
-            newStreak = 1;
-          } else {
-            const lastDateStr = uniqueDateStrs[uniqueDateStrs.length - 1];
-            const lastDate    = new Date(lastDateStr + 'T00:00:00Z');
-            const todayMidnight = new Date(todayDateStr + 'T00:00:00Z');
-            const diffDays = Math.round((todayMidnight - lastDate) / (1000 * 60 * 60 * 24));
-            newStreak = diffDays === 1 ? (currentData.streak || 0) + 1 : 1;
-          }
-        }
-
-        // ── Sessions list (cap at 20 most recent) ─────────────────────────────
-        const sessions = Array.isArray(currentData.recent_sessions)
-          ? currentData.recent_sessions.slice()
-          : [];
-        sessions.unshift({
-          date:       todayISO,
-          topic:      tabMode === 'picture' ? 'Picture Talk' : topicText,
-          mode:       tabMode,
-          score:      avgScore,
-          fluency:    fluency,
-          clarity:    clarity,
-          confidence: confidence
-        });
-        const trimmedSessions = sessions.slice(0, 20);
-
-        // ── WRITE 1: scalar fields + arrayUnion for practice_dates ────────────
-        // NOTE: arrayUnion is a Firestore FieldValue sentinel.
-        // We MUST NOT mix it with a plain-array field (recent_sessions) in the
-        // same updateDoc call — that causes silent failures in some SDK builds.
-        const scalarPayload = {
-          aura_points:    (currentData.aura_points || 0) + 10,
-          total_yaps:     (currentData.total_yaps  || 0) + 1,
-          streak:          newStreak,
-          practice_dates:  arrayUnion(todayISO)
-        };
-
-        if (userDoc.exists()) {
-          await updateDoc(userRef, scalarPayload);
+      const existingDates  = cur.practice_dates || [];
+      const uniqueDateStrs = [...new Set(existingDates.map(d => String(d).split('T')[0]))].filter(Boolean).sort();
+      let newStreak = Number(cur.streak) || 0;
+      if (!uniqueDateStrs.includes(todayDateStr)) {
+        if (uniqueDateStrs.length === 0) {
+          newStreak = 1;
         } else {
-          await setDoc(userRef, Object.assign(
-            {
-              name:            user.displayName || 'Speaker',
-              email:           user.email       || '',
-              gender:          'prefer_not',
-              avatar_bg:       'b6e3f4',
-              created_at:      now,
-              recent_sessions: []
-            },
-            scalarPayload
-          ));
+          const last = new Date(uniqueDateStrs[uniqueDateStrs.length - 1] + 'T00:00:00Z');
+          const tod  = new Date(todayDateStr + 'T00:00:00Z');
+          const diff = Math.round((tod - last) / 86400000);
+          newStreak = diff === 1 ? newStreak + 1 : 1;
         }
+      }
 
-        // ── WRITE 2: recent_sessions as a plain array (separate write) ────────
-        await updateDoc(userRef, { recent_sessions: trimmedSessions });
+      const sessions = Array.isArray(cur.recent_sessions) ? cur.recent_sessions.slice() : [];
+      sessions.unshift({
+        date: todayISO, topic: sessionData.topic || 'General Practice',
+        mode: sessionData.mode || 'random', score: avgScore,
+        fluency, clarity, confidence
+      });
 
-        console.log('Session saved! Mode:', tabMode, '| Score:', avgScore, '| Streak:', newStreak);
-      } catch (err) {
-        console.error('savePracticeSession failed:', err);
+      const scalarPayload = {
+        aura_points:   (Number(cur.aura_points) || 0) + 10,
+        total_yaps:    (Number(cur.total_yaps)  || 0) + 1,
+        streak:         newStreak,
+        practice_dates: arrayUnion(todayISO)
+      };
+
+      if (userDoc.exists()) {
+        await updateDoc(userRef, scalarPayload);
+      } else {
+        await setDoc(userRef, Object.assign(
+          { name: user.displayName || 'Speaker', email: user.email || '', gender: 'prefer_not', avatar_bg: 'b6e3f4', created_at: now, recent_sessions: [] },
+          scalarPayload
+        ));
+      }
+      await updateDoc(userRef, { recent_sessions: sessions.slice(0, 20) });
+      console.log('[Tracker] Firestore direct save OK. Streak:', newStreak);
+    }
+
+    // ── Orchestrator: try backend first, fall back to Firestore ───────────────
+    async function savePracticeSession(user, data) {
+      const now          = new Date();
+      const todayISO     = now.toISOString();
+      const todayDateStr = todayISO.split('T')[0];
+
+      const topicEl  = document.getElementById('topic-main');
+      const topicText = topicEl ? topicEl.innerText.trim() : 'General Practice';
+      const activeTab = document.querySelector('.nav-tab.active');
+      const tabMode   = activeTab ? (activeTab.dataset.tab || 'random') : 'random';
+
+      const sessionData = {
+        topic:      tabMode === 'picture' ? 'Picture Talk' : topicText,
+        mode:       tabMode,
+        fluency:    data && data.fluency    ? data.fluency    : 0,
+        clarity:    data && data.clarity    ? data.clarity    : 0,
+        confidence: data && data.confidence ? data.confidence : 0,
+      };
+
+      console.log('[Tracker] Initiating session save... Mode:', tabMode);
+
+      // Try backend proxy first (immune to ad blockers)
+      try {
+        await saveViaBackend(user, sessionData);
+        return; // success — done
+      } catch (backendErr) {
+        console.warn('[Tracker] Backend proxy failed, trying Firestore directly...', backendErr.message);
+      }
+
+      // Fallback to direct Firestore
+      try {
+        await saveViaFirestore(user, sessionData, now, todayISO, todayDateStr);
+      } catch (fsErr) {
+        console.error('[Tracker] Both save methods failed:', fsErr.message);
       }
     }
 
-    // ── Intercept window.showRealAnalysis with a polling approach ─────────────
-    // app.js is a sync script that runs first, but we poll just to be safe.
+    // ── Intercept window.showRealAnalysis (speech analysis results) ────────────
     function interceptAnalysis(user) {
-      // Tear down any previous interception first
       if (typeof window._speakup_unwrap === 'function') window._speakup_unwrap();
 
       function tryIntercept() {
@@ -564,18 +574,14 @@
           setTimeout(tryIntercept, 100);
           return;
         }
-        // Grab the clean original (never the already-wrapped version)
         const originalFn = window._speakup_original_showRealAnalysis || window.showRealAnalysis;
         window._speakup_original_showRealAnalysis = originalFn;
 
         window.showRealAnalysis = async function(data) {
-          // 1. Show scores in the UI immediately (original behavior)
           originalFn.apply(this, arguments);
-          // 2. Persist to Firebase in the background
           savePracticeSession(user, data);
         };
 
-        // Expose a clean-up function so re-auth replaces cleanly
         window._speakup_unwrap = function() {
           if (window._speakup_original_showRealAnalysis) {
             window.showRealAnalysis = window._speakup_original_showRealAnalysis;
@@ -583,19 +589,17 @@
           window._speakup_original_showRealAnalysis = null;
           window._speakup_unwrap = null;
         };
-
-        console.log('Speech analysis tracker armed for:', user.email);
+        console.log('[Tracker] Speech analysis armed for:', user.email);
       }
 
       tryIntercept();
     }
 
-    // ── Save session when the circular timer reaches "Done!" ──────────────────
+    // ── Watch for timer completion (Done!) ─────────────────────────────────────
     let _timerObserver = null;
 
     function watchTimerCompletion(user) {
       if (_timerObserver) { _timerObserver.disconnect(); _timerObserver = null; }
-
       const countdownEl = document.getElementById('circle-countdown');
       if (!countdownEl) return;
 
@@ -605,19 +609,16 @@
         const txt = countdownEl.textContent.trim();
         if (txt.startsWith('Done') && !_savedThisRound) {
           _savedThisRound = true;
-          console.log('Timer completed - saving session to dashboard');
+          console.log('[Tracker] Timer completed - saving session');
           savePracticeSession(user, { fluency: 0, clarity: 0, confidence: 0 });
         }
-        // Reset guard when a new round begins
-        if (/^\d:\d\d$/.test(txt)) {
-          _savedThisRound = false;
-        }
+        if (/^\d:\d\d$/.test(txt)) _savedThisRound = false;
       });
 
       _timerObserver.observe(countdownEl, { childList: true, characterData: true, subtree: true });
     }
 
-    // ── Auth listener — wire everything up once user identity is known ─────────
+    // ── Auth listener ──────────────────────────────────────────────────────────
     onAuthStateChanged(auth, (user) => {
       if (user) {
         interceptAnalysis(user);

@@ -12,6 +12,7 @@
 
 // ─── CONFIG ────────────────────────────────────────────────────────────────
 const UNSPLASH_KEY = process.env.UNSPLASH_ACCESS_KEY;
+const PEXELS_KEY   = process.env.PEXELS_API_KEY;
 
 // ─── DYNAMIC QUERY GENERATOR ───────────────────────────────────────────────
 // Generates thousands of unique search combinations based on target themes
@@ -24,8 +25,7 @@ const VOCAB = {
   scenes:  ['park', 'kitchen', 'airport terminal', 'cafe', 'street market', 'train station', 'office', 'classroom', 'subway', 'shopping mall', 'festival', 'gym'],
   scnMods: ['crowded', 'messy', 'busy', 'action packed', 'chaotic', 'bustling', 'lively', 'energetic'],
 
-
-
+  situations: ['people working together', 'friends laughing', 'musician playing live', 'family dinner', 'sports match', 'people talking', 'students studying', 'team meeting', 'couple walking', 'kids playing', 'customer at a cafe', 'person reading a book'],
 
   styles:  ['photorealistic', 'real photography', 'high quality photo', 'documentary photography']
 };
@@ -96,8 +96,33 @@ async function fetchUnsplashQuery(query, count = PER_QUERY) {
       category: query,
       id   : photo.id,
     }));
-  } catch (e) {
+} catch (e) {
     console.error('Unsplash fetch error:', e);
+    return [];
+  }
+}
+
+// ─── PEXELS FALLBACK API ───────────────────────────────────────────────────
+// Uses the exact same dynamic queries so images remain highly descriptive
+async function fetchPexelsFallback(query, count = PER_QUERY) {
+  if (!PEXELS_KEY) return [];
+
+  const url = `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=${count}`;
+  try {
+    const res = await fetch(url, {
+      headers: { Authorization: PEXELS_KEY },
+    });
+    if (!res.ok) return [];
+    const json = await res.json();
+    return (json.photos || []).map(photo => ({
+      url: photo.src.large, // Pexels provides pre-sized URLs
+      alt: photo.alt || query,
+      color: photo.avg_color || '#e8e8e8',
+      category: query,
+      id: `pexels-${photo.id}`,
+    }));
+  } catch (e) {
+    console.error('Pexels fetch error:', e);
     return [];
   }
 }
@@ -116,13 +141,25 @@ async function refillCache() {
 
   console.log('🖼️  Refilling image cache…');
 
-  // Generate unique dynamic queries
   const needed   = BATCH_SIZE - imageCache.length;
-  const queries  = Math.ceil(needed / PER_QUERY);
-  const selected = Array.from({ length: queries }, () => generateDynamicQuery());
+  let newImgs = [];
 
-  const results = await Promise.all(selected.map(q => fetchUnsplashQuery(q)));
-  const newImgs = results.flat();
+  if (UNSPLASH_KEY) {
+    // Generate unique dynamic queries
+    const queries  = Math.ceil(needed / PER_QUERY);
+    const selected = Array.from({ length: queries }, () => generateDynamicQuery());
+    const results = await Promise.all(selected.map(q => fetchUnsplashQuery(q)));
+    newImgs = results.flat();
+  }
+
+  // If Unsplash failed (quota) or no key, use Pexels API to maintain quality/context
+  if (newImgs.length === 0 && PEXELS_KEY) {
+    console.log('Using Pexels fallback API...');
+    const queries  = Math.ceil(needed / PER_QUERY);
+    const selected = Array.from({ length: queries }, () => generateDynamicQuery());
+    const results = await Promise.all(selected.map(q => fetchPexelsFallback(q)));
+    newImgs = results.flat();
+  }
 
   // Deduplicate by id against existing cache
   const existingIds = new Set(imageCache.map(i => i.id));
@@ -182,7 +219,12 @@ const FALLBACK_IMAGES = [
   // Situations
   { url: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1200&h=800&fit=crop&auto=format&q=80', alt: 'group of people working together', category: 'Situation', color: '#2c3e50' },
   { url: 'https://images.unsplash.com/photo-1530099486328-e021101a494a?w=1200&h=800&fit=crop&auto=format&q=80', alt: 'friends laughing', category: 'Situation', color: '#f39c12' },
-  { url: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=1200&h=800&fit=crop&auto=format&q=80', alt: 'musician playing guitar', category: 'Situation', color: '#8e44ad' }
+  { url: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=1200&h=800&fit=crop&auto=format&q=80', alt: 'musician playing guitar', category: 'Situation', color: '#8e44ad' },
+  { url: 'https://images.unsplash.com/photo-1542204165-65bf26472b9b?w=1200&h=800&fit=crop&auto=format&q=80', alt: 'photography studio team', category: 'Situation', color: '#34495e' },
+  { url: 'https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=1200&h=800&fit=crop&auto=format&q=80', alt: 'people in a meeting', category: 'Situation', color: '#95a5a6' },
+  { url: 'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=1200&h=800&fit=crop&auto=format&q=80', alt: 'picnic in park', category: 'Situation', color: '#27ae60' },
+  { url: 'https://images.unsplash.com/photo-1543269865-cbf427effbad?w=1200&h=800&fit=crop&auto=format&q=80', alt: 'students in classroom', category: 'Situation', color: '#f1c40f' },
+  { url: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1200&h=800&fit=crop&auto=format&q=80', alt: 'university students laughing', category: 'Situation', color: '#e67e22' }
 ];
 
 let globalFallbackIdx = Math.floor(Math.random() * FALLBACK_IMAGES.length);
@@ -210,16 +252,16 @@ export default async function handler(req, res) {
   }
 
   // Return a single image
-  const img = UNSPLASH_KEY ? pickImage() : null;
+  const img = pickImage();
 
   if (!img) {
-    // Serve a fallback (no key or empty cache)
+    // Serve a hardcoded fallback (if both Unsplash and Pexels fail)
     const fallback = FALLBACK_IMAGES[globalFallbackIdx % FALLBACK_IMAGES.length];
     globalFallbackIdx++;
     res.setHeader('Cache-Control', 'no-store');
-    return res.status(200).json({ ...fallback, source: 'fallback' });
+    return res.status(200).json({ ...fallback, source: 'hardcoded-fallback' });
   }
 
   res.setHeader('Cache-Control', 'no-store');
-  return res.status(200).json({ ...img, source: 'unsplash', cacheSize: imageCache.length });
+  return res.status(200).json({ ...img, source: img.id && img.id.startsWith('pexels') ? 'pexels' : 'unsplash', cacheSize: imageCache.length });
 }

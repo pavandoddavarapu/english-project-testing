@@ -1080,14 +1080,4 @@ chatbotInput.addEventListener("keypress", (e) => {
 
 
 
-// --- CHATBOT SCROLL LOGIC ---
-window.addEventListener('scroll', () => {
-  const container = document.getElementById('chatbot-container');
-  if (container) {
-    if (window.scrollY > 150) {
-      container.classList.remove('scroll-hidden');
-    } else {
-      container.classList.add('scroll-hidden');
-    }
-  }
-});
+// Chatbot scroll logic removed so it's always visible on large laptop screens

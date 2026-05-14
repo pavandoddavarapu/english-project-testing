@@ -647,7 +647,7 @@ function openModal() {
     if (currentTab === 'picture') {
       modalCurrentTopicSpan.textContent = "Describe the picture provided.";
     } else {
-      modalCurrentTopicSpan.textContent = topicMain ? topicMain.textContent : "General speaking practice";
+      modalCurrentTopicSpan.textContent = topicMain ? topicMain.innerText.trim() : "General speaking practice";
     }
   }
 }
@@ -701,7 +701,7 @@ recordBtn.addEventListener("click", async () => {
         reader.onloadend = async () => {
           const base64data = reader.result.split(',')[1];
           
-          let currentTopic = topicMain ? topicMain.textContent : "General speaking practice";
+          let currentTopic = topicMain ? topicMain.innerText.trim() : "General speaking practice";
           let currentImageUrl = null;
           
           if (currentTab === 'picture') {

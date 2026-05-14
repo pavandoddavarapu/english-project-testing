@@ -72,8 +72,10 @@ async function fsGet(uid, idToken) {
 
 async function fsPatch(uid, idToken, fields) {
   // Build field list for partial update
-  const fieldPaths = Object.keys(fields).join(',');
-  const url = `${FS_BASE}/users/${uid}?updateMask.fieldPaths=${encodeURIComponent(fieldPaths)}`;
+  const fieldParams = Object.keys(fields)
+    .map(k => `updateMask.fieldPaths=${encodeURIComponent(k)}`)
+    .join('&');
+  const url = `${FS_BASE}/users/${uid}?${fieldParams}`;
 
   const body = { fields: {} };
   for (const [k, v] of Object.entries(fields)) body.fields[k] = toFSValue(v);

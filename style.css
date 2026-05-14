@@ -1488,6 +1488,17 @@ body::before {
     gap: 12px;
     padding: 14px 16px;
   }
+  .nav-right {
+    width: 100%;
+    justify-content: flex-start;
+    overflow-x: auto;
+    white-space: nowrap;
+    padding-bottom: 6px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .nav-right::-webkit-scrollbar {
+    height: 0px; /* hide scrollbar visually */
+  }
   /* On mobile, reset absolute centering so tabs stack naturally */
   .nav-tabs {
     position: static;

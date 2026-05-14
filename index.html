@@ -69,6 +69,22 @@
       gap: 16px;
     }
 
+    @media (max-width: 600px) {
+      .lp-nav {
+        padding: 10px 16px;
+      }
+      .lp-nav-right {
+        gap: 10px;
+        overflow-x: auto;
+        white-space: nowrap;
+        padding-bottom: 4px; /* Space for scrollbar */
+        -webkit-overflow-scrolling: touch;
+      }
+      .lp-nav-right::-webkit-scrollbar {
+        height: 0px; /* hide scrollbar but allow swipe */
+      }
+    }
+
     .btn-nav-login {
       padding: 9px 22px;
       border-radius: 99px;

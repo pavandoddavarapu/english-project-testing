@@ -3,227 +3,103 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Speak Up! - Master English Speaking</title>
+  <title>Speak Up! — Level Up Your English Fluency</title>
+  
+  <!-- SEO & Social Meta Tags -->
+  <meta name="description" content="Master your English speaking skills with daily AI-generated challenges, interview prep, and real-time speech analysis.">
+  <meta property="og:title" content="Speak Up! — Level Up Your English Fluency">
+  <meta property="og:description" content="Level up your fluency with daily AI-generated speaking challenges, picture talks, and interview prep.">
+  <meta property="og:image" content="./icon-512.png">
+  <meta property="og:type" content="website">
+
+  <!-- PWA Setup -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#D63384">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&family=Pacifico&display=swap" rel="stylesheet">
   
-  <style>
-    /* Base Variables inspired by the Speak Up! theme */
-    :root {
-      --primary: #D63384;
-      --primary-dark: #A31F60;
-      --accent: #FFB3D1;
-      --accent2: #FFDAE0;
-      --bg: #FFF0F5;
-      --text: #2A2A3E;
-      --text-muted: #6B7280;
-      --white: #FFFFFF;
-      --radius: 24px;
-      --shadow: rgba(214, 51, 132, 0.15);
-    }
+  <link rel="stylesheet" href="style.css">
+  
+  <script>
+    // Immediate Theme Initialization to prevent flash
+    (function() {
+      const saved = localStorage.getItem("speakup-theme") || "pink";
+      document.documentElement.setAttribute("data-theme", saved);
+    })();
+  </script>
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
+  <style>
+    /* Premium Landing Page Specific Styles */
+    
+    :root {
+      --hero-gradient: linear-gradient(135deg, var(--bg) 0%, var(--bg-card) 100%);
     }
 
     body {
-      font-family: 'Nunito', sans-serif;
-      background-color: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      position: relative;
+      background: var(--hero-gradient);
       overflow-x: hidden;
     }
 
-    /* Background blobs */
-    body::before {
-      content: '';
-      position: absolute;
-      top: -10%;
-      left: -10%;
-      width: 50%;
-      height: 50%;
-      background: radial-gradient(circle, rgba(214,51,132,0.15) 0%, transparent 60%);
-      z-index: -1;
-      border-radius: 50%;
-    }
-
-    body::after {
-      content: '';
-      position: absolute;
-      bottom: -10%;
-      right: -10%;
-      width: 60%;
-      height: 60%;
-      background: radial-gradient(circle, rgba(255,179,209,0.2) 0%, transparent 60%);
-      z-index: -1;
-      border-radius: 50%;
-    }
-
-    /* Navbar */
-    .navbar {
+    /* Hero Section Enhancements */
+    .hero-section {
+      position: relative;
+      padding: 120px 20px 80px;
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 20px 40px;
-      background: rgba(255, 255, 255, 0.7);
-      backdrop-filter: blur(10px);
-      box-shadow: 0 4px 20px var(--shadow);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-
-    .brand {
-      font-family: 'Fredoka One', cursive;
-      font-size: 1.8rem;
-      color: var(--primary);
-      text-decoration: none;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .nav-links {
-      display: flex;
-      gap: 15px;
-      align-items: center;
-    }
-
-    .btn-login {
-      font-family: 'Nunito', sans-serif;
-      font-weight: 800;
-      font-size: 1rem;
-      color: var(--primary);
-      text-decoration: none;
-      padding: 10px 24px;
-      border: 2px solid var(--primary);
-      border-radius: 50px;
-      transition: all 0.3s ease;
-      background: transparent;
-    }
-
-    .btn-login:hover {
-      background: rgba(214, 51, 132, 0.1);
-      transform: translateY(-2px);
-    }
-
-    .btn-signup {
-      font-family: 'Nunito', sans-serif;
-      font-weight: 800;
-      font-size: 1rem;
-      color: var(--white);
-      text-decoration: none;
-      padding: 12px 28px;
-      background: var(--primary);
-      border-radius: 50px;
-      box-shadow: 0 4px 15px rgba(214, 51, 132, 0.4);
-      transition: all 0.3s ease;
-    }
-
-    .btn-signup:hover {
-      background: var(--primary-dark);
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(214, 51, 132, 0.5);
-    }
-
-    /* Hero Section */
-    .hero {
-      display: flex;
-      align-items: center;
-      justify-content: center;
       flex-direction: column;
-      flex-grow: 1;
+      align-items: center;
       text-align: center;
-      padding: 60px 20px;
+      min-height: 90vh;
+      justify-content: center;
     }
 
-    .hero-pill {
-      background: var(--accent2);
+    .hero-badge {
+      background: var(--accent3);
       color: var(--primary-dark);
+      padding: 8px 20px;
+      border-radius: 99px;
       font-weight: 800;
-      font-size: 0.9rem;
-      padding: 6px 16px;
-      border-radius: 30px;
-      margin-bottom: 24px;
-      display: inline-block;
+      font-size: 0.85rem;
       text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 1.5px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 12px var(--shadow);
+      animation: fadeInUp 0.6s ease both;
     }
 
     .hero-title {
       font-family: 'Fredoka One', cursive;
-      font-size: 4.5rem;
-      color: var(--text);
-      line-height: 1.1;
-      max-width: 800px;
+      font-size: clamp(3rem, 8vw, 5.5rem);
+      color: var(--primary);
+      line-height: 1;
       margin-bottom: 24px;
+      animation: fadeInUp 0.6s ease 0.1s both;
+      text-shadow: 4px 4px 0 var(--accent2);
     }
 
     .hero-title span {
-      color: var(--primary);
-      display: inline-block;
-      position: relative;
+      color: var(--text);
+      display: block;
+      font-size: 0.6em;
+      margin-top: 10px;
+      text-shadow: none;
     }
 
-    .hero-title span::after {
-      content: '';
-      position: absolute;
-      bottom: 8px;
-      left: 0;
-      width: 100%;
-      height: 12px;
-      background: var(--accent);
-      z-index: -1;
-      border-radius: 10px;
-    }
-
-    .hero-subtitle {
+    .hero-desc {
       font-size: 1.25rem;
       color: var(--text-muted);
-      max-width: 600px;
+      max-width: 650px;
       font-weight: 600;
-      margin-bottom: 40px;
       line-height: 1.6;
+      margin-bottom: 40px;
+      animation: fadeInUp 0.6s ease 0.2s both;
     }
 
-    .hero-actions {
-      display: flex;
-      gap: 20px;
-      justify-content: center;
-    }
-
-    .btn-main {
-      font-family: 'Nunito', sans-serif;
-      font-weight: 800;
-      font-size: 1.1rem;
-      color: var(--white);
-      text-decoration: none;
-      padding: 16px 40px;
-      background: var(--primary);
-      border-radius: 50px;
-      box-shadow: 0 8px 25px rgba(214, 51, 132, 0.4);
-      transition: all 0.3s ease;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .btn-main:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 12px 30px rgba(214, 51, 132, 0.5);
-      background: var(--primary-dark);
-    }
-
-    /* Floating Icons Animation */
-    .floating-icons {
+    /* Floating Decor */
+    .floating-decor {
       position: absolute;
       width: 100%;
       height: 100%;
@@ -233,83 +109,366 @@
       z-index: -1;
     }
 
-    .icon {
+    .decor-item {
       position: absolute;
-      font-size: 2.5rem;
-      opacity: 0.8;
+      font-size: clamp(2rem, 5vw, 4rem);
+      filter: drop-shadow(0 10px 20px var(--shadow));
       animation: float 6s ease-in-out infinite;
+      opacity: 0.8;
     }
 
-    .icon:nth-child(1) { top: 20%; left: 15%; animation-delay: 0s; font-size: 3rem; }
-    .icon:nth-child(2) { top: 60%; left: 10%; animation-delay: 1s; font-size: 2.5rem; }
-    .icon:nth-child(3) { top: 30%; right: 15%; animation-delay: 2s; font-size: 3.5rem; }
-    .icon:nth-child(4) { top: 70%; right: 10%; animation-delay: 1.5s; font-size: 2rem; }
+    .decor-1 { top: 15%; left: 10%; animation-delay: 0s; }
+    .decor-2 { top: 60%; left: 15%; animation-delay: 1s; }
+    .decor-3 { top: 20%; right: 10%; animation-delay: 2s; }
+    .decor-4 { top: 70%; right: 15%; animation-delay: 1.5s; }
 
     @keyframes float {
-      0% { transform: translateY(0px) rotate(0deg); }
-      50% { transform: translateY(-20px) rotate(10deg); }
-      100% { transform: translateY(0px) rotate(0deg); }
+      0%, 100% { transform: translateY(0) rotate(0); }
+      50% { transform: translateY(-30px) rotate(10deg); }
     }
 
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Features Grid */
+    .features-section {
+      padding: 100px 20px;
+      background: var(--white);
+      border-radius: 60px 60px 0 0;
+      box-shadow: 0 -20px 40px var(--shadow);
+      margin-top: -60px;
+      position: relative;
+      z-index: 10;
+    }
+
+    .section-header {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+
+    .section-header h2 {
+      font-family: 'Fredoka One', cursive;
+      font-size: 3rem;
+      color: var(--primary-dark);
+      margin-bottom: 10px;
+    }
+
+    .section-header p {
+      color: var(--text-muted);
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 30px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .feature-card {
+      background: var(--bg);
+      border: 2px solid var(--accent2);
+      border-radius: 30px;
+      padding: 40px 30px;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 20px 40px var(--shadow-lg);
+      background: var(--white);
+    }
+
+    .feature-icon {
+      font-size: 3.5rem;
+      margin-bottom: 20px;
+    }
+
+    .feature-card h3 {
+      font-family: 'Fredoka One', cursive;
+      color: var(--primary);
+      font-size: 1.5rem;
+      margin-bottom: 15px;
+    }
+
+    .feature-card p {
+      color: var(--text-muted);
+      font-weight: 600;
+      line-height: 1.5;
+    }
+
+    /* Auth Actions */
+    .hero-actions {
+      display: flex;
+      gap: 20px;
+      animation: fadeInUp 0.6s ease 0.3s both;
+    }
+
+    .btn-lg {
+      padding: 18px 45px;
+      font-size: 1.1rem;
+      border-radius: 99px;
+      font-weight: 800;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn-primary-lg {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 10px 25px var(--shadow-lg);
+    }
+
+    .btn-primary-lg:hover {
+      background: var(--primary-dark);
+      transform: translateY(-4px) scale(1.05);
+      box-shadow: 0 15px 35px var(--shadow-lg);
+    }
+
+    .btn-outline-lg {
+      background: white;
+      color: var(--primary);
+      border: 3px solid var(--primary);
+    }
+
+    .btn-outline-lg:hover {
+      background: var(--bg);
+      transform: translateY(-4px) scale(1.05);
+    }
+
+    /* Footer Glass */
+    footer {
+      padding: 60px 20px;
+      text-align: center;
+      background: var(--bg-card);
+      border-top: 1.5px solid var(--accent2);
+    }
+
+    .footer-brand {
+      font-family: 'Pacifico', cursive;
+      font-size: 2rem;
+      color: var(--primary);
+      margin-bottom: 20px;
+      display: block;
+    }
+
+    .copyright {
+      color: var(--text-muted);
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+
+    /* Responsiveness */
     @media (max-width: 768px) {
-      .hero-title { font-size: 3rem; }
-      .navbar { padding: 15px 20px; }
-      .nav-links { gap: 10px; }
-      .btn-login, .btn-signup { padding: 8px 16px; font-size: 0.9rem; }
-      .icon { display: none; }
+      .hero-section { padding-top: 100px; }
+      .hero-title { font-size: 3.5rem; }
+      .hero-actions { flex-direction: column; width: 100%; max-width: 300px; }
+      .btn-lg { width: 100%; justify-content: center; }
     }
   </style>
 </head>
 <body>
 
-  <!-- Floating Background Elements -->
-  <div class="floating-icons">
-    <div class="icon">🎙️</div>
-    <div class="icon">✨</div>
-    <div class="icon">🚀</div>
-    <div class="icon">💡</div>
-  </div>
+  <!-- Navbar -->
+  <nav class="navbar" style="position: fixed; top: 0; width: 100%; background: var(--bg-card); opacity: 0.98; backdrop-filter: blur(10px); border-bottom: 1.5px solid var(--accent2); padding: 12px 32px; box-shadow: 0 4px 20px var(--shadow); z-index: 1000;">
+    <div class="nav-brand" style="font-size: 1.5rem;">Speak Up! 🎤</div>
+    
+    <div style="display: flex; gap: 20px; align-items: center;">
+      <!-- Theme Switcher (Same as practice.html) -->
+      <div class="theme-switcher" id="theme-switcher">
+        <button class="theme-toggle-btn" id="theme-toggle-btn" title="Change Theme">
+          <span class="theme-icon">🎨</span>
+          <span class="theme-label">Theme</span>
+          <span class="theme-arrow">▾</span>
+        </button>
+        <div class="theme-dropdown hidden" id="theme-dropdown">
+          <div class="theme-dropdown-title">Choose a Theme</div>
+          <div class="theme-grid">
+            <button class="theme-swatch active" data-theme="pink" title="Blossom Pink" style="--sw:#D63384"><span class="swatch-dot" style="background:#D63384"></span>Blossom</button>
+            <button class="theme-swatch" data-theme="green" title="Forest Green" style="--sw:#2D6A4F"><span class="swatch-dot" style="background:#2D6A4F"></span>Forest</button>
+            <button class="theme-swatch" data-theme="blue" title="Ocean Blue" style="--sw:#1A6FA8"><span class="swatch-dot" style="background:#1A6FA8"></span>Ocean</button>
+            <button class="theme-swatch" data-theme="purple" title="Royal Purple" style="--sw:#7B2FBE"><span class="swatch-dot" style="background:#7B2FBE"></span>Royal</button>
+            <button class="theme-swatch" data-theme="orange" title="Sunset Orange" style="--sw:#D4580A"><span class="swatch-dot" style="background:#D4580A"></span>Sunset</button>
+            <button class="theme-swatch" data-theme="teal" title="Teal Breeze" style="--sw:#0D9488"><span class="swatch-dot" style="background:#0D9488"></span>Teal</button>
+            <button class="theme-swatch" data-theme="dark" title="Midnight Dark" style="--sw:#1E1E2E"><span class="swatch-dot" style="background:#1E1E2E"></span>Dark</button>
+          </div>
+        </div>
+      </div>
 
-  <nav class="navbar">
-    <a href="#" class="brand">
-      🎤 Speak Up!
-    </a>
-    <div class="nav-links" id="auth-links">
-      <a href="login.html" class="btn-login">Login</a>
-      <a href="signup.html" class="btn-signup">Sign Up Free</a>
+      <div id="nav-auth-links" style="display: flex; gap: 12px;">
+        <a href="login.html" class="btn-primary" style="margin-bottom: 0; padding: 10px 22px;">Login</a>
+        <a href="signup.html" class="btn-primary" style="margin-bottom: 0; padding: 10px 22px; background: var(--primary-dark);">Join Free</a>
+      </div>
     </div>
   </nav>
 
-  <main class="hero">
-    <div class="hero-pill">🔥 The Ultimate Practice Platform</div>
-    <h1 class="hero-title">Master your English <br><span>speaking skills</span></h1>
-    <p class="hero-subtitle">
-      Level up your fluency with daily AI-generated speaking challenges, picture talks, and interview prep. Record, analyze, and improve your confidence!
-    </p>
-    <div class="hero-actions" id="hero-actions">
-      <a href="signup.html" class="btn-main">
-        Start Practicing <span>→</span>
-      </a>
+  <!-- Hero Section -->
+  <header class="hero-section">
+    <div class="floating-decor">
+      <div class="decor-item decor-1">🎙️</div>
+      <div class="decor-item decor-2">✨</div>
+      <div class="decor-item decor-3">🚀</div>
+      <div class="decor-item decor-4">💡</div>
     </div>
-  </main>
+
+    <div class="hero-badge">🔥 The Ultimate AI Practice Platform</div>
+    <h1 class="hero-title">
+      Master English<span>Speaking Skills</span>
+    </h1>
+    <p class="hero-desc">
+      Level up your fluency with daily AI-generated challenges, picture talks, and real-time analysis. Record, track your progress, and build unstoppable confidence!
+    </p>
+
+    <div class="hero-actions" id="hero-actions">
+      <a href="signup.html" class="btn-lg btn-primary-lg">Start Practicing Now <span>→</span></a>
+      <a href="#features" class="btn-lg btn-outline-lg">Explore Features</a>
+    </div>
+  </header>
+
+  <!-- Features Section -->
+  <section class="features-section" id="features">
+    <div class="section-header">
+      <h2>Built for Growth</h2>
+      <p>Everything you need to go from silent to fluent.</p>
+    </div>
+
+    <div class="features-grid">
+      <!-- AI Topics -->
+      <div class="feature-card">
+        <div class="feature-icon">🤖</div>
+        <h3>AI Daily Topics</h3>
+        <p>Fresh prompts every day across Interview Prep, Vocabulary, and Random Challenges tailored to your level.</p>
+      </div>
+
+      <!-- Picture Talk -->
+      <div class="feature-card">
+        <div class="feature-icon">📸</div>
+        <h3>Picture Talk</h3>
+        <p>Describe dynamic images to improve your descriptive vocabulary and observational speaking skills.</p>
+      </div>
+
+      <!-- Real-time Analysis -->
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3>AI Speech Analysis</h3>
+        <p>Get instant feedback on your Fluency, Clarity, and Confidence with detailed AI scoring for every session.</p>
+      </div>
+
+      <!-- Progress Tracking -->
+      <div class="feature-card">
+        <div class="feature-icon">🔥</div>
+        <h3>Gamified Progress</h3>
+        <p>Earn Aura points, maintain your streak, and level up your "Community Clout" as you practice daily.</p>
+      </div>
+
+      <!-- Genie Chatbot -->
+      <div class="feature-card">
+        <div class="feature-icon">🧞</div>
+        <h3>Genie Chatbot</h3>
+        <p>Stuck on a word? Ask Genie! Your personal AI assistant is always ready to help with grammar and vocab.</p>
+      </div>
+
+      <!-- Dark Mode -->
+      <div class="feature-card">
+        <div class="feature-icon">🎨</div>
+        <h3>Dynamic Themes</h3>
+        <p>Choose from 7 beautiful themes, including a sleek Midnight Dark mode for late-night practice sessions.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-brand">Speak Up!</div>
+    <p class="hero-desc" style="margin: 0 auto 30px auto; font-size: 1rem;">The world is waiting to hear you speak. Start your journey today.</p>
+    <p class="copyright">© 2026 Speak Up! — Built with ❤️ for English learners everywhere.</p>
+  </footer>
+
+  <!-- Scripts -->
+  <script>
+    // Theme Switcher Logic
+    (function() {
+      const themeToggleBtn = document.getElementById("theme-toggle-btn");
+      const themeDropdown = document.getElementById("theme-dropdown");
+      const themeSwatches = document.querySelectorAll(".theme-swatch");
+      
+      if(themeToggleBtn) {
+        themeToggleBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const isOpen = !themeDropdown.classList.contains("hidden");
+          themeDropdown.classList.toggle("hidden", isOpen);
+          themeToggleBtn.classList.toggle("open", !isOpen);
+        });
+        
+        document.addEventListener("click", (e) => {
+          if (!e.target.closest("#theme-switcher")) {
+            themeDropdown.classList.add("hidden");
+            themeToggleBtn.classList.remove("open");
+          }
+        });
+        
+        themeSwatches.forEach(swatch => {
+          swatch.addEventListener("click", () => {
+            const theme = swatch.dataset.theme;
+            applyTheme(theme);
+            themeSwatches.forEach(s => s.classList.remove("active"));
+            swatch.classList.add("active");
+            setTimeout(() => {
+              themeDropdown.classList.add("hidden");
+              themeToggleBtn.classList.remove("open");
+            }, 220);
+          });
+        });
+        
+        function applyTheme(theme) {
+          document.documentElement.setAttribute("data-theme", theme);
+          localStorage.setItem("speakup-theme", theme);
+          const THEME_COLORS = { pink: "#D63384", green: "#2D6A4F", blue: "#1A6FA8", purple: "#7B2FBE", orange: "#D4580A", teal: "#0D9488", dark: "#C084FC" };
+          const color = THEME_COLORS[theme] || THEME_COLORS.pink;
+          themeToggleBtn.style.borderColor = color + "80";
+        }
+        
+        function initTheme() {
+          const saved = localStorage.getItem("speakup-theme") || "pink";
+          themeSwatches.forEach(s => s.classList.toggle("active", s.dataset.theme === saved));
+          applyTheme(saved);
+        }
+        initTheme();
+      }
+    })();
+  </script>
 
   <script type="module">
     import { auth } from './firebase-config.js';
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
 
+    // Auth State Listener
     onAuthStateChanged(auth, (user) => {
-      const authLinks = document.getElementById('auth-links');
+      const navAuthLinks = document.getElementById('nav-auth-links');
       const heroActions = document.getElementById('hero-actions');
       
       if (user) {
-        authLinks.innerHTML = `
-          <a href="genz-streak-test.html" class="btn-login" style="border-color: transparent; font-weight: 800;">Dashboard</a>
-          <a href="practice.html" class="btn-signup">Start Practice</a>
+        // Update Navbar
+        navAuthLinks.innerHTML = `
+          <a href="genz-streak-test.html" class="btn-primary" style="margin-bottom: 0; padding: 10px 22px; background: transparent; color: var(--primary); border: 2px solid var(--primary);">Dashboard</a>
+          <a href="practice.html" class="btn-primary" style="margin-bottom: 0; padding: 10px 22px;">Start Practice</a>
         `;
+        
+        // Update Hero
         heroActions.innerHTML = `
-          <a href="practice.html" class="btn-main">
-            Go to Practice Area <span>→</span>
-          </a>
+          <a href="practice.html" class="btn-lg btn-primary-lg">Go to Practice Area <span>→</span></a>
+          <a href="genz-streak-test.html" class="btn-lg btn-outline-lg">View Your Progress</a>
         `;
       }
     });

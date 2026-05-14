@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Speak Up! – English Speech Practice</title>
+  <title>Speak Up! English Speech Practice</title>
 
   <!-- SEO & Social Meta Tags -->
   <meta name="description"
@@ -70,7 +70,8 @@
           </div>
         </div>
       </div>
-      <a href="login.html" id="auth-btn" style="text-decoration: none; font-weight: 800; font-family: 'Nunito', sans-serif; background: var(--primary); color: white; padding: 6px 14px; border-radius: 20px; font-size: 0.9rem; transition: background 0.2s;">Login</a>
+      <a href="login.html" id="auth-btn"
+        style="text-decoration: none; font-weight: 800; font-family: 'Nunito', sans-serif; background: var(--primary); color: white; padding: 6px 14px; border-radius: 20px; font-size: 0.9rem; transition: background 0.2s;">Login</a>
     </div>
   </nav>
 
@@ -78,7 +79,7 @@
   <script type="module">
     import { auth } from './firebase-config.js';
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
-    
+
     onAuthStateChanged(auth, (user) => {
       const authBtn = document.getElementById('auth-btn');
       if (user) {
@@ -382,7 +383,24 @@
     <div class="modal-box">
       <button class="modal-close" id="modal-close">✕</button>
       <h2 class="modal-title">🎙️ Speech Analysis</h2>
-      <p class="modal-sub">Click "Start Recording" and speak your topic for analysis.</p>
+      <p class="modal-sub">Choose your topic, click "Start Recording" and speak.</p>
+
+      <div class="topic-selection-area"
+        style="margin-bottom: 20px; text-align: left; background: var(--bg); padding: 15px; border-radius: 12px; border: 1px solid var(--accent2);">
+        <label style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px; cursor: pointer;">
+          <input type="radio" name="modal-topic-type" value="current" id="radio-current-topic" checked
+            style="accent-color: var(--primary); transform: scale(1.2);">
+          <span style="font-weight: 600; color: var(--text);">Spinned Topic: <span id="modal-current-topic"
+              style="color: var(--primary);">—</span></span>
+        </label>
+        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+          <input type="radio" name="modal-topic-type" value="custom" id="radio-custom-topic"
+            style="accent-color: var(--primary); transform: scale(1.2);">
+          <span style="font-weight: 600; color: var(--text);">Custom Topic</span>
+        </label>
+        <input type="text" id="modal-custom-topic-input" placeholder="What do you want to talk about?"
+          style="width: 100%; padding: 10px 14px; margin-top: 10px; border-radius: 8px; border: 2px solid var(--accent2); background: var(--white); color: var(--text); font-family: inherit; font-size: 0.95rem; outline: none; transition: border-color 0.2s; display: none;">
+      </div>
       <div class="record-area">
         <button class="btn-record" id="record-btn">🔴 Start Recording</button>
         <div class="record-status" id="record-status"></div>
@@ -411,11 +429,14 @@
         </div>
         <div class="result-card" style="margin-top: 15px;">
           <div class="result-label">Feedback</div>
-          <div class="result-text" id="feedback-val" style="font-size: 0.9em; margin-top: 5px; line-height: 1.4;">—</div>
+          <div class="result-text" id="feedback-val" style="font-size: 0.9em; margin-top: 5px; line-height: 1.4;">—
+          </div>
         </div>
         <div class="result-card" style="margin-top: 10px;">
           <div class="result-label">What you said (Transcription)</div>
-          <div class="result-text" id="transcription-val" style="font-size: 0.85em; margin-top: 5px; font-style: italic; color: var(--text-color); opacity: 0.8;">—</div>
+          <div class="result-text" id="transcription-val"
+            style="font-size: 0.85em; margin-top: 5px; font-style: italic; color: var(--text-color); opacity: 0.8;">—
+          </div>
         </div>
       </div>
     </div>
@@ -425,7 +446,8 @@
   <div class="chatbot-container" id="chatbot-container">
     <div class="chatbot-pointer">
       <span class="pointer-text handwritten">Got a question? Ask<br>Genie!</span>
-      <svg class="pointer-arrow" width="50" height="50" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+      <svg class="pointer-arrow" width="50" height="50" viewBox="0 0 100 100" fill="none" stroke="currentColor"
+        stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
         <path d="M10,20 Q60,10 80,70 M50,60 L80,70 L85,40"></path>
       </svg>
     </div>
@@ -439,7 +461,8 @@
       </div>
       <div class="chatbot-messages" id="chatbot-messages">
         <div class="chat-message bot-message">
-          Greetings. I am Genie, your professional English language assistant. How may I assist you with your grammar or vocabulary today?
+          Greetings. I am Genie, your professional English language assistant. How may I assist you with your grammar or
+          vocabulary today?
         </div>
       </div>
       <div class="chatbot-input-area">
@@ -452,7 +475,7 @@
   <!-- Smart Cached Image System -->
   <script src="image-cache.js"></script>
   <script src="app.js"></script>
-  
+
   <!-- Practice Session Tracker v2 — backend proxy + Firestore fallback -->
   <script type="module">
     import { auth, db } from './firebase-config.js';
@@ -482,12 +505,12 @@
       const userDoc = await getDoc(userRef);
       const cur = userDoc.exists() ? userDoc.data() : {};
 
-      const fluency    = Math.min(100, Math.max(0, Number(sessionData.fluency)    || 0));
-      const clarity    = Math.min(100, Math.max(0, Number(sessionData.clarity)    || 0));
+      const fluency = Math.min(100, Math.max(0, Number(sessionData.fluency) || 0));
+      const clarity = Math.min(100, Math.max(0, Number(sessionData.clarity) || 0));
       const confidence = Math.min(100, Math.max(0, Number(sessionData.confidence) || 0));
-      const avgScore   = Math.round((fluency + clarity + confidence) / 3);
+      const avgScore = Math.round((fluency + clarity + confidence) / 3);
 
-      const existingDates  = cur.practice_dates || [];
+      const existingDates = cur.practice_dates || [];
       const uniqueDateStrs = [...new Set(existingDates.map(d => String(d).split('T')[0]))].filter(Boolean).sort();
       let newStreak = Number(cur.streak) || 0;
       if (!uniqueDateStrs.includes(todayDateStr)) {
@@ -495,7 +518,7 @@
           newStreak = 1;
         } else {
           const last = new Date(uniqueDateStrs[uniqueDateStrs.length - 1] + 'T00:00:00Z');
-          const tod  = new Date(todayDateStr + 'T00:00:00Z');
+          const tod = new Date(todayDateStr + 'T00:00:00Z');
           const diff = Math.round((tod - last) / 86400000);
           newStreak = diff === 1 ? newStreak + 1 : 1;
         }
@@ -509,9 +532,9 @@
       });
 
       const scalarPayload = {
-        aura_points:   (Number(cur.aura_points) || 0) + 10,
-        total_yaps:    (Number(cur.total_yaps)  || 0) + 1,
-        streak:         newStreak,
+        aura_points: (Number(cur.aura_points) || 0) + 10,
+        total_yaps: (Number(cur.total_yaps) || 0) + 1,
+        streak: newStreak,
         practice_dates: arrayUnion(todayISO)
       };
 
@@ -529,20 +552,20 @@
 
     // ── Orchestrator: try backend first, fall back to Firestore ───────────────
     async function savePracticeSession(user, data) {
-      const now          = new Date();
-      const todayISO     = now.toISOString();
+      const now = new Date();
+      const todayISO = now.toISOString();
       const todayDateStr = todayISO.split('T')[0];
 
-      const topicEl  = document.getElementById('topic-main');
+      const topicEl = document.getElementById('topic-main');
       const topicText = topicEl ? topicEl.innerText.trim() : 'General Practice';
       const activeTab = document.querySelector('.nav-tab.active');
-      const tabMode   = activeTab ? (activeTab.dataset.tab || 'random') : 'random';
+      const tabMode = activeTab ? (activeTab.dataset.tab || 'random') : 'random';
 
       const sessionData = {
-        topic:      tabMode === 'picture' ? 'Picture Talk' : topicText,
-        mode:       tabMode,
-        fluency:    data && data.fluency    ? data.fluency    : 0,
-        clarity:    data && data.clarity    ? data.clarity    : 0,
+        topic: tabMode === 'picture' ? 'Picture Talk' : topicText,
+        mode: tabMode,
+        fluency: data && data.fluency ? data.fluency : 0,
+        clarity: data && data.clarity ? data.clarity : 0,
         confidence: data && data.confidence ? data.confidence : 0,
       };
 
@@ -576,12 +599,12 @@
         const originalFn = window._speakup_original_showRealAnalysis || window.showRealAnalysis;
         window._speakup_original_showRealAnalysis = originalFn;
 
-        window.showRealAnalysis = async function(data) {
+        window.showRealAnalysis = async function (data) {
           originalFn.apply(this, arguments);
           savePracticeSession(user, data);
         };
 
-        window._speakup_unwrap = function() {
+        window._speakup_unwrap = function () {
           if (window._speakup_original_showRealAnalysis) {
             window.showRealAnalysis = window._speakup_original_showRealAnalysis;
           }
@@ -629,7 +652,7 @@
     });
   </script>
 
-    <!-- PWA Service Worker Registration -->
+  <!-- PWA Service Worker Registration -->
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {

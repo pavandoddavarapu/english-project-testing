@@ -553,6 +553,9 @@ btnResetCircle.addEventListener("click", () => {
   circleRunning = false;
   circleSeconds = circleMaxSeconds;
   circleCountdown.classList.remove("urgent");
+  circleCountdown.classList.remove("done");
+  const circleTimer = document.getElementById("circle-timer");
+  if (circleTimer) circleTimer.classList.remove("timer-finished");
   progressRingFill.classList.remove("urgent");
   updateCircleDisplay();
   setRingProgress(1);
@@ -596,6 +599,9 @@ function tickCircleTimer() {
     circleRunning = false;
     circleCountdown.textContent = "Done! 🎉";
     circleCountdown.classList.remove("urgent");
+    circleCountdown.classList.add("done");
+    const circleTimer = document.getElementById("circle-timer");
+    if (circleTimer) circleTimer.classList.add("timer-finished");
     progressRingFill.classList.remove("urgent");
     btnPlayPause.classList.remove("paused");
     btnPlayPause.querySelector(".play-icon").textContent = "▶";
@@ -634,6 +640,33 @@ function openModal() {
   recordBtn.textContent = "🔴 Start Recording";
   recordBtn.classList.remove("recording");
   isRecording = false;
+
+  // Set the current spinned topic text in the modal
+  const modalCurrentTopicSpan = document.getElementById("modal-current-topic");
+  if (modalCurrentTopicSpan) {
+    if (currentTab === 'picture') {
+      modalCurrentTopicSpan.textContent = "Describe the picture provided.";
+    } else {
+      modalCurrentTopicSpan.textContent = topicMain ? topicMain.textContent : "General speaking practice";
+    }
+  }
+}
+
+// Custom Topic UI Toggle
+const radioCurrentTopic = document.getElementById("radio-current-topic");
+const radioCustomTopic = document.getElementById("radio-custom-topic");
+const customTopicInput = document.getElementById("modal-custom-topic-input");
+
+if (radioCurrentTopic && radioCustomTopic && customTopicInput) {
+  radioCurrentTopic.addEventListener("change", () => {
+    if (radioCurrentTopic.checked) customTopicInput.style.display = "none";
+  });
+  radioCustomTopic.addEventListener("change", () => {
+    if (radioCustomTopic.checked) {
+      customTopicInput.style.display = "block";
+      customTopicInput.focus();
+    }
+  });
 }
 
 function closeModal() {
@@ -676,6 +709,15 @@ recordBtn.addEventListener("click", async () => {
              if (window.PictureTalk && window.PictureTalk.getCurrent()) {
                  currentImageUrl = window.PictureTalk.getCurrent().url;
              }
+          }
+
+          // Override with custom topic if selected
+          if (radioCustomTopic && radioCustomTopic.checked) {
+            const customVal = customTopicInput.value.trim();
+            if (customVal) {
+              currentTopic = customVal;
+              currentImageUrl = null; // Ignore image if they provide a custom topic
+            }
           }
 
           try {
@@ -1013,7 +1055,16 @@ function appendMessage(role, text) {
                           .replace(/\n/g, '<br/>');
   msgDiv.innerHTML = formattedText;
   chatbotMessages.appendChild(msgDiv);
-  chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+
+  // For bot messages: scroll so the TOP of the new message is visible
+  // For user messages: keep showing bottom (natural feel)
+  if (role === 'bot') {
+    setTimeout(() => {
+      msgDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
+  } else {
+    chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+  }
 }
 
 function showTyping() {
@@ -1080,4 +1131,51 @@ chatbotInput.addEventListener("keypress", (e) => {
 
 
 
-// Chatbot scroll logic removed so it's always visible on large laptop screens
+// ─── MOBILE SCROLL SHOW/HIDE GENIE ───────────────────────────────────────
+// Shows Genie button when user scrolls down, hides when scrolling back up
+// Uses direction detection so it reacts immediately, not at the top
+(function() {
+  const isMobile = () => window.innerWidth <= 768;
+  const chatbotContainer = document.getElementById('chatbot-container');
+  if (!chatbotContainer) return;
+
+  let lastScrollY = window.scrollY;
+  let ticking = false;
+
+  window.addEventListener('scroll', () => {
+    if (!ticking) {
+      requestAnimationFrame(() => {
+        if (!isMobile()) { ticking = false; return; }
+
+        const currentScrollY = window.scrollY;
+        const scrollingDown = currentScrollY > lastScrollY;
+
+        if (scrollingDown && currentScrollY > 80) {
+          // User scrolled down past 80px — show the chatbot button
+          chatbotContainer.style.opacity = '1';
+          chatbotContainer.style.pointerEvents = 'auto';
+          chatbotContainer.style.transform = 'translateY(0)';
+        } else if (!scrollingDown) {
+          // User scrolled up — immediately hide the chatbot button (but not window if open)
+          if (chatbotWindow && chatbotWindow.classList.contains('hidden')) {
+            chatbotContainer.style.opacity = '0';
+            chatbotContainer.style.pointerEvents = 'none';
+            chatbotContainer.style.transform = 'translateY(20px)';
+          }
+        }
+
+        lastScrollY = currentScrollY;
+        ticking = false;
+      });
+      ticking = true;
+    }
+  }, { passive: true });
+
+  // Initial state on mobile: hidden until scroll
+  if (isMobile()) {
+    chatbotContainer.style.opacity = '0';
+    chatbotContainer.style.pointerEvents = 'none';
+    chatbotContainer.style.transform = 'translateY(20px)';
+    chatbotContainer.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+  }
+})();

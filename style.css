@@ -1144,6 +1144,13 @@ body::before {
   justify-content: space-between;
   padding: 16px 32px;
   flex-shrink: 0;
+  position: relative;
+}
+
+#timer-speech-btn {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 .timer-back-btn {
@@ -1226,6 +1233,14 @@ body::before {
   width: 100%;
   height: 100%;
   transform: rotate(-90deg);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+/* Hide the ring when timer finishes */
+.circle-timer.timer-finished .progress-ring {
+  opacity: 0;
+  transform: rotate(-90deg) scale(0.9);
+  pointer-events: none;
 }
 
 .progress-ring-bg {
@@ -1262,7 +1277,19 @@ body::before {
   color: var(--text);
   letter-spacing: 2px;
   line-height: 1;
-  transition: color 0.3s ease;
+  transition: color 0.3s ease, font-size 0.3s ease;
+  white-space: nowrap;
+}
+
+.circle-countdown.done {
+  font-size: 3.2rem; /* Big and bold */
+  color: var(--primary); /* Pop with primary color */
+  animation: donePop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes donePop {
+  0% { transform: scale(0.5); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
 }
 
 .circle-countdown.urgent {
@@ -1274,6 +1301,13 @@ body::before {
 .circle-adjust-btns {
   display: flex;
   gap: 10px;
+  transition: opacity 0.3s ease;
+}
+
+/* Hide adjust buttons when timer finishes */
+.circle-timer.timer-finished .circle-adjust-btns {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .btn-adjust {

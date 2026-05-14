@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="pink">
+<html lang="en" data-theme="green">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="style.css">
   <script>
     (function() {
-      const saved = localStorage.getItem("speakup-theme") || "pink";
+      const saved = localStorage.getItem("speakup-theme") || "green";
       document.documentElement.setAttribute("data-theme", saved);
     })();
   </script>
@@ -755,8 +755,8 @@
         <div class="theme-dropdown hidden" id="theme-dropdown">
           <div class="theme-dropdown-title">Choose a Theme</div>
           <div class="theme-grid">
-            <button class="theme-swatch active" data-theme="pink" title="Blossom Pink" style="--sw:#D63384"><span class="swatch-dot" style="background:#D63384"></span>Blossom</button>
-            <button class="theme-swatch" data-theme="green" title="Forest Green" style="--sw:#2D6A4F"><span class="swatch-dot" style="background:#2D6A4F"></span>Forest</button>
+            <button class="theme-swatch" data-theme="pink" title="Blossom Pink" style="--sw:#D63384"><span class="swatch-dot" style="background:#D63384"></span>Blossom</button>
+            <button class="theme-swatch active" data-theme="green" title="Forest Green" style="--sw:#2D6A4F"><span class="swatch-dot" style="background:#2D6A4F"></span>Forest</button>
             <button class="theme-swatch" data-theme="blue" title="Ocean Blue" style="--sw:#1A6FA8"><span class="swatch-dot" style="background:#1A6FA8"></span>Ocean</button>
             <button class="theme-swatch" data-theme="purple" title="Royal Purple" style="--sw:#7B2FBE"><span class="swatch-dot" style="background:#7B2FBE"></span>Royal</button>
             <button class="theme-swatch" data-theme="orange" title="Sunset Orange" style="--sw:#D4580A"><span class="swatch-dot" style="background:#D4580A"></span>Sunset</button>

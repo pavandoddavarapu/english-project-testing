@@ -1000,12 +1000,12 @@ function applyTheme(theme) {
     teal: "#0D9488",
     dark: "#C084FC",
   };
-  const color = THEME_COLORS[theme] || THEME_COLORS.pink;
+  const color = THEME_COLORS[theme] || THEME_COLORS.green;
   themeToggleBtn.style.borderColor = color + "80"; // 50% opacity border hint
 }
 
 function initTheme() {
-  const saved = localStorage.getItem("speakup-theme") || "pink";
+  const saved = localStorage.getItem("speakup-theme") || "green";
   document.documentElement.setAttribute("data-theme", saved);
 
   // Mark the matching swatch as active

@@ -53,9 +53,9 @@
         <div class="theme-dropdown hidden" id="theme-dropdown">
           <div class="theme-dropdown-title">Choose a Theme</div>
           <div class="theme-grid">
-            <button class="theme-swatch active" data-theme="pink" title="Blossom Pink" style="--sw:#D63384"><span
+            <button class="theme-swatch" data-theme="pink" title="Blossom Pink" style="--sw:#D63384"><span
                 class="swatch-dot" style="background:#D63384"></span>Blossom</button>
-            <button class="theme-swatch" data-theme="green" title="Forest Green" style="--sw:#2D6A4F"><span
+            <button class="theme-swatch active" data-theme="green" title="Forest Green" style="--sw:#2D6A4F"><span
                 class="swatch-dot" style="background:#2D6A4F"></span>Forest</button>
             <button class="theme-swatch" data-theme="blue" title="Ocean Blue" style="--sw:#1A6FA8"><span
                 class="swatch-dot" style="background:#1A6FA8"></span>Ocean</button>
@@ -74,6 +74,13 @@
         style="text-decoration: none; font-weight: 800; font-family: 'Nunito', sans-serif; background: var(--primary); color: white; padding: 6px 14px; border-radius: 20px; font-size: 0.9rem; transition: background 0.2s;">Login</a>
     </div>
   </nav>
+
+  <script>
+    (function () {
+      const saved = localStorage.getItem("speakup-theme") || "green";
+      document.documentElement.setAttribute("data-theme", saved);
+    })();
+  </script>
 
   <!-- Auth Script -->
   <script type="module">

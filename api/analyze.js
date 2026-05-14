@@ -67,19 +67,33 @@ export default async function handler(req, res) {
       // Continue with empty transcription — still do scoring
     }
 
-    // ── STEP 2: Score the transcription using Groq LLM ──────────────────────
-    const scoringPrompt = `You are an expert, encouraging English speech coach.
-The student was asked to speak about: "${topic || 'General speaking practice'}"
-Their speech transcription is: "${transcription || '(no transcription available)'}"
+    // ── STEP 1.5: Validate Transcription Length ──────────────────────────────
+    const cleanTranscription = transcription.trim();
+    const wordCount = cleanTranscription.split(/\s+/).filter(w => w.length > 0).length;
+    
+    if (wordCount < 3 || cleanTranscription.length < 10) {
+      return res.status(200).json({
+        fluency: 0,
+        clarity: 0,
+        confidence: 0,
+        feedback: "Hmm, that was a bit too short! To give you a good analysis, I need to hear a little more. Take a deep breath and try speaking for at least a few sentences.",
+        transcription: cleanTranscription
+      });
+    }
 
-Your philosophy: build confidence, reward natural expression, reduce fear of judgment.
+    // ── STEP 2: Score the transcription using Groq LLM ──────────────────────
+    const scoringPrompt = `You are an expert, incredibly warm, and encouraging English speech coach.
+The student was asked to speak about: "${topic || 'General speaking practice'}"
+Their speech transcription is: "${cleanTranscription || '(no transcription available)'}"
+
+Your philosophy: ALWAYS be incredibly warm, friendly, and highly motivating. Use encouraging language, cheer them on, and make them feel amazing about practicing. Reward effort, natural expression, and flow. However, if the speech is completely off-topic, just a few random words, or gibberish, score them strictly (e.g., 0-10) but gently and warmly encourage them to try speaking directly about the topic next time.
 Evaluate their speech and return ONLY a valid JSON object (no markdown, no extra text):
 {
   "fluency": <number 0-100, reward flow and continuity even with simple words>,
   "clarity": <number 0-100, focus on comprehensibility not perfect pronunciation>,
   "confidence": <number 0-100, reward effort and self-expression>,
-  "feedback": "<2 encouraging sentences: praise their effort, then give one gentle improvement tip>",
-  "transcription": "${transcription.replace(/"/g, '\\"')}"
+  "feedback": "<2-3 extremely encouraging and friendly sentences: warmly praise their effort, give one gentle improvement tip, and add a motivating cheer at the end>",
+  "transcription": "${cleanTranscription.replace(/"/g, '\\"')}"
 }`;
 
     const chatRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {

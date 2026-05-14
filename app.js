@@ -681,8 +681,21 @@ function closeModal() {
 
 let audioChunks = [];
 
+let analysisTimestamps = [];
+
 recordBtn.addEventListener("click", async () => {
   if (!isRecording) {
+    // ── RATE LIMIT CHECK ──
+    const now = Date.now();
+    // Keep only timestamps from the last 60 seconds
+    analysisTimestamps = analysisTimestamps.filter(t => now - t < 60000);
+    
+    if (analysisTimestamps.length >= 2) {
+      const waitSeconds = Math.ceil((60000 - (now - analysisTimestamps[0])) / 1000);
+      recordStatus.innerHTML = `<span style="color: #D4580A; font-weight: bold;">Whoa there, speedster! 🏃‍♂️</span><br>We love the enthusiasm, but let's focus on quality over quantity! Take a deep breath and prepare your next amazing speech. Please wait ${waitSeconds} seconds.`;
+      return;
+    }
+
     // Start
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -721,6 +734,9 @@ recordBtn.addEventListener("click", async () => {
           }
 
           try {
+            // Record this API call timestamp
+            analysisTimestamps.push(Date.now());
+
             const res = await fetch("/api/analyze", {
               method: "POST",
               headers: { "Content-Type": "application/json" },

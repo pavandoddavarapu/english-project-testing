@@ -508,15 +508,12 @@
     }
 
     .heatmap-wrapper {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
       overflow-x: auto;
-      padding-bottom: 8px;
+      overflow-y: visible;
+      padding: 12px;
       background: rgba(255,255,255,0.4);
       border: 1.5px solid var(--accent2);
       border-radius: 12px;
-      padding: 12px;
     }
 
     .heatmap-wrapper::-webkit-scrollbar { height: 6px; }
@@ -525,24 +522,26 @@
 
     .heatmap-grid {
       display: flex;
-      gap: 4px;
+      gap: 3px;
+      min-width: max-content;
     }
 
     .heatmap-col {
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 3px;
     }
 
     .heatmap-square {
-      width: 13px;
-      height: 13px;
-      border-radius: 4px;
-      background-color: rgba(214,51,132,0.08); /* Level 0 */
+      width: 11px;
+      height: 11px;
+      border-radius: 3px;
+      background-color: rgba(214,51,132,0.08);
       transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.2s;
       cursor: pointer;
       position: relative;
       border: 1px solid rgba(214,51,132,0.1);
+      flex-shrink: 0;
     }
 
     .heatmap-square:hover {
@@ -562,9 +561,11 @@
       justify-content: space-between;
       color: var(--text-muted);
       font-size: 0.75rem;
-      margin-top: 4px;
+      margin-top: 6px;
       font-weight: 800;
-      padding-inline: 4px;
+      padding-inline: 2px;
+      min-width: max-content;
+      width: 100%;
     }
 
     /* Recent AC */
@@ -741,7 +742,7 @@
 </head>
 <body>
 
-  <nav class="navbar">
+  <nav class="navbar" style="margin-bottom: 20px;">
     <div class="nav-brand">Speak Up! 🎤</div>
     
     <div style="display: flex; gap: 15px; align-items: center;">

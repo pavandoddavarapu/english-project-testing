@@ -102,7 +102,7 @@ export default async function handler(req, res) {
   if (req.method !== 'POST')   return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    const { idToken, uid, sessionData } = req.body || {};
+    const { idToken, uid, sessionData, displayName, email } = req.body || {};
 
     if (!idToken || !uid || !sessionData) {
       return res.status(400).json({ error: 'Missing idToken, uid, or sessionData' });
@@ -153,13 +153,23 @@ export default async function handler(req, res) {
     const updatedDates = [...new Set([...existingDates, todayISO])];
 
     // ── 5. Write everything back ──────────────────────────────────────────────
-    await fsPatch(uid, idToken, {
+    const isNewUser = !currentData || Object.keys(currentData).length === 0;
+    const writePayload = {
       aura_points:     (Number(currentData.aura_points) || 0) + 10,
       total_yaps:      (Number(currentData.total_yaps)  || 0) + 1,
       streak:           newStreak,
       practice_dates:   updatedDates,
       recent_sessions:  trimmedSessions,
-    });
+    };
+    // For brand-new users: also save profile fields so the dashboard can display them
+    if (isNewUser) {
+      writePayload.name       = displayName || 'Speaker';
+      writePayload.email      = email       || '';
+      writePayload.gender     = 'prefer_not';
+      writePayload.avatar_bg  = 'b6e3f4';
+      writePayload.created_at = now.toISOString();
+    }
+    await fsPatch(uid, idToken, writePayload);
 
     console.log(`[save-session] uid=${uid} mode=${sessionData.mode} score=${avgScore} streak=${newStreak}`);
     return res.status(200).json({ ok: true, streak: newStreak, aura: (Number(currentData.aura_points) || 0) + 10 });

@@ -1319,97 +1319,132 @@
       masteryEl.innerText = avgMastery;
     }
 
+    // ── Backend fallback: fetch user data via /api/get-user (bypasses ad blocker) ──
+    async function loadFromBackend(user) {
+      try {
+        console.log('[Dashboard] Fetching data from backend...');
+        const idToken = await user.getIdToken(true);
+        const res = await fetch('/api/get-user', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ idToken, uid: user.uid })
+        });
+        if (!res.ok) throw new Error(`/api/get-user returned ${res.status}`);
+        const { exists, data: userData } = await res.json();
+
+        if (exists && userData) {
+          applyUserData(user, userData);
+          console.log('[Dashboard] Backend load OK. Sessions:', (userData.recent_sessions||[]).length);
+        } else {
+          console.log('[Dashboard] No user doc yet (new user).');
+          renderZeros();
+        }
+      } catch (err) {
+        console.error('[Dashboard] Backend load failed:', err.message);
+        renderZeros();
+      }
+    }
+
+    // ── Apply a userData object to all dashboard elements ─────────────────────
+    function applyUserData(user, userData) {
+      _currentUserGender = userData.gender || 'prefer_not';
+      _currentAvatarBg   = userData.avatar_bg || 'b6e3f4';
+
+      var savedSeed = localStorage.getItem('speakup-avatar-seed');
+      if (!savedSeed) {
+        const seeds = getAvatarSeeds(_currentUserGender);
+        savedSeed = seeds[0];
+        localStorage.setItem('speakup-avatar-seed', savedSeed);
+      }
+      _currentAvatarSeed = savedSeed;
+
+      document.getElementById('profile-img').src =
+        `https://api.dicebear.com/7.x/notionists/svg?seed=${_currentAvatarSeed}&backgroundColor=${_currentAvatarBg}`;
+
+      const displayName = userData.name || user.displayName || 'Speaker';
+      const firstName   = displayName.split(' ')[0];
+      document.getElementById('profile-name').innerText    = displayName;
+      document.getElementById('welcome-title').innerText   = `Welcome back, ${firstName}! 👋`;
+
+      const auraPoints = userData.aura_points || 0;
+      const streak     = userData.streak      || 0;
+      document.getElementById('profile-aura').innerText   = auraPoints.toLocaleString();
+      document.getElementById('banner-aura').innerText    = auraPoints.toLocaleString();
+      document.getElementById('banner-streak').innerText  = streak;
+      document.getElementById('streak-count').innerText   = streak;
+
+      renderHeatmap(userData.practice_dates   || [], userData.total_yaps  || 0);
+      renderBadges(userData.practice_dates    || [], userData.aura_points  || 0);
+      renderSkillsProfile(userData.recent_sessions || []);
+      renderCloutAndDialects(userData);
+      renderRecentSessions(userData.recent_sessions || []);
+    }
+
+    // ── Render zeros (used when no data is available) ─────────────────────────
+    function renderZeros() {
+      document.getElementById('profile-aura').innerText  = '0';
+      document.getElementById('banner-aura').innerText   = '0';
+      document.getElementById('banner-streak').innerText = '0';
+      document.getElementById('streak-count').innerText  = '0';
+      renderHeatmap([], 0);
+      renderBadges([], 0);
+      renderSkillsProfile([]);
+      renderCloutAndDialects({});
+      renderRecentSessions([]);
+    }
+
     onAuthStateChanged(auth, async (user) => {
       if (user) {
-        // Update basic info IMMEDIATELY so it's not stuck on "Loading..."
-        document.getElementById('profile-img').src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}&backgroundColor=b6e3f4`;
-        document.getElementById('profile-name').innerText = user.displayName || 'Speaker';
+        // Show basic auth info immediately while data loads
+        document.getElementById('profile-name').innerText  = user.displayName || 'Speaker';
         document.getElementById('profile-email').innerText = user.email || '';
-        
-        // Fetch user data from Firestore in the background using onSnapshot
-        // onSnapshot with local cache enabled in firebase-config.js provides instant loads
-        try {
-          const docRef = doc(db, "users", user.uid);
-          
-          onSnapshot(docRef, { includeMetadataChanges: true }, (docSnap) => {
-            if (docSnap.exists()) {
-              const userData = docSnap.data();
-              
-              // Set global avatar variables so the picker works
-              _currentUserGender = userData.gender || 'prefer_not';
-              _currentAvatarBg = userData.avatar_bg || 'b6e3f4';
-              
-              // Initialize seed if not already picked
-              var savedSeed = localStorage.getItem('speakup-avatar-seed');
-              if (!savedSeed) {
-                const seeds = getAvatarSeeds(_currentUserGender);
-                savedSeed = seeds[0];
-                localStorage.setItem('speakup-avatar-seed', savedSeed);
-              }
-              _currentAvatarSeed = savedSeed;
-              
-              // Render Avatar
-              document.getElementById('profile-img').src = `https://api.dicebear.com/7.x/notionists/svg?seed=${_currentAvatarSeed}&backgroundColor=${_currentAvatarBg}`;
 
-              // Update name in case they have a custom one in DB
-              const displayName = userData.name || user.displayName || 'Speaker';
-              const firstName = displayName.split(' ')[0];
-              document.getElementById('profile-name').innerText = displayName;
-              document.getElementById('welcome-title').innerText = `Welcome back, ${firstName}! 👋`;
-              
-              const auraPoints = userData.aura_points || 0;
-              const streak = userData.streak || 0;
-              
-              document.getElementById('profile-aura').innerText = auraPoints.toLocaleString();
-              document.getElementById('banner-aura').innerText = auraPoints.toLocaleString();
-              document.getElementById('banner-streak').innerText = streak;
-              document.getElementById('streak-count').innerText = streak;
-              
-              // Render heatmap, badges, skills profile, clout and recent sessions
-              renderHeatmap(userData.practice_dates || [], userData.total_yaps || 0);
-              renderBadges(userData.practice_dates || [], userData.aura_points || 0);
-              renderSkillsProfile(userData.recent_sessions || []);
-              renderCloutAndDialects(userData);
-              renderRecentSessions(userData.recent_sessions || []);
-            } else {
-              // No doc found, user is new. Render 0s immediately.
-              document.getElementById('profile-aura').innerText = '0';
-              renderHeatmap([], 0);
-              renderBadges([], 0);
-              renderSkillsProfile([]);
-              renderCloutAndDialects({});
-              renderRecentSessions([]);
-              
-              // Auto-create firestore doc for new users in the background
-              if (!docSnap.metadata.fromCache) {
-                const userData = {
-                  name: user.displayName || 'Speaker',
-                  email: user.email || '',
-                  aura_points: 0,
-                  streak: 0,
-                  practice_dates: [],
-                  created_at: new Date()
-                };
-                setDoc(docRef, userData).catch(err => {
-                  console.error("Failed to auto-create user doc:", err);
-                });
-              }
+        let dataLoaded = false;
+
+        try {
+          const docRef = doc(db, 'users', user.uid);
+
+          // Try real-time Firestore listener first
+          onSnapshot(docRef, { includeMetadataChanges: true }, (docSnap) => {
+            dataLoaded = true;
+            if (docSnap.exists()) {
+              applyUserData(user, docSnap.data());
+
+              // Auto-create Firestore doc for brand new users (from confirmed network, not cache)
+            } else if (!docSnap.metadata.fromCache) {
+              setDoc(docRef, {
+                name:           user.displayName || 'Speaker',
+                email:          user.email       || '',
+                aura_points:    0,
+                streak:         0,
+                total_yaps:     0,
+                practice_dates: [],
+                recent_sessions:[],
+                gender:         'prefer_not',
+                avatar_bg:      'b6e3f4',
+                created_at:     new Date()
+              }).catch(e => console.warn('[Dashboard] setDoc failed:', e.message));
+              renderZeros();
             }
-          }, (error) => {
-            console.error("Error listening to user data:", error);
-            // Fallback if firestore rules block access or other error
-            document.getElementById('profile-aura').innerText = '0';
-            renderHeatmap([]);
-            renderBadges([], 0);
-            renderSkillsProfile([]);
-            renderCloutAndDialects({});
-            renderRecentSessions([]);
+          }, async (error) => {
+            // Firestore blocked (ad blocker) — fall back to backend
+            console.warn('[Dashboard] Firestore snapshot failed:', error.message);
+            if (!dataLoaded) await loadFromBackend(user);
           });
+
+          // Safety timeout: if Firestore hasn't responded in 4 seconds, use backend
+          setTimeout(async () => {
+            if (!dataLoaded) {
+              console.warn('[Dashboard] Firestore timeout — using backend fallback');
+              await loadFromBackend(user);
+            }
+          }, 4000);
+
         } catch (error) {
-          console.error("Error setting up snapshot:", error);
+          console.error('[Dashboard] Error setting up snapshot:', error);
+          await loadFromBackend(user);
         }
       } else {
-        // Not logged in! Redirect to login page
         window.location.href = 'login.html';
       }
     });

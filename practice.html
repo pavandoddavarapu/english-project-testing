@@ -466,7 +466,7 @@
       const res = await fetch('/api/save-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idToken, uid: user.uid, sessionData })
+        body: JSON.stringify({ idToken, uid: user.uid, sessionData, displayName: user.displayName || 'Speaker', email: user.email || '' })
       });
       if (!res.ok) {
         const txt = await res.text();

@@ -17,41 +17,197 @@ const PEXELS_KEY   = process.env.PEXELS_API_KEY;
 // ─── DYNAMIC QUERY GENERATOR ───────────────────────────────────────────────
 // Generates thousands of unique search combinations based on target themes
 
-const VOCAB = {
-  objects: ['teapot', 'backpack', 'camera', 'sneaker', 'coffee mug', 'book', 'plant', 'clock', 'chair', 'lamp', 'bicycle', 'guitar', 'headphones', 'sunglasses', 'watch', 'typewriter', 'vase'],
-  objMods: ['ceramic', 'leather', 'vintage', 'modern', 'colorful', 'minimalist', 'wooden', 'glass', 'metallic', 'retro', 'elegant'],
-  objCtx:  ['on plain background', 'isolated', 'still life', 'clean background', 'minimalism', 'hero shot', 'studio lighting'],
-
-  scenes:  ['park', 'kitchen', 'airport terminal', 'cafe', 'street market', 'train station', 'office', 'classroom', 'subway', 'shopping mall', 'festival', 'gym'],
-  scnMods: ['crowded', 'messy', 'busy', 'action packed', 'chaotic', 'bustling', 'lively', 'energetic'],
-
-  situations: ['people working together', 'friends laughing', 'musician playing live', 'family dinner', 'sports match', 'people talking', 'students studying', 'team meeting', 'couple walking', 'kids playing', 'customer at a cafe', 'person reading a book'],
-
-  styles:  ['photorealistic', 'real photography', 'high quality photo', 'documentary photography']
-};
+const PICTURE_TALK_PROMPTS = [
+    "Cozy bedroom with rain outside",
+    "Warm cafe corner with books",
+    "Study desk with laptop and coffee",
+    "Messy student room",
+    "Balcony with tea during sunset",
+    "Rainy street at night",
+    "Small town road in evening",
+    "Train station with empty platform",
+    "Night market with warm lights",
+    "Bus stop during heavy rain",
+    "Old city alley with lanterns",
+    "Mountain road during sunrise",
+    "Beach with chair and umbrella",
+    "Tent beside a lake",
+    "Campfire in forest at night",
+    "Picnic setup in park",
+    "Boat near calm river",
+    "Hammock between trees",
+    "Snow cabin in mountains",
+    "Fishing dock during sunset",
+    "Bicycle near mountain trail",
+    "Open diary on wooden desk",
+    "Half-finished cup of coffee",
+    "Open laptop at midnight",
+    "Forgotten umbrella on street",
+    "Packed suitcase near door",
+    "Books scattered on floor",
+    "Window with rain drops",
+    "Lights glowing in dark room",
+    "Old bookshelf with warm lighting",
+    "Gaming setup with LED lights",
+    "Kitchen late at night",
+    "Living room with fireplace",
+    "Artist workspace with paintings",
+    "Messy kitchen after cooking",
+    "Garage filled with random tools",
+    "Creative art studio",
+    "Supermarket shopping aisle",
+    "Bookstore reading corner",
+    "Festival street decorations",
+    "Backpack with travel items",
+    "Camping gear near tent",
+    "Desk full of notebooks",
+    "Vintage bicycle near cafe",
+    "Empty cinema hall",
+    "Rooftop with city lights",
+    "Sunset view from balcony",
+    "Cloudy sky above city",
+    "Neon street during rain",
+    "Train window mountain view",
+    "Ocean waves during sunrise",
+    "Street filled with autumn leaves",
+    "Small bakery with warm lights",
+    "Wooden bridge in forest",
+    "Quiet library corner",
+    "Cozy coffee shop during rain",
+    "Laptop beside window",
+    "Vinyl records on table",
+    "Morning breakfast table",
+    "Street musician setup",
+    "Travel map on desk",
+    "Polaroid photos on wall",
+    "Empty classroom after school",
+    "Candles and books aesthetic",
+    "Tea stall during monsoon",
+    "Street food market",
+    "Park bench under tree",
+    "Garden with flowers and lights",
+    "City skyline at night",
+    "Desert road trip scene",
+    "Road with cherry blossom trees",
+    "Flower shop interior",
+    "Music room with guitar",
+    "Retro arcade room",
+    "Corner desk with plants",
+    "Boat dock during fog",
+    "Mountain campsite morning view",
+    "Lighthouse near ocean",
+    "Rainy car window view",
+    "Wooden cabin interior",
+    "Open notebook beside coffee",
+    "Library table with lamp",
+    "Cafe table beside window",
+    "Street crossing in Tokyo style",
+    "Night highway from car",
+    "Countryside road with bicycle",
+    "Lantern-lit street",
+    "Abandoned train tracks",
+    "Rain puddles reflecting lights",
+    "Picnic blanket under tree",
+    "Village market morning scene",
+    "Empty airport waiting area",
+    "Workspace with dual monitors",
+    "Minimalist room aesthetic",
+    "Old camera on wooden table",
+    "Forest trail during fog",
+    "Rooftop movie night setup",
+    "Chess board in cafe",
+    "Raincoat hanging near door",
+    "Open suitcase with clothes",
+    "Firewood beside campfire",
+    "Snowfall outside cabin window",
+    "Moonlit beach scene",
+    "Wooden dock with canoe",
+    "Street with bicycles parked",
+    "Tiny bookstore alley",
+    "Vintage train compartment",
+    "Candlelight dinner setup",
+    "Laptop and headphones on desk",
+    "Quiet subway station",
+    "Rainy evening convenience store",
+    "Bedroom with fairy lights",
+    "Cozy attic workspace",
+    "Lake surrounded by mountains",
+    "Roadside diner at night",
+    "Warm soup on table",
+    "Wooden swing in garden",
+    "Cloudy weather from apartment window",
+    "Empty parking lot during rain",
+    "Street cafe during winter",
+    "Piano in dimly lit room",
+    "Camping van near forest",
+    "Coffee machine in kitchen",
+    "Old typewriter on desk",
+    "Night sky full of stars",
+    "Art supplies on wooden table",
+    "Festival lanterns hanging above street",
+    "Morning sunlight through curtains",
+    "Bridge over calm river",
+    "Hidden cafe in alley",
+    "Movie projector setup",
+    "Street after rainfall",
+    "Cozy reading nook",
+    "Tea and cookies on table",
+    "Forest cabin with smoke chimney",
+    "Bicycle basket with flowers",
+    "Rainy rooftop city view",
+    "Sunlight in quiet library",
+    "Notebook with handwritten notes",
+    "Small garden cafe",
+    "Winter street with lights",
+    "Clouds visible from airplane window",
+    "Countryside train crossing",
+    "Desk setup with plants",
+    "Night camping under stars",
+    "Vintage radio beside window",
+    "Messy creative workspace",
+    "Hiking shoes near backpack",
+    "Cafe menu board aesthetic",
+    "Wooden staircase with lights",
+    "Street with colorful umbrellas",
+    "Quiet beach during evening",
+    "Open terrace with plants",
+    "Reading chair beside lamp",
+    "Train passing through snowy mountains",
+    "Indoor plants near sunny window",
+    "Street lined with small shops",
+    "Notebook and fountain pen",
+    "Warm blanket and coffee setup",
+    "Foggy morning road",
+    "Skateboard near staircase",
+    "Old town during sunset",
+    "Music headphones beside laptop",
+    "Ice cream truck near beach",
+    "Cooking ingredients on kitchen counter",
+    "Mountain lake reflection",
+    "Cozy rainy afternoon room",
+    "Open sketchbook on desk",
+    "Rural village evening scene",
+    "Decorated room during festival",
+    "Road trip supplies in car",
+    "Quiet rooftop during sunset",
+    "Wooden cafe aesthetic interior",
+    "Old lantern beside books",
+    "Seaside cafe during morning",
+    "Cabin with glowing windows",
+    "Photography camera setup",
+    "Street market with fruits",
+    "Long empty highway",
+    "Comfortable sofa with blanket",
+    "Warm lights in bookstore",
+    "Travel backpack beside train seat"
+];
 
 function pick(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
 function generateDynamicQuery() {
-  const type = Math.floor(Math.random() * 3); // Now 3 categories: Objects, Scenes, Situations
-  let query = '';
-  
-  if (type === 0) {
-    query = `${pick(VOCAB.objMods)} ${pick(VOCAB.objects)} ${pick(VOCAB.objCtx)}`;
-  } else if (type === 1) {
-    query = `${pick(VOCAB.scnMods)} ${pick(VOCAB.scenes)}`;
-  } else {
-    query = pick(VOCAB.situations);
-  }
-  
-  // 30% chance to append a specific style constraint
-  if (Math.random() < 0.3) {
-    query += ` ${pick(VOCAB.styles)}`;
-  }
-  
-  return query;
+  return pick(PICTURE_TALK_PROMPTS);
 }
 
 const BATCH_SIZE        = 75;   // total images to hold in cache
@@ -207,24 +363,7 @@ const FALLBACK_IMAGES = [
   { url: 'https://images.unsplash.com/photo-1512152272829-e3139592d56f?w=1200&h=800&fit=crop&auto=format&q=80', alt: 'fast food burger', category: 'Food', color: '#e07b39' },
   { url: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=1200&h=800&fit=crop&auto=format&q=80', alt: 'white smart watch', category: 'Simple Object', color: '#e0e0e0' },
   { url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=1200&h=800&fit=crop&auto=format&q=80', alt: 'headphones on desk', category: 'Simple Object', color: '#2c3e50' },
-  { url: 'https://images.unsplash.com/photo-1544816155-12df9643f363?w=1200&h=800&fit=crop&auto=format&q=80', alt: 'coffee mug', category: 'Simple Object', color: '#d35400' },
-  
-  // Busy Scenes
-  { url: 'https://images.unsplash.com/photo-1517783999520-f068d7431a60?w=1200&h=800&fit=crop&auto=format&q=80', alt: 'crowded street scene', category: 'Busy Scene', color: '#34495e' },
-  { url: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=1200&h=800&fit=crop&auto=format&q=80', alt: 'messy desk and students', category: 'Busy Scene', color: '#3498db' },
-  { url: 'https://images.unsplash.com/photo-1506012787146-f92b2d7d6d96?w=1200&h=800&fit=crop&auto=format&q=80', alt: 'busy airport terminal', category: 'Busy Scene', color: '#1a2a4a' },
-  { url: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=1200&h=800&fit=crop&auto=format&q=80', alt: 'people in a cafe', category: 'Busy Scene', color: '#8B6F47' },
-  { url: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&h=800&fit=crop&auto=format&q=80', alt: 'busy open plan office', category: 'Busy Scene', color: '#bdc3c7' },
-  
-  // Situations
-  { url: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1200&h=800&fit=crop&auto=format&q=80', alt: 'group of people working together', category: 'Situation', color: '#2c3e50' },
-  { url: 'https://images.unsplash.com/photo-1530099486328-e021101a494a?w=1200&h=800&fit=crop&auto=format&q=80', alt: 'friends laughing', category: 'Situation', color: '#f39c12' },
-  { url: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=1200&h=800&fit=crop&auto=format&q=80', alt: 'musician playing guitar', category: 'Situation', color: '#8e44ad' },
-  { url: 'https://images.unsplash.com/photo-1542204165-65bf26472b9b?w=1200&h=800&fit=crop&auto=format&q=80', alt: 'photography studio team', category: 'Situation', color: '#34495e' },
-  { url: 'https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=1200&h=800&fit=crop&auto=format&q=80', alt: 'people in a meeting', category: 'Situation', color: '#95a5a6' },
-  { url: 'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=1200&h=800&fit=crop&auto=format&q=80', alt: 'picnic in park', category: 'Situation', color: '#27ae60' },
-  { url: 'https://images.unsplash.com/photo-1543269865-cbf427effbad?w=1200&h=800&fit=crop&auto=format&q=80', alt: 'students in classroom', category: 'Situation', color: '#f1c40f' },
-  { url: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1200&h=800&fit=crop&auto=format&q=80', alt: 'university students laughing', category: 'Situation', color: '#e67e22' }
+  { url: 'https://images.unsplash.com/photo-1544816155-12df9643f363?w=1200&h=800&fit=crop&auto=format&q=80', alt: 'coffee mug', category: 'Simple Object', color: '#d35400' }
 ];
 
 let globalFallbackIdx = Math.floor(Math.random() * FALLBACK_IMAGES.length);

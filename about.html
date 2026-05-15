@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="green">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About Speak Up! - Master English Speaking</title>
+  <meta name="description"
+    content="Learn how Speak Up! helps budding learners improve English fluency through features, streaks, and AI analysis.">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&family=Pacifico&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script>(function () { const t = localStorage.getItem("speakup-theme") || "green"; document.documentElement.setAttribute("data-theme", t); })();</script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    /* ── NAVBAR ── */
+    .lp-nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 40px;
+      background: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(16px);
+      border-bottom: 1.5px solid var(--accent2);
+      box-shadow: 0 4px 24px var(--shadow);
+    }
+
+    [data-theme="dark"] .lp-nav {
+      background: rgba(30, 30, 46, 0.7);
+    }
+
+    .lp-brand {
+      font-family: 'Pacifico', cursive;
+      font-size: 1.6rem;
+      color: var(--primary);
+      text-shadow: 2px 2px 0 var(--accent2);
+      text-decoration: none;
+    }
+
+    .lp-nav-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    @media (max-width: 600px) {
+      .lp-nav {
+        padding: 10px 16px;
+      }
+      .lp-nav-right {
+        gap: 10px;
+        overflow-x: auto;
+        white-space: nowrap;
+        padding-bottom: 4px;
+        -webkit-overflow-scrolling: touch;
+      }
+      .lp-nav-right::-webkit-scrollbar {
+        height: 0px;
+      }
+    }
+
+    .btn-nav-login {
+      padding: 9px 22px;
+      border-radius: 99px;
+      font-weight: 800;
+      font-size: 0.9rem;
+      border: 2px solid var(--primary);
+      color: var(--primary);
+      background: transparent;
+      text-decoration: none;
+      transition: all .2s;
+    }
+
+    .btn-nav-login:hover {
+      background: var(--primary);
+      color: #fff;
+      transform: translateY(-2px);
+    }
+
+    .btn-nav-join {
+      padding: 10px 24px;
+      border-radius: 99px;
+      font-weight: 800;
+      font-size: 0.9rem;
+      background: var(--primary);
+      color: #fff;
+      text-decoration: none;
+      box-shadow: 0 6px 20px var(--shadow-lg);
+      transition: all .2s;
+    }
+
+    .btn-nav-join:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+    }
+
+    /* ── ABOUT HERO ── */
+    .about-hero {
+      padding: 130px 24px 60px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg, var(--bg) 0%, var(--accent3) 100%);
+    }
+
+    .about-hero-blob {
+      position: absolute !important;
+      border-radius: 50%;
+      filter: blur(90px);
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.25;
+    }
+
+    .blob-a {
+      width: 500px;
+      height: 500px;
+      background: var(--primary);
+      top: -50px;
+      left: -100px;
+    }
+
+    .blob-b {
+      width: 600px;
+      height: 600px;
+      background: var(--accent);
+      bottom: -150px;
+      right: -100px;
+    }
+
+    .about-hero > :not(.about-hero-blob) {
+      position: relative;
+      z-index: 1;
+    }
+
+    .beta-badge {
+      display: inline-block;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 800;
+      font-size: 0.85rem;
+      padding: 6px 16px;
+      border-radius: 99px;
+      margin-bottom: 24px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      box-shadow: 0 4px 12px var(--shadow);
+    }
+
+    .about-title {
+      font-family: 'Fredoka One', cursive;
+      font-size: clamp(2.8rem, 6vw, 4.5rem);
+      color: var(--text);
+      line-height: 1.1;
+      margin-bottom: 24px;
+      max-width: 900px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .about-title .highlight {
+      color: var(--primary);
+      text-shadow: 3px 3px 0 var(--accent2);
+    }
+
+    .about-sub {
+      font-size: 1.25rem;
+      color: var(--text-muted);
+      font-weight: 700;
+      max-width: 650px;
+      line-height: 1.7;
+      margin-bottom: 40px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* ── VALUE PROPOSITION ── */
+    .value-sec {
+      padding: 100px 24px;
+      background: var(--white);
+      position: relative;
+    }
+
+    [data-theme="dark"] .value-sec {
+      background: var(--bg-card);
+    }
+
+    .sec-header {
+      text-align: center;
+      margin-bottom: 70px;
+    }
+
+    .sec-eyebrow {
+      font-size: 0.85rem;
+      font-weight: 900;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--primary);
+      margin-bottom: 12px;
+    }
+
+    .sec-title {
+      font-family: 'Fredoka One', cursive;
+      font-size: clamp(2.2rem, 5vw, 3.2rem);
+      color: var(--text);
+      margin-bottom: 16px;
+    }
+
+    .split-layout {
+      display: flex;
+      align-items: center;
+      gap: 60px;
+      max-width: 1100px;
+      margin: 0 auto 80px;
+    }
+
+    .split-layout.reverse {
+      flex-direction: row-reverse;
+    }
+
+    .split-content {
+      flex: 1;
+    }
+
+    .split-content h3 {
+      font-family: 'Fredoka One', cursive;
+      font-size: 2rem;
+      color: var(--primary);
+      margin-bottom: 20px;
+    }
+
+    .split-content p {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      line-height: 1.8;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+
+    .split-visual {
+      flex: 1;
+      position: relative;
+    }
+
+    .visual-box {
+      background: var(--bg);
+      border: 3px solid var(--accent2);
+      border-radius: 32px;
+      padding: 40px;
+      text-align: center;
+      box-shadow: 0 24px 48px var(--shadow-lg);
+      transform: rotate(-2deg);
+      transition: transform 0.4s;
+    }
+
+    .split-layout.reverse .visual-box {
+      transform: rotate(2deg);
+    }
+
+    .visual-box:hover {
+      transform: rotate(0deg) scale(1.02);
+    }
+
+    .visual-icon {
+      font-size: 5rem;
+      margin-bottom: 20px;
+      display: inline-block;
+      animation: floatAnim 4s ease-in-out infinite;
+    }
+
+    /* ── GAMIFICATION SECTION ── */
+    .game-sec {
+      padding: 100px 24px;
+      background: var(--bg);
+      text-align: center;
+    }
+
+    .streak-showcase {
+      background: var(--white);
+      max-width: 900px;
+      margin: 0 auto;
+      border-radius: 32px;
+      padding: 50px;
+      border: 3px solid var(--accent2);
+      box-shadow: 0 20px 50px var(--shadow-lg);
+      position: relative;
+      overflow: hidden;
+    }
+
+    [data-theme="dark"] .streak-showcase {
+      background: var(--bg-card);
+    }
+
+    .streak-flame {
+      font-size: 6rem;
+      margin-bottom: 20px;
+      filter: drop-shadow(0 10px 20px rgba(255, 100, 0, 0.4));
+      animation: pulse 2s infinite;
+    }
+
+    .streak-showcase h3 {
+      font-family: 'Fredoka One', cursive;
+      font-size: 2.5rem;
+      color: var(--text);
+      margin-bottom: 20px;
+    }
+
+    .streak-showcase p {
+      font-size: 1.15rem;
+      color: var(--text-muted);
+      line-height: 1.7;
+      font-weight: 600;
+      max-width: 600px;
+      margin: 0 auto 30px;
+    }
+
+    .streak-steps {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .s-step {
+      background: var(--bg);
+      border: 2px solid var(--accent2);
+      padding: 20px;
+      border-radius: 20px;
+      flex: 1;
+      min-width: 200px;
+      text-align: center;
+      font-weight: 700;
+      color: var(--primary-dark);
+    }
+
+    .s-step span {
+      display: block;
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+
+    /* ── FOOTER ── */
+    .lp-footer {
+      padding: 60px 40px 40px;
+      background: var(--bg-card);
+      border-top: 1.5px solid var(--accent2);
+    }
+
+    .footer-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 24px;
+    }
+
+    .footer-brand-big {
+      font-family: 'Pacifico', cursive;
+      font-size: 2rem;
+      color: var(--primary);
+    }
+
+    .footer-tagline {
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: .9rem;
+      margin-top: 6px;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 24px;
+    }
+
+    .footer-links a {
+      color: var(--text-muted);
+      font-weight: 700;
+      text-decoration: none;
+      font-size: .9rem;
+      transition: color .2s;
+    }
+
+    .footer-links a:hover {
+      color: var(--primary);
+    }
+
+    .footer-copy {
+      text-align: center;
+      color: var(--text-muted);
+      font-weight: 700;
+      font-size: .85rem;
+      padding-top: 32px;
+      margin-top: 32px;
+      border-top: 1.5px solid var(--accent2);
+    }
+
+    /* ── CTA BANNER ── */
+    .cta-sec {
+      padding: 90px 24px;
+      background: var(--primary);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cta-sec h2 {
+      font-family: 'Fredoka One', cursive;
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      color: #fff;
+      margin-bottom: 16px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .btn-cta-white {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 18px 48px;
+      background: #fff;
+      color: var(--primary);
+      border-radius: 99px;
+      font-weight: 800;
+      font-size: 1.05rem;
+      text-decoration: none;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, .2);
+      transition: all .3s cubic-bezier(.34, 1.56, .64, 1);
+      position: relative;
+      z-index: 1;
+    }
+
+    .btn-cta-white:hover {
+      transform: translateY(-5px) scale(1.05);
+      box-shadow: 0 20px 48px rgba(0, 0, 0, .25);
+    }
+
+    @keyframes floatAnim {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-15px) rotate(5deg); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    @media(max-width: 900px) {
+      .split-layout, .split-layout.reverse {
+        flex-direction: column;
+        text-align: center;
+      }
+      .visual-box {
+        transform: rotate(0) !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="lp-nav">
+    <a href="index.html" class="lp-brand">Speak Up!</a>
+    <div class="lp-nav-right">
+      <div class="theme-switcher" id="theme-switcher">
+        <button class="theme-toggle-btn" id="theme-toggle-btn" title="Change Theme">
+          <span class="theme-icon">🎨</span>
+          <span class="theme-label">Theme</span>
+          <span class="theme-arrow">▾</span>
+        </button>
+        <div class="theme-dropdown hidden" id="theme-dropdown">
+          <div class="theme-dropdown-title">Choose a Theme</div>
+          <div class="theme-grid">
+            <button class="theme-swatch" data-theme="pink" style="--sw:#D63384"><span class="swatch-dot" style="background:#D63384"></span>Blossom</button>
+            <button class="theme-swatch active" data-theme="green" style="--sw:#2D6A4F"><span class="swatch-dot" style="background:#2D6A4F"></span>Forest</button>
+            <button class="theme-swatch" data-theme="blue" style="--sw:#1A6FA8"><span class="swatch-dot" style="background:#1A6FA8"></span>Ocean</button>
+            <button class="theme-swatch" data-theme="purple" style="--sw:#7B2FBE"><span class="swatch-dot" style="background:#7B2FBE"></span>Royal</button>
+            <button class="theme-swatch" data-theme="orange" style="--sw:#D4580A"><span class="swatch-dot" style="background:#D4580A"></span>Sunset</button>
+            <button class="theme-swatch" data-theme="teal" style="--sw:#0D9488"><span class="swatch-dot" style="background:#0D9488"></span>Teal</button>
+            <button class="theme-swatch" data-theme="dark" style="--sw:#1E1E2E"><span class="swatch-dot" style="background:#1E1E2E"></span>Dark</button>
+          </div>
+        </div>
+      </div>
+      <div id="nav-auth-links" style="display:flex;gap:12px;align-items:center;">
+        <a href="about.html" style="font-weight: 800; font-size: 0.95rem; color: var(--primary); text-decoration: none; margin-right: 8px;">About</a>
+        <a href="login.html" class="btn-nav-login">Login</a>
+        <a href="signup.html" class="btn-nav-join">Join Free 🚀</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO SECTION -->
+  <header class="about-hero">
+    <div class="about-hero-blob blob-a"></div>
+    <div class="about-hero-blob blob-b"></div>
+    <div class="beta-badge">AI is in Beta</div>
+    <h1 class="about-title">Your Journey to <span class="highlight">Fluent English</span> Starts Here</h1>
+    <p class="about-sub">We believe that speaking confidently shouldn't feel like a chore. Speak Up! is designed to help budding learners practice, make mistakes, and grow every single day using the power of AI.</p>
+  </header>
+
+  <!-- HOW IT HELPS -->
+  <section class="value-sec">
+    <div class="sec-header">
+      <div class="sec-eyebrow">✦ Why We Built This</div>
+      <h2 class="sec-title">Empowering Budding Learners</h2>
+    </div>
+
+    <div class="split-layout">
+      <div class="split-content">
+        <h3>Overcome the Fear of Speaking</h3>
+        <p>Many learners understand English perfectly but freeze when it's time to talk. Speak Up! provides a completely judgment-free zone. You practice alone with our AI, so you can stumble, stutter, and try again without any embarrassment.</p>
+        <p>Our platform simulates real-world scenarios, from casual Picture Talks to intense Interview Prep, so you're ready when it actually counts.</p>
+      </div>
+      <div class="split-visual">
+        <div class="visual-box">
+          <span class="visual-icon">🛡️</span>
+          <h4 style="font-family: 'Fredoka One'; font-size: 1.5rem; color: var(--primary);">Safe & Private</h4>
+          <p style="color: var(--text-muted); font-weight: 700; margin-top: 10px;">Just you and the AI</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="split-layout reverse">
+      <div class="split-content">
+        <h3>Instant, Actionable Feedback</h3>
+        <p>Waiting for a teacher to correct you is a thing of the past. The moment you finish speaking, our advanced AI analyzes your audio.</p>
+        <p>You get instant scores on <strong>Fluency</strong>, <strong>Clarity</strong>, and <strong>Confidence</strong>, along with a detailed transcript and actionable advice on grammar and vocabulary.</p>
+      </div>
+      <div class="split-visual">
+        <div class="visual-box">
+          <span class="visual-icon">📊</span>
+          <h4 style="font-family: 'Fredoka One'; font-size: 1.5rem; color: var(--primary);">Real-time Scoring</h4>
+          <p style="color: var(--text-muted); font-weight: 700; margin-top: 10px;">Know exactly how you did</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DASHBOARD & STREAKS -->
+  <section class="game-sec">
+    <div class="sec-header">
+      <div class="sec-eyebrow">✦ Gamified Progress</div>
+      <h2 class="sec-title">The Dashboard & Streaks</h2>
+    </div>
+
+    <div class="streak-showcase">
+      <div class="streak-flame">🔥</div>
+      <h3>Fuel Your Motivation</h3>
+      <p>Consistency is the secret to language fluency. That's why your Dashboard is built around the concept of Streaks and Aura Points.</p>
+      
+      <div class="streak-steps">
+        <div class="s-step">
+          <span>🎤</span>
+          Complete a Session
+        </div>
+        <div class="s-step">
+          <span>📈</span>
+          Streak Goes Up +1
+        </div>
+        <div class="s-step">
+          <span>✨</span>
+          Earn Aura Points
+        </div>
+      </div>
+
+      <p style="margin-top: 30px; margin-bottom: 0;">
+        <strong>How it works:</strong> Every time you hit record, speak your mind, and submit your session for AI analysis, you instantly secure your daily streak. Watching that fire emoji go up day by day is the ultimate motivation hack!
+      </p>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-sec">
+    <h2>Ready to start your streak? 🚀</h2>
+    <br>
+    <a href="signup.html" class="btn-cta-white">Join Free Today</a>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="lp-footer">
+    <div class="footer-inner">
+      <div>
+        <div class="footer-brand-big">Speak Up!</div>
+        <div class="footer-tagline">The world is waiting to hear you. 🌍</div>
+      </div>
+      <div class="footer-links">
+        <a href="about.html" style="color: var(--primary);">About</a>
+        <a href="login.html">Login</a>
+        <a href="signup.html">Sign Up</a>
+        <a href="practice.html">Practice</a>
+        <a href="genz-streak-test.html">Dashboard</a>
+      </div>
+    </div>
+    <div class="footer-copy">© 2026 Speak Up! Built with ❤️ for English learners everywhere.</div>
+  </footer>
+
+  <!-- THEME SWITCHER SCRIPT -->
+  <script>
+    (function () {
+      const btn = document.getElementById("theme-toggle-btn");
+      const dd = document.getElementById("theme-dropdown");
+      const sw = document.querySelectorAll(".theme-swatch");
+      const COLORS = { pink: "#D63384", green: "#2D6A4F", blue: "#1A6FA8", purple: "#7B2FBE", orange: "#D4580A", teal: "#0D9488", dark: "#C084FC" };
+
+      function apply(theme) {
+        document.documentElement.setAttribute("data-theme", theme);
+        localStorage.setItem("speakup-theme", theme);
+        btn.style.borderColor = (COLORS[theme] || COLORS.pink) + "80";
+      }
+      function init() {
+        const saved = localStorage.getItem("speakup-theme") || "pink";
+        sw.forEach(s => s.classList.toggle("active", s.dataset.theme === saved));
+        apply(saved);
+      }
+      btn.addEventListener("click", e => {
+        e.stopPropagation();
+        const open = !dd.classList.contains("hidden");
+        dd.classList.toggle("hidden", open);
+        btn.classList.toggle("open", !open);
+      });
+      document.addEventListener("click", e => {
+        if (!e.target.closest("#theme-switcher")) { dd.classList.add("hidden"); btn.classList.remove("open"); }
+      });
+      sw.forEach(s => s.addEventListener("click", () => {
+        apply(s.dataset.theme);
+        sw.forEach(x => x.classList.remove("active"));
+        s.classList.add("active");
+        setTimeout(() => { dd.classList.add("hidden"); btn.classList.remove("open"); }, 200);
+      }));
+      init();
+    })();
+  </script>
+
+  <!-- AUTH SCRIPT -->
+  <script type="module">
+    import { auth } from './firebase-config.js';
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        document.getElementById('nav-auth-links').innerHTML = `
+          <a href="genz-streak-test.html" class="btn-nav-login">Dashboard</a>
+          <a href="practice.html" class="btn-nav-join">Practice 🎤</a>`;
+      }
+    });
+  </script>
+</body>
+</html>

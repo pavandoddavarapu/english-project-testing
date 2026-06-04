@@ -1,5 +1,5 @@
-// v4 — added in-browser Whisper (Transformers.js) + CDN passthrough fixes
-const CACHE_NAME = 'speakup-cache-v4';
+// v5 — updated dark theme styling (LeetCode style) cache bust
+const CACHE_NAME = 'speakup-cache-v5';
 
 const ASSETS_TO_CACHE = [
   './',

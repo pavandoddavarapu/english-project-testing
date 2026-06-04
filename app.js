@@ -56,6 +56,82 @@ let mediaRecorder = null;
 let confettiAnimId = null;
 let confettiParticles = [];
 
+// ── IN-BROWSER WHISPER (Transformers.js) ──────────────────────────────────
+// Runs Whisper speech-to-text inside the user's browser.
+// No API calls, no rate limits, completely free.
+let whisperWorker = null;
+let whisperReady = false; // true once the model is fully loaded
+let whisperLoading = false;
+
+function initWhisperWorker() {
+  try {
+    // Module workers need type:'module' so Transformers.js ESM imports work.
+    whisperWorker = new Worker('./whisper-worker.js', { type: 'module' });
+
+    // Global listener ONLY handles model lifecycle events (loading, progress, ready, error).
+    // It intentionally does NOT handle 'complete' or 'transcribing' — those are handled
+    // exclusively by the per-request promise inside the recording stop handler.
+    whisperWorker.addEventListener('message', (e) => {
+      const { type, message, progress, file } = e.data;
+      if (type === 'loading')  { whisperLoading = true;  console.log('[Whisper]', message); }
+      if (type === 'progress') { console.log(`[Whisper] Downloading ${file}: ${progress}%`); }
+      if (type === 'ready')    { whisperReady = true; whisperLoading = false; console.log('[Whisper] ✅ Model ready — transcription is free!'); }
+      // Only set whisperReady=false for errors during the LOAD phase.
+      // Errors during transcription are handled by the per-request promise.
+      if (type === 'error' && !whisperReady) { whisperLoading = false; console.warn('[Whisper] Load error:', e.data.error); }
+    });
+
+    // Start loading the model immediately in the background.
+    // By the time the user finishes speaking, it will likely be ready.
+    whisperWorker.postMessage({ type: 'load' });
+  } catch (err) {
+    console.warn('[Whisper] Could not start worker (likely unsupported browser):', err);
+    whisperWorker = null;
+  }
+}
+
+// Convert a recorded audio Blob → Float32Array at 16 kHz (what Whisper expects).
+// Uses a separate AudioContext (whisperAudioCtx) to avoid conflicting with the
+// global audioCtx used by sound effects (playTick, playWhoosh, playDing).
+async function audioBlobToFloat32(blob) {
+  // Guard: reject empty blobs before they crash the AudioContext decoder
+  if (!blob || blob.size === 0) {
+    throw new Error('Audio blob is empty — nothing was recorded.');
+  }
+
+  const arrayBuffer = await blob.arrayBuffer();
+
+  // Use a SEPARATE AudioContext — never reuse the global audioCtx which is
+  // shared with the sound effects system and may be in a different state.
+  const whisperAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  let decoded;
+  try {
+    decoded = await whisperAudioCtx.decodeAudioData(arrayBuffer);
+  } finally {
+    // Always close this temporary context to release the OS audio handle
+    whisperAudioCtx.close();
+  }
+
+  // Guard: zero-duration audio would crash OfflineAudioContext with length=0
+  if (!decoded || decoded.duration < 0.1) {
+    throw new Error('Recording too short to process (less than 0.1 seconds).');
+  }
+
+  // Resample to exactly 16 kHz using OfflineAudioContext.
+  const TARGET_SR = 16000;
+  const frameCount = Math.ceil(decoded.duration * TARGET_SR);
+  const offlineCtx = new OfflineAudioContext(1, frameCount, TARGET_SR);
+  const source = offlineCtx.createBufferSource();
+  source.buffer = decoded;
+  source.connect(offlineCtx.destination);
+  source.start(0);
+  const resampled = await offlineCtx.startRendering();
+  return resampled.getChannelData(0);
+}
+
+// Kick off the worker as soon as the page loads.
+initWhisperWorker();
+
 // ─── AI CONFIG & FILTER STATE ───────────────────────────
 // Keys are now securely stored in Vercel Environment Variables
 const TODAY = new Date().toISOString().slice(0, 10);
@@ -687,100 +763,132 @@ recordBtn.addEventListener("click", async () => {
   if (!isRecording) {
     // ── RATE LIMIT CHECK ──
     const now = Date.now();
-    // Keep only timestamps from the last 60 seconds
     analysisTimestamps = analysisTimestamps.filter(t => now - t < 60000);
-    
+
     if (analysisTimestamps.length >= 2) {
       const waitSeconds = Math.ceil((60000 - (now - analysisTimestamps[0])) / 1000);
-      recordStatus.innerHTML = `<span style="color: #D4580A; font-weight: bold;">Whoa there, speedster! 🏃‍♂️</span><br>We love the enthusiasm, but let's focus on quality over quantity! Take a deep breath and prepare your next amazing speech. Please wait ${waitSeconds} seconds.`;
+      recordStatus.innerHTML = `<span style="color: #D4580A; font-weight: bold;">Whoa there, speedster! 🏃‍♂️</span><br>We love the enthusiasm, but let’s focus on quality over quantity! Take a deep breath and prepare your next amazing speech. Please wait ${waitSeconds} seconds.`;
       return;
     }
 
-    // Start
+    // ── START RECORDING ──
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       mediaRecorder = new MediaRecorder(stream);
       audioChunks = [];
-      mediaRecorder.addEventListener("dataavailable", event => {
-        audioChunks.push(event.data);
-      });
-      
+      mediaRecorder.addEventListener("dataavailable", event => { audioChunks.push(event.data); });
+
       mediaRecorder.addEventListener("stop", async () => {
         const audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
-        
-        // Convert Blob to Base64
-        const reader = new FileReader();
-        reader.readAsDataURL(audioBlob);
-        reader.onloadend = async () => {
-          const base64data = reader.result.split(',')[1];
-          
-          let currentTopic = topicMain ? topicMain.innerText.trim() : "General speaking practice";
-          let currentImageUrl = null;
-          
-          if (currentTab === 'picture') {
-             currentTopic = "Describe the picture provided.";
-             if (window.PictureTalk && window.PictureTalk.getCurrent()) {
-                 currentImageUrl = window.PictureTalk.getCurrent().url;
-             }
-          }
 
-          // Override with custom topic if selected
-          if (radioCustomTopic && radioCustomTopic.checked) {
-            const customVal = customTopicInput.value.trim();
-            if (customVal) {
-              currentTopic = customVal;
-              currentImageUrl = null; // Ignore image if they provide a custom topic
-            }
-          }
+        // ── Build topic / image context ──
+        let currentTopic    = topicMain ? topicMain.innerText.trim() : 'General speaking practice';
+        let currentImageUrl = null;
 
+        if (currentTab === 'picture') {
+          currentTopic = 'Describe the picture provided.';
+          if (window.PictureTalk && window.PictureTalk.getCurrent()) {
+            currentImageUrl = window.PictureTalk.getCurrent().url;
+          }
+        }
+        if (radioCustomTopic && radioCustomTopic.checked) {
+          const customVal = customTopicInput.value.trim();
+          if (customVal) { currentTopic = customVal; currentImageUrl = null; }
+        }
+
+        // ── TRANSCRIPTION ──
+        // Try in-browser Whisper first (free, fast, no rate limits).
+        // Fall back to sending raw audio to the server if the worker isn't ready.
+        let transcript = null;
+        let usedBrowserWhisper = false;
+
+        if (whisperWorker && whisperReady) {
           try {
-            // Record this API call timestamp
-            analysisTimestamps.push(Date.now());
+            recordStatus.textContent = '🧠 Transcribing locally… (on your device, free!)';
 
-            const res = await fetch("/api/analyze", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                audioBase64: base64data,
-                mimeType: audioBlob.type,
-                topic: currentTopic,
-                imageUrl: currentImageUrl
-              })
+            // Convert blob to 16 kHz Float32Array for Transformers.js
+            const float32Audio = await audioBlobToFloat32(audioBlob);
+
+            // Send audio to the worker and await the transcript
+            transcript = await new Promise((resolve, reject) => {
+              const onMsg = (e) => {
+                if (e.data.type === 'complete') { whisperWorker.removeEventListener('message', onMsg); resolve(e.data.text); }
+                if (e.data.type === 'error')    { whisperWorker.removeEventListener('message', onMsg); reject(new Error(e.data.error)); }
+              };
+              whisperWorker.addEventListener('message', onMsg);
+              // Transfer the buffer for zero-copy performance
+              whisperWorker.postMessage({ type: 'transcribe', audio: float32Audio }, [float32Audio.buffer]);
             });
 
-            if (!res.ok) {
-              const errorData = await res.json().catch(() => ({}));
-              throw new Error(errorData.error || `Analysis failed (${res.status})`);
-            }
-            const data = await res.json();
-            showRealAnalysis(data);
-          } catch (err) {
-            console.error(err);
-            recordStatus.textContent = `⚠️ ${err.message || "Error analyzing speech. Try again."}`;
-            recordBtn.textContent = "🔴 Try Again";
-            recordBtn.disabled = false;
+            usedBrowserWhisper = true;
+            console.log('[Whisper] Transcript (browser):', transcript);
+          } catch (workerErr) {
+            console.warn('[Whisper] Worker failed, falling back to server:', workerErr);
+            transcript = null;
           }
-        };
+        } else {
+          console.log('[Whisper] Worker not ready yet — using server-side Whisper as fallback.');
+        }
+
+        // ── SCORING ──
+        try {
+          analysisTimestamps.push(Date.now());
+          recordStatus.textContent = '📊 Scoring your speech with AI…';
+
+          let body;
+          if (usedBrowserWhisper && transcript) {
+            // 🌟 Path A: Send only the text — zero Whisper API cost!
+            body = JSON.stringify({ transcript, topic: currentTopic, imageUrl: currentImageUrl });
+          } else {
+            // 🔄 Path B: Legacy — send audio so the server runs Whisper
+            const reader = new FileReader();
+            const base64data = await new Promise((res) => {
+              reader.onloadend = () => res(reader.result.split(',')[1]);
+              reader.readAsDataURL(audioBlob);
+            });
+            body = JSON.stringify({ audioBase64: base64data, mimeType: audioBlob.type, topic: currentTopic, imageUrl: currentImageUrl });
+          }
+
+          const res = await fetch('/api/analyze', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body,
+          });
+
+          if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            throw new Error(errorData.error || `Analysis failed (${res.status})`);
+          }
+          const data = await res.json();
+          showRealAnalysis(data);
+        } catch (err) {
+          console.error(err);
+          recordStatus.textContent = `⚠️ ${err.message || 'Error analysing speech. Try again.'}`;
+          recordBtn.textContent = '🔴 Try Again';
+          recordBtn.disabled = false;
+        }
       });
 
       mediaRecorder.start();
       isRecording = true;
-      recordBtn.textContent = "⏹ Stop & Analyse";
-      recordBtn.classList.add("recording");
-      recordStatus.textContent = "🎙️ Recording… speak now!";
+      recordBtn.textContent = '⏹ Stop & Analyse';
+      recordBtn.classList.add('recording');
+      recordStatus.textContent = '🎙️ Recording… speak now!';
     } catch {
-      recordStatus.textContent = "⚠️ Microphone access denied. Cannot record.";
+      recordStatus.textContent = '⚠️ Microphone access denied. Cannot record.';
     }
   } else {
-    // Stop & analyse
+    // ── STOP ──
     if (mediaRecorder) {
       mediaRecorder.stop();
       mediaRecorder.stream.getTracks().forEach(t => t.stop());
     }
     isRecording = false;
-    recordBtn.textContent = "🔄 Analysing…";
+    recordBtn.textContent = whisperReady ? '🔄 Transcribing…' : '🔄 Analysing…';
     recordBtn.disabled = true;
-    recordStatus.textContent = "Processing your speech with AI…";
+    recordStatus.textContent = whisperReady
+      ? '🧠 Transcribing on your device (free & private)…'
+      : 'Processing your speech with AI…';
   }
 });
 

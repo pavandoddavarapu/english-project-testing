@@ -1,6 +1,8 @@
 export const config = {
   api: {
     bodyParser: {
+      // When the browser transcribes locally, we only receive text (~1 KB).
+      // Keep 10 MB as a fallback for legacy audio upload path.
       sizeLimit: '10mb',
     },
   },
@@ -17,67 +19,75 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: "Method not allowed" });
 
   try {
-    const { audioBase64, mimeType, topic } = req.body;
+    // transcript  → sent by the browser when it used local Whisper (free, fast, no rate limit)
+    // audioBase64 → legacy path: browser sends raw audio, we call Groq Whisper server-side
+    const { transcript: browserTranscript, audioBase64, mimeType, topic, imageUrl } = req.body;
 
-    if (!audioBase64) {
-      return res.status(400).json({ error: "No audio data provided" });
+    if (!browserTranscript && !audioBase64) {
+      return res.status(400).json({ error: 'No audio or transcript provided' });
     }
 
     const GROQ_KEY = process.env.GROQ_API_KEY;
     if (!GROQ_KEY) {
-      return res.status(500).json({ error: "Missing GROQ_API_KEY environment variable" });
+      return res.status(500).json({ error: 'Missing GROQ_API_KEY environment variable' });
     }
 
-    // ── STEP 1: Transcribe audio using Groq Whisper ──────────────────────────
-    const audioBuffer = Buffer.from(audioBase64, 'base64');
-    const baseMime = (mimeType || 'audio/webm').split(';')[0];
+    let cleanTranscription = '';
 
-    // Map MIME type to a file extension Whisper accepts
-    const extMap = {
-      'audio/webm': 'webm',
-      'audio/ogg': 'ogg',
-      'audio/mp4': 'mp4',
-      'audio/mpeg': 'mp3',
-      'audio/wav': 'wav',
-      'audio/flac': 'flac',
-    };
-    const ext = extMap[baseMime] || 'webm';
+    // ── PATH A: Browser already transcribed locally — skip Whisper entirely ──
+    if (browserTranscript) {
+      console.log('[analyze] Using browser-side Whisper transcript (0 API cost)');
+      cleanTranscription = browserTranscript.trim();
 
-    // Build multipart/form-data manually using FormData (Node 18+)
-    const formData = new FormData();
-    const audioBlob = new Blob([audioBuffer], { type: baseMime });
-    formData.append('file', audioBlob, `audio.${ext}`);
-    formData.append('model', 'whisper-large-v3-turbo');
-    formData.append('response_format', 'json');
-    formData.append('language', 'en');
-
-    const whisperRes = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${GROQ_KEY}` },
-      body: formData,
-    });
-
-    let transcription = '';
-    if (whisperRes.ok) {
-      const whisperData = await whisperRes.json();
-      transcription = whisperData.text || '';
+    // ── PATH B: Legacy — receive audio and transcribe server-side via Groq ──
     } else {
-      const errText = await whisperRes.text();
-      console.error('Whisper error:', errText);
-      // Continue with empty transcription — still do scoring
+      console.log('[analyze] Transcribing via Groq Whisper (legacy path)');
+      const audioBuffer = Buffer.from(audioBase64, 'base64');
+      const baseMime = (mimeType || 'audio/webm').split(';')[0];
+
+      const extMap = {
+        'audio/webm': 'webm',
+        'audio/ogg':  'ogg',
+        'audio/mp4':  'mp4',
+        'audio/mpeg': 'mp3',
+        'audio/wav':  'wav',
+        'audio/flac': 'flac',
+      };
+      const ext = extMap[baseMime] || 'webm';
+
+      const formData = new FormData();
+      const audioBlob = new Blob([audioBuffer], { type: baseMime });
+      formData.append('file', audioBlob, `audio.${ext}`);
+      formData.append('model', 'whisper-large-v3-turbo');
+      formData.append('response_format', 'json');
+      formData.append('language', 'en');
+
+      const whisperRes = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${GROQ_KEY}` },
+        body: formData,
+      });
+
+      if (whisperRes.ok) {
+        const whisperData = await whisperRes.json();
+        cleanTranscription = (whisperData.text || '').trim();
+      } else {
+        const errText = await whisperRes.text();
+        console.error('[analyze] Whisper error:', errText);
+        // Continue with empty transcription — LLM will still score generously
+      }
     }
 
-    // ── STEP 1.5: Validate Transcription Length ──────────────────────────────
-    const cleanTranscription = transcription.trim();
+    // ── STEP 1.5: Validate Transcription Length ───────────────────────────────
     const wordCount = cleanTranscription.split(/\s+/).filter(w => w.length > 0).length;
-    
+
     if (wordCount < 3 || cleanTranscription.length < 10) {
       return res.status(200).json({
         fluency: 0,
         clarity: 0,
         confidence: 0,
-        feedback: "Hmm, that was a bit too short! To give you a good analysis, I need to hear a little more. Take a deep breath and try speaking for at least a few sentences.",
-        transcription: cleanTranscription
+        feedback: 'Hmm, that was a bit too short! To give you a good analysis, I need to hear a little more. Take a deep breath and try speaking for at least a few sentences.',
+        transcription: cleanTranscription,
       });
     }
 

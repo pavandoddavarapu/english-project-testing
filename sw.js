@@ -1,5 +1,5 @@
-// v3 — bumped to bust old cache that was serving stale practice.html
-const CACHE_NAME = 'speakup-cache-v3';
+// v4 — added in-browser Whisper (Transformers.js) + CDN passthrough fixes
+const CACHE_NAME = 'speakup-cache-v4';
 
 const ASSETS_TO_CACHE = [
   './',
@@ -33,12 +33,15 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   const url = event.request.url;
 
-  // Never intercept third-party API / auth / firestore calls
+  // Never intercept third-party API / auth / firestore / AI model CDN calls
   if (
     url.includes('googleapis.com') ||
     url.includes('api.groq.com') ||
     url.includes('firebaseapp.com') ||
     url.includes('gstatic.com') ||
+    url.includes('jsdelivr.net') ||
+    url.includes('huggingface.co') ||
+    url.includes('hf.co') ||
     url.includes('/api/')
   ) {
     return; // let the browser handle it normally

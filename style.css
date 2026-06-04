@@ -10,7 +10,7 @@
 
 /* ── 1. Blossom Pink (default) ── */
 :root,
-[data-theme="pink"] {
+html[data-theme="pink"] {
   --bg:           #FFF0F5;
   --bg-card:      #FFE4EE;
   --primary:      #D63384;
@@ -28,7 +28,7 @@
 }
 
 /* ── 2. Forest Green ── */
-[data-theme="green"] {
+html[data-theme="green"] {
   --bg:           #F0FAF4;
   --bg-card:      #D8F0E2;
   --primary:      #2D6A4F;
@@ -46,7 +46,7 @@
 }
 
 /* ── 3. Ocean Blue ── */
-[data-theme="blue"] {
+html[data-theme="blue"] {
   --bg:           #EFF6FF;
   --bg-card:      #DBEAFE;
   --primary:      #1A6FA8;
@@ -64,7 +64,7 @@
 }
 
 /* ── 4. Royal Purple ── */
-[data-theme="purple"] {
+html[data-theme="purple"] {
   --bg:           #F5F0FF;
   --bg-card:      #EDE0FF;
   --primary:      #7B2FBE;
@@ -82,7 +82,7 @@
 }
 
 /* ── 5. Sunset Orange ── */
-[data-theme="orange"] {
+html[data-theme="orange"] {
   --bg:           #FFF7ED;
   --bg-card:      #FFEDD5;
   --primary:      #D4580A;
@@ -100,7 +100,7 @@
 }
 
 /* ── 6. Teal Breeze ── */
-[data-theme="teal"] {
+html[data-theme="teal"] {
   --bg:           #F0FAFA;
   --bg-card:      #CCFBF1;
   --primary:      #0D9488;
@@ -118,7 +118,7 @@
 }
 
 /* ── 7. LeetCode Dark ── */
-[data-theme="dark"] {
+html[data-theme="dark"] {
   --bg:           #1a1a1a;
   --bg-card:      #282828;
   --primary:      #ffa116;
@@ -136,20 +136,20 @@
 }
 
 /* Dark theme overrides for elements that use hardcoded white */
-[data-theme="dark"] body { color: var(--text); }
-[data-theme="dark"] .nav-tabs,
-[data-theme="dark"] .filter-pill,
-[data-theme="dark"] .btn-timer,
-[data-theme="dark"] .btn-stop,
-[data-theme="dark"] .btn-adjust,
-[data-theme="dark"] .btn-reset-circle,
-[data-theme="dark"] .framework-item,
-[data-theme="dark"] .vocab-card,
-[data-theme="dark"] .frameworks-box,
-[data-theme="dark"] .modal-box { background: rgba(40, 40, 40, 0.95) !important; }
-[data-theme="dark"] .timer-screen { background: #1a1a1a; }
-[data-theme="dark"] .modal-box { background: #282828 !important; }
-[data-theme="dark"] .btn-primary { color: #1a1a1a; }
+html[data-theme="dark"] body { color: var(--text); }
+html[data-theme="dark"] .nav-tabs,
+html[data-theme="dark"] .filter-pill,
+html[data-theme="dark"] .btn-timer,
+html[data-theme="dark"] .btn-stop,
+html[data-theme="dark"] .btn-adjust,
+html[data-theme="dark"] .btn-reset-circle,
+html[data-theme="dark"] .framework-item,
+html[data-theme="dark"] .vocab-card,
+html[data-theme="dark"] .frameworks-box,
+html[data-theme="dark"] .modal-box { background: rgba(40, 40, 40, 0.95) !important; }
+html[data-theme="dark"] .timer-screen { background: #1a1a1a; }
+html[data-theme="dark"] .modal-box { background: #282828 !important; }
+html[data-theme="dark"] .btn-primary { color: #1a1a1a; }
 
 /* --- Reset & Base --- */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -294,7 +294,7 @@ body::before {
   z-index: 999;
 }
 
-[data-theme="dark"] .theme-dropdown {
+html[data-theme="dark"] .theme-dropdown {
   background: rgba(40, 40, 40, 0.98);
   border-color: var(--accent2);
 }
@@ -334,7 +334,7 @@ body::before {
   text-align: left;
 }
 
-[data-theme="dark"] .theme-swatch {
+html[data-theme="dark"] .theme-swatch {
   background: rgba(255,255,255,0.06);
   color: var(--text);
 }
@@ -344,7 +344,7 @@ body::before {
   transform: scale(1.03);
 }
 
-[data-theme="dark"] .theme-swatch:hover {
+html[data-theme="dark"] .theme-swatch:hover {
   background: rgba(255,255,255,0.12);
 }
 
@@ -769,10 +769,10 @@ body::before {
   display: none;
 }
 
-[data-theme="dark"] .filter-dropdown-menu { background: rgba(40, 40, 40, 0.98); border-color: var(--accent2); }
-[data-theme="dark"] .filter-option:hover { background: rgba(255,255,255,0.08); }
-[data-theme="dark"] .filter-option.active { background: rgba(255,255,255,0.12); color: var(--accent); }
-[data-theme="dark"] .filter-option .check { color: var(--accent); }
+html[data-theme="dark"] .filter-dropdown-menu { background: rgba(40, 40, 40, 0.98); border-color: var(--accent2); }
+html[data-theme="dark"] .filter-option:hover { background: rgba(255,255,255,0.08); }
+html[data-theme="dark"] .filter-option.active { background: rgba(255,255,255,0.12); color: var(--accent); }
+html[data-theme="dark"] .filter-option .check { color: var(--accent); }
 
 /* --- Topic area --- */
 .topic-area {
@@ -1708,7 +1708,7 @@ body::before {
   animation: fadeSlideIn 0.5s ease 0.5s both;
 }
 
-[data-theme="dark"] .picture-tips-card {
+html[data-theme="dark"] .picture-tips-card {
   background: rgba(40, 40, 40, 0.90);
   border-color: var(--accent2);
 }
@@ -2172,7 +2172,7 @@ body.has-bg-image .btn-timer {
   transform-origin: bottom right;
 }
 
-[data-theme="dark"] .chatbot-window {
+html[data-theme="dark"] .chatbot-window {
   background: rgba(26, 26, 26, 0.9);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }

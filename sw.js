@@ -1,5 +1,5 @@
-// v5 — updated dark theme styling (LeetCode style) cache bust
-const CACHE_NAME = 'speakup-cache-v5';
+// v6 — updated dark theme styling (LeetCode style) cache bust
+const CACHE_NAME = 'speakup-cache-v6';
 
 const ASSETS_TO_CACHE = [
   './',

@@ -40,7 +40,7 @@
       animation: bounceIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
     }
     
-    [data-theme="dark"] .auth-card {
+    html[data-theme="dark"] .auth-card {
       background: rgba(40,40,40,0.95) !important;
     }
 
@@ -136,7 +136,7 @@
       box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
     }
     
-    [data-theme="dark"] .auth-input {
+    html[data-theme="dark"] .auth-input {
       background: rgba(26,26,26,0.9) !important;
     }
 
@@ -230,12 +230,12 @@
       height: 20px;
     }
 
-    [data-theme="dark"] .btn-google {
+    html[data-theme="dark"] .btn-google {
       background: rgba(40,40,40,0.95) !important;
       border-color: var(--accent2);
       color: var(--text);
     }
-    [data-theme="dark"] .btn-google:hover {
+    html[data-theme="dark"] .btn-google:hover {
       background: rgba(255,255,255,0.08) !important;
     }
 
@@ -268,13 +268,13 @@
     <div class="theme-dropdown hidden" id="theme-dropdown">
       <div class="theme-dropdown-title">Choose a Theme</div>
       <div class="theme-grid">
-        <button class="theme-swatch active" data-theme="pink" title="Blossom Pink" style="--sw:#D63384"><span class="swatch-dot" style="background:#D63384"></span>Blossom</button>
         <button class="theme-swatch" data-theme="green" title="Forest Green" style="--sw:#2D6A4F"><span class="swatch-dot" style="background:#2D6A4F"></span>Forest</button>
+        <button class="theme-swatch" data-theme="dark" title="Dark" style="--sw:#ffa116"><span class="swatch-dot" style="background:#ffa116"></span>Dark</button>
+        <button class="theme-swatch" data-theme="pink" title="Blossom Pink" style="--sw:#D63384"><span class="swatch-dot" style="background:#D63384"></span>Blossom</button>
         <button class="theme-swatch" data-theme="blue" title="Ocean Blue" style="--sw:#1A6FA8"><span class="swatch-dot" style="background:#1A6FA8"></span>Ocean</button>
         <button class="theme-swatch" data-theme="purple" title="Royal Purple" style="--sw:#7B2FBE"><span class="swatch-dot" style="background:#7B2FBE"></span>Royal</button>
         <button class="theme-swatch" data-theme="orange" title="Sunset Orange" style="--sw:#D4580A"><span class="swatch-dot" style="background:#D4580A"></span>Sunset</button>
         <button class="theme-swatch" data-theme="teal" title="Teal Breeze" style="--sw:#0D9488"><span class="swatch-dot" style="background:#0D9488"></span>Teal</button>
-        <button class="theme-swatch" data-theme="dark" title="Dark" style="--sw:#ffa116"><span class="swatch-dot" style="background:#ffa116"></span>Dark</button>
       </div>
     </div>
   </div>

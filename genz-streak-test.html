@@ -20,33 +20,33 @@
     /* ── Premium Dashboard Overrides ── */
 
     /* Dark mode */
-    [data-theme="dark"] .panel,
-    [data-theme="dark"] .rank,
-    [data-theme="dark"] .heatmap-stats,
-    [data-theme="dark"] .filter-dropdown,
-    [data-theme="dark"] .heatmap-wrapper,
-    [data-theme="dark"] .recent-item,
-    [data-theme="dark"] .circle-inner { 
+    html[data-theme="dark"] .panel,
+    html[data-theme="dark"] .rank,
+    html[data-theme="dark"] .heatmap-stats,
+    html[data-theme="dark"] .filter-dropdown,
+    html[data-theme="dark"] .heatmap-wrapper,
+    html[data-theme="dark"] .recent-item,
+    html[data-theme="dark"] .circle-inner { 
       background: rgba(40,40,40,0.95) !important; 
     }
-    [data-theme="dark"] .stat-row:hover,
-    [data-theme="dark"] .tab:hover { 
+    html[data-theme="dark"] .stat-row:hover,
+    html[data-theme="dark"] .tab:hover { 
       background: rgba(255,255,255,0.08) !important; 
     }
-    [data-theme="dark"] .diff-item {
+    html[data-theme="dark"] .diff-item {
       background: rgba(255,255,255,0.05) !important;
     }
-    [data-theme="dark"] .stat-row span:first-child[style] {
+    html[data-theme="dark"] .stat-row span:first-child[style] {
       background: rgba(40,40,40,0.95) !important;
     }
-    [data-theme="dark"] .badge {
+    html[data-theme="dark"] .badge {
       background: rgba(40,40,40,0.95) !important;
     }
-    [data-theme="dark"] .welcome-banner {
+    html[data-theme="dark"] .welcome-banner {
       background: linear-gradient(135deg, rgba(255,161,22,0.15), rgba(255,192,30,0.10)) !important;
       border-color: rgba(255,161,22,0.3) !important;
     }
-    [data-theme="dark"] .section-title {
+    html[data-theme="dark"] .section-title {
       color: var(--primary) !important;
     }
 
@@ -755,13 +755,13 @@
         <div class="theme-dropdown hidden" id="theme-dropdown">
           <div class="theme-dropdown-title">Choose a Theme</div>
           <div class="theme-grid">
+            <button class="theme-swatch" data-theme="green" title="Forest Green" style="--sw:#2D6A4F"><span class="swatch-dot" style="background:#2D6A4F"></span>Forest</button>
+            <button class="theme-swatch" data-theme="dark" title="Dark" style="--sw:#ffa116"><span class="swatch-dot" style="background:#ffa116"></span>Dark</button>
             <button class="theme-swatch" data-theme="pink" title="Blossom Pink" style="--sw:#D63384"><span class="swatch-dot" style="background:#D63384"></span>Blossom</button>
-            <button class="theme-swatch active" data-theme="green" title="Forest Green" style="--sw:#2D6A4F"><span class="swatch-dot" style="background:#2D6A4F"></span>Forest</button>
             <button class="theme-swatch" data-theme="blue" title="Ocean Blue" style="--sw:#1A6FA8"><span class="swatch-dot" style="background:#1A6FA8"></span>Ocean</button>
             <button class="theme-swatch" data-theme="purple" title="Royal Purple" style="--sw:#7B2FBE"><span class="swatch-dot" style="background:#7B2FBE"></span>Royal</button>
             <button class="theme-swatch" data-theme="orange" title="Sunset Orange" style="--sw:#D4580A"><span class="swatch-dot" style="background:#D4580A"></span>Sunset</button>
             <button class="theme-swatch" data-theme="teal" title="Teal Breeze" style="--sw:#0D9488"><span class="swatch-dot" style="background:#0D9488"></span>Teal</button>
-            <button class="theme-swatch" data-theme="dark" title="Dark" style="--sw:#ffa116"><span class="swatch-dot" style="background:#ffa116"></span>Dark</button>
           </div>
         </div>
       </div>

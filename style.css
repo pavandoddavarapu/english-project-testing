@@ -117,20 +117,20 @@
   --radius-pill:  999px;
 }
 
-/* ── 7. Midnight Dark ── */
+/* ── 7. LeetCode Dark ── */
 [data-theme="dark"] {
-  --bg:           #1E1E2E;
-  --bg-card:      #2A2A3E;
-  --primary:      #C084FC;
-  --primary-dark: #9B59D0;
-  --accent:       #E879F9;
-  --accent2:      #6B2F8A;
-  --accent3:      #FDE68A;
-  --text:         #E2D9F3;
-  --text-muted:   #9E8AB0;
-  --white:        #2A2A3E;
-  --shadow:       rgba(192,132,252,0.18);
-  --shadow-lg:    rgba(192,132,252,0.30);
+  --bg:           #1a1a1a;
+  --bg-card:      #282828;
+  --primary:      #ffa116;
+  --primary-dark: #d68000;
+  --accent:       #00b8a3;
+  --accent2:      #383838;
+  --accent3:      #ffc01e;
+  --text:         #eff1f6;
+  --text-muted:   #abb1ba;
+  --white:        #282828;
+  --shadow:       rgba(0,0,0,0.3);
+  --shadow-lg:    rgba(0,0,0,0.5);
   --radius:       14px;
   --radius-pill:  999px;
 }
@@ -146,10 +146,10 @@
 [data-theme="dark"] .framework-item,
 [data-theme="dark"] .vocab-card,
 [data-theme="dark"] .frameworks-box,
-[data-theme="dark"] .modal-box { background: rgba(42,42,62,0.95) !important; }
-[data-theme="dark"] .timer-screen { background: #1E1E2E; }
-[data-theme="dark"] .modal-box { background: #2A2A3E !important; }
-[data-theme="dark"] .btn-primary { color: #1E1E2E; }
+[data-theme="dark"] .modal-box { background: rgba(40, 40, 40, 0.95) !important; }
+[data-theme="dark"] .timer-screen { background: #1a1a1a; }
+[data-theme="dark"] .modal-box { background: #282828 !important; }
+[data-theme="dark"] .btn-primary { color: #1a1a1a; }
 
 /* --- Reset & Base --- */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -295,7 +295,7 @@ body::before {
 }
 
 [data-theme="dark"] .theme-dropdown {
-  background: rgba(42,42,62,0.98);
+  background: rgba(40, 40, 40, 0.98);
   border-color: var(--accent2);
 }
 
@@ -769,7 +769,7 @@ body::before {
   display: none;
 }
 
-[data-theme="dark"] .filter-dropdown-menu { background: rgba(42,42,62,0.98); border-color: var(--accent2); }
+[data-theme="dark"] .filter-dropdown-menu { background: rgba(40, 40, 40, 0.98); border-color: var(--accent2); }
 [data-theme="dark"] .filter-option:hover { background: rgba(255,255,255,0.08); }
 [data-theme="dark"] .filter-option.active { background: rgba(255,255,255,0.12); color: var(--accent); }
 [data-theme="dark"] .filter-option .check { color: var(--accent); }
@@ -1709,7 +1709,7 @@ body::before {
 }
 
 [data-theme="dark"] .picture-tips-card {
-  background: rgba(42, 42, 62, 0.90);
+  background: rgba(40, 40, 40, 0.90);
   border-color: var(--accent2);
 }
 
@@ -2173,7 +2173,7 @@ body.has-bg-image .btn-timer {
 }
 
 [data-theme="dark"] .chatbot-window {
-  background: rgba(30, 30, 46, 0.7);
+  background: rgba(26, 26, 26, 0.9);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 

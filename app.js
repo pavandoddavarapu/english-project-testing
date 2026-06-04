@@ -1177,7 +1177,7 @@ function applyTheme(theme) {
     purple: "#7B2FBE",
     orange: "#D4580A",
     teal: "#0D9488",
-    dark: "#C084FC",
+    dark: "#ffa116",
   };
   const color = THEME_COLORS[theme] || THEME_COLORS.green;
   themeToggleBtn.style.borderColor = color + "80"; // 50% opacity border hint

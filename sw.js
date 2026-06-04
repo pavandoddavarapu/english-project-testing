@@ -1,5 +1,5 @@
-// v6 — updated dark theme styling (LeetCode style) cache bust
-const CACHE_NAME = 'speakup-cache-v6';
+// v7 — added redirected response cache safety checks
+const CACHE_NAME = 'speakup-cache-v7';
 
 const ASSETS_TO_CACHE = [
   './',
@@ -52,9 +52,16 @@ self.addEventListener('fetch', event => {
     event.respondWith(
       fetch(event.request)
         .then(networkRes => {
-          // Update cache with fresh copy
-          const clone = networkRes.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+          // Only cache successful, non-redirected GET responses.
+          // Caching redirected responses throws a TypeError in many browsers.
+          if (networkRes.ok && !networkRes.redirected && event.request.method === 'GET') {
+            const clone = networkRes.clone();
+            caches.open(CACHE_NAME).then(cache => {
+              cache.put(event.request, clone).catch(err => {
+                console.warn('[SW] Cache put failed:', err);
+              });
+            });
+          }
           return networkRes;
         })
         .catch(() => caches.match(event.request))

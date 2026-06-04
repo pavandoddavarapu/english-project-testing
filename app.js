@@ -63,6 +63,34 @@ let whisperWorker = null;
 let whisperReady = false; // true once the model is fully loaded
 let whisperLoading = false;
 
+// ── UI helper: update the whisper status badge in the modal ─────────────────
+// The badge element (#whisper-badge) is added to practice.html near the record btn.
+function updateWhisperBadge(state, progress) {
+  const badge = document.getElementById('whisper-badge');
+  if (!badge) return;
+  const s = badge.style;
+  s.transition = 'opacity 0.3s';
+  if (state === 'loading') {
+    badge.textContent = '⏳ Loading on-device AI (first time only)…';
+    s.color = 'var(--text, #555)'; s.opacity = '0.7';
+  } else if (state === 'downloading') {
+    const pct = (progress !== undefined) ? ` ${progress}%` : '';
+    badge.textContent = `⬇️ Downloading Whisper AI${pct} (39 MB, one time only)…`;
+    s.color = 'var(--text, #555)'; s.opacity = '0.8';
+  } else if (state === 'cache') {
+    badge.textContent = '⚡ Found in cache — loading instantly…';
+    s.color = 'var(--primary, #2D6A4F)'; s.opacity = '0.85';
+  } else if (state === 'ready') {
+    badge.textContent = '✅ On-device AI Ready — transcription is free & private!';
+    s.color = 'var(--primary, #2D6A4F)'; s.opacity = '1';
+  } else if (state === 'fallback') {
+    badge.textContent = '☁️ Using cloud AI (on-device AI still loading…)';
+    s.color = 'var(--text, #555)'; s.opacity = '0.7';
+  } else {
+    badge.textContent = '';
+  }
+}
+
 function initWhisperWorker() {
   try {
     // Module workers need type:'module' so Transformers.js ESM imports work.
@@ -72,14 +100,41 @@ function initWhisperWorker() {
     // It intentionally does NOT handle 'complete' or 'transcribing' — those are handled
     // exclusively by the per-request promise inside the recording stop handler.
     whisperWorker.addEventListener('message', (e) => {
-      const { type, message, progress, file } = e.data;
-      if (type === 'loading')  { whisperLoading = true;  console.log('[Whisper]', message); }
-      if (type === 'progress') { console.log(`[Whisper] Downloading ${file}: ${progress}%`); }
-      if (type === 'ready')    { whisperReady = true; whisperLoading = false; console.log('[Whisper] ✅ Model ready — transcription is free!'); }
+      const { type, message, progress, file, cached } = e.data;
+      if (type === 'loading') {
+        whisperLoading = true;
+        // Show different badge depending on whether it's a fresh download or cache hit
+        if (cached) {
+          updateWhisperBadge('cache');   // fast — loading from browser storage
+        } else {
+          updateWhisperBadge('loading'); // slow — downloading for the first time
+        }
+        console.log('[Whisper]', message);
+      }
+      if (type === 'downloading') {
+        updateWhisperBadge('downloading');
+      }
+      if (type === 'progress') {
+        console.log(`[Whisper] Downloading ${file}: ${progress}%`);
+        updateWhisperBadge('downloading', progress);
+      }
+      if (type === 'ready') {
+        whisperReady = true;
+        whisperLoading = false;
+        updateWhisperBadge('ready');
+        console.log('[Whisper] ✅ Model ready — transcription is free!');
+      }
       // Only set whisperReady=false for errors during the LOAD phase.
       // Errors during transcription are handled by the per-request promise.
-      if (type === 'error' && !whisperReady) { whisperLoading = false; console.warn('[Whisper] Load error:', e.data.error); }
+      if (type === 'error' && !whisperReady) {
+        whisperLoading = false;
+        updateWhisperBadge('');
+        console.warn('[Whisper] Load error:', e.data.error);
+      }
     });
+
+    // Show loading state immediately so user sees feedback right away
+    updateWhisperBadge('loading');
 
     // Start loading the model immediately in the background.
     // By the time the user finishes speaking, it will likely be ready.
@@ -87,6 +142,7 @@ function initWhisperWorker() {
   } catch (err) {
     console.warn('[Whisper] Could not start worker (likely unsupported browser):', err);
     whisperWorker = null;
+    updateWhisperBadge('');
   }
 }
 
@@ -826,8 +882,7 @@ recordBtn.addEventListener("click", async () => {
             console.warn('[Whisper] Worker failed, falling back to server:', workerErr);
             transcript = null;
           }
-        } else {
-          console.log('[Whisper] Worker not ready yet — using server-side Whisper as fallback.');
+
         }
 
         // ── SCORING ──

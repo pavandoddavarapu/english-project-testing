@@ -410,6 +410,8 @@
       </div>
       <div class="record-area">
         <button class="btn-record" id="record-btn">🔴 Start Recording</button>
+        <!-- Whisper on-device AI status badge — updated live by app.js -->
+        <div id="whisper-badge" style="font-size:0.78rem; margin-top:8px; min-height:18px; font-weight:600; letter-spacing:0.01em; transition: opacity 0.3s;"></div>
         <div class="record-status" id="record-status"></div>
       </div>
       <div class="analysis-results hidden" id="analysis-results">
@@ -481,7 +483,7 @@
 
   <!-- Smart Cached Image System -->
   <script src="image-cache.js?v=2"></script>
-  <script src="app.js?v=2"></script>
+  <script src="app.js?v=3"></script>
 
   <!-- Practice Session Tracker v2 — backend proxy + Firestore fallback -->
   <script type="module">

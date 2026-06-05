@@ -1098,6 +1098,54 @@
   </div>
 
   <script>
+    (function() {
+      try {
+        const lastUid = localStorage.getItem('speakup-last-uid');
+        if (lastUid) {
+          const cached = localStorage.getItem('speakup-user-data-' + lastUid);
+          if (cached) {
+            const data = JSON.parse(cached);
+            
+            // 1. Profile Panel
+            const displayName = data.name || 'Speaker';
+            const firstName = displayName.split(' ')[0];
+            document.getElementById('profile-name').innerText = displayName;
+            document.getElementById('profile-email').innerText = data.email || '';
+            document.getElementById('profile-aura').innerText = (data.aura_points || 0).toLocaleString();
+            document.getElementById('streak-count').innerText = data.streak || 0;
+            
+            const savedSeed = localStorage.getItem('speakup-avatar-seed') || 'Felix';
+            const avatarBg = data.avatar_bg || 'b6e3f4';
+            document.getElementById('profile-img').src = `https://api.dicebear.com/7.x/notionists/svg?seed=${savedSeed}&backgroundColor=${avatarBg}`;
+            
+            // 2. Welcome Banner
+            const welcomeTitleEl = document.getElementById('welcome-title');
+            if (welcomeTitleEl) {
+              welcomeTitleEl.innerText = `Welcome back, ${firstName}! 👋`;
+            }
+            const bannerStreakEl = document.getElementById('banner-streak');
+            if (bannerStreakEl) {
+              bannerStreakEl.innerText = data.streak || 0;
+            }
+            const bannerAuraEl = document.getElementById('banner-aura');
+            if (bannerAuraEl) {
+              bannerAuraEl.innerText = (data.aura_points || 0).toLocaleString();
+            }
+            
+            // 3. Stats Panel
+            document.getElementById('clout-total-yaps').innerText = data.total_yaps || 0;
+            document.getElementById('clout-aura').innerText = data.aura_points || 0;
+            
+            console.log('[Pre-paint] Successfully pre-populated dashboard from local cache.');
+          }
+        }
+      } catch (e) {
+        console.error('[Pre-paint] Failed to pre-populate:', e);
+      }
+    })();
+  </script>
+
+  <script>
     document.addEventListener('DOMContentLoaded', () => {
       const themeToggleBtn = document.getElementById("theme-toggle-btn");
       const themeDropdown = document.getElementById("theme-dropdown");
@@ -1703,6 +1751,7 @@
 
     onAuthStateChanged(auth, async (user) => {
       if (user) {
+        localStorage.setItem('speakup-last-uid', user.uid);
         // Show basic auth info immediately while data loads
         document.getElementById('profile-name').innerText  = user.displayName || 'Speaker';
         document.getElementById('profile-email').innerText = user.email || '';

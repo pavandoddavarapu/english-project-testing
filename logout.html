@@ -196,6 +196,7 @@
 
     // Perform actual Firebase sign out when landing on this page
     signOut(auth).then(() => {
+      localStorage.removeItem('speakup-last-uid');
       console.log("User successfully signed out.");
     }).catch((error) => {
       console.error("Error signing out:", error);

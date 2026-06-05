@@ -1,5 +1,5 @@
-// v7 — added redirected response cache safety checks
-const CACHE_NAME = 'speakup-cache-v7';
+// v8 — updated dark theme toggle button background cache bust
+const CACHE_NAME = 'speakup-cache-v8';
 
 const ASSETS_TO_CACHE = [
   './',

@@ -1390,7 +1390,7 @@
 
     const AVATAR_SEEDS_MALE   = ['Felix','Aaron','Ryan','Marcus','Alex','Jordan','Peter','Dylan'];
     const AVATAR_SEEDS_FEMALE = ['Zoe','Sarah','Emma','Lily','Ava','Grace','Chloe','Ruby'];
-    const AVATAR_SEEDS_ANY    = ['Sam','Casey','Riley','Jamie','Morgan','Charlie','Taylor','Parker'];
+    const AVATAR_SEEDS_ANY    = [...AVATAR_SEEDS_MALE, ...AVATAR_SEEDS_FEMALE];
 
     function getAvatarSeeds(gender) {
       if (gender === 'female') return AVATAR_SEEDS_FEMALE;

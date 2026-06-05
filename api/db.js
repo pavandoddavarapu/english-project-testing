@@ -39,10 +39,10 @@ export async function query(text, params) {
 (async () => {
   try {
     await pool.query(`
-      ALTER TABLE users 
+      ALTER TABLE public.users 
       ADD COLUMN IF NOT EXISTS avatar_seed VARCHAR(100) DEFAULT 'Felix'
     `);
-    console.log('🔌 [DB Migration] users.avatar_seed column is verified/added.');
+    console.log('🔌 [DB Migration] public.users.avatar_seed column is verified/added.');
   } catch (err) {
     console.error('❌ [DB Migration] Failed to ensure users.avatar_seed column:', err.message);
   }

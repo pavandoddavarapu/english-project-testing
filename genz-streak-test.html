@@ -25,8 +25,7 @@
     html[data-theme="dark"] .heatmap-stats,
     html[data-theme="dark"] .filter-dropdown,
     html[data-theme="dark"] .heatmap-wrapper,
-    html[data-theme="dark"] .recent-item,
-    html[data-theme="dark"] .circle-inner { 
+    html[data-theme="dark"] .recent-item { 
       background: rgba(40,40,40,0.95) !important; 
     }
     html[data-theme="dark"] .stat-row:hover,
@@ -349,18 +348,19 @@
       width: 100px;
       height: 100px;
       border-radius: 50%;
-      background: conic-gradient(var(--accent) 15%, var(--primary) 35%, rgba(255,179,209,0.3) 0);
+      background: conic-gradient(var(--primary) 0%, var(--bg-card) 0%);
       display: flex;
       justify-content: center;
       align-items: center;
       position: relative;
       box-shadow: 0 4px 12px var(--shadow);
+      transition: background 0.3s ease;
     }
 
     .circle-inner {
       width: 80px;
       height: 80px;
-      background: #FFF0F5;
+      background: var(--bg);
       border-radius: 50%;
       display: flex;
       flex-direction: column;
@@ -1290,34 +1290,44 @@
       const clarityEl = document.getElementById('clarity-score');
       const confidenceEl = document.getElementById('confidence-score');
       const masteryEl = document.getElementById('mastery-score');
+      const circleChart = document.querySelector('.circle-chart');
 
       if (sessions.length === 0) {
         fluencyEl.innerText = '0/100';
         clarityEl.innerText = '0/100';
         confidenceEl.innerText = '0/100';
         masteryEl.innerText = '0';
+        if (circleChart) {
+          circleChart.style.background = `conic-gradient(var(--primary) 0%, var(--bg-card) 0%)`;
+        }
         return;
       }
 
       // Filter sessions that have the individual scores
       const validSessions = sessions.filter(s => s.fluency !== undefined);
       
+      let avgMastery = 0;
       if (validSessions.length === 0) {
         // Fallback if we only have the average score
-        const avgMastery = Math.round(sessions.reduce((acc, s) => acc + (s.score || 0), 0) / sessions.length);
-        masteryEl.innerText = avgMastery;
-        return;
+        avgMastery = Math.round(sessions.reduce((acc, s) => acc + (s.score || 0), 0) / sessions.length) || 0;
+        fluencyEl.innerText = '0/100';
+        clarityEl.innerText = '0/100';
+        confidenceEl.innerText = '0/100';
+      } else {
+        const avgFluency = Math.round(validSessions.reduce((acc, s) => acc + s.fluency, 0) / validSessions.length);
+        const avgClarity = Math.round(validSessions.reduce((acc, s) => acc + s.clarity, 0) / validSessions.length);
+        const avgConfidence = Math.round(validSessions.reduce((acc, s) => acc + s.confidence, 0) / validSessions.length);
+        avgMastery = Math.round((avgFluency + avgClarity + avgConfidence) / 3);
+
+        fluencyEl.innerText = `${avgFluency}/100`;
+        clarityEl.innerText = `${avgClarity}/100`;
+        confidenceEl.innerText = `${avgConfidence}/100`;
       }
 
-      const avgFluency = Math.round(validSessions.reduce((acc, s) => acc + s.fluency, 0) / validSessions.length);
-      const avgClarity = Math.round(validSessions.reduce((acc, s) => acc + s.clarity, 0) / validSessions.length);
-      const avgConfidence = Math.round(validSessions.reduce((acc, s) => acc + s.confidence, 0) / validSessions.length);
-      const avgMastery = Math.round((avgFluency + avgClarity + avgConfidence) / 3);
-
-      fluencyEl.innerText = `${avgFluency}/100`;
-      clarityEl.innerText = `${avgClarity}/100`;
-      confidenceEl.innerText = `${avgConfidence}/100`;
       masteryEl.innerText = avgMastery;
+      if (circleChart) {
+        circleChart.style.background = `conic-gradient(var(--primary) ${avgMastery}%, var(--bg-card) ${avgMastery}%)`;
+      }
     }
 
     // ── Backend fallback: fetch user data via /api/get-user (bypasses ad blocker) ──

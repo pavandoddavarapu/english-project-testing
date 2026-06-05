@@ -33,7 +33,7 @@
 
   <!-- NAV -->
   <nav class="navbar">
-    <div class="nav-brand">Small Steps to the podium 🎤</div>
+    <div class="nav-brand" style="display: inline-flex; align-items: center;">Small Steps to the podium 🎤 <span id="db-indicator" class="db-indicator-badge firebase">🔥 Firebase</span></div>
 
     <div class="nav-tabs">
       <button class="nav-tab active" data-tab="random" id="tab-random">🎲 Random Topics</button>
@@ -86,6 +86,19 @@
   <script type="module">
     import { auth } from './firebase-config.js';
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+
+    // Set DB indicator immediately on load
+    const usePostgres = localStorage.getItem('speakup-use-postgres') === 'true';
+    const indicator = document.getElementById('db-indicator');
+    if (indicator) {
+      if (usePostgres) {
+        indicator.innerText = '🐘 PostgreSQL';
+        indicator.className = 'db-indicator-badge postgres';
+      } else {
+        indicator.innerText = '🔥 Firebase';
+        indicator.className = 'db-indicator-badge firebase';
+      }
+    }
 
     onAuthStateChanged(auth, (user) => {
       const authBtn = document.getElementById('auth-btn');

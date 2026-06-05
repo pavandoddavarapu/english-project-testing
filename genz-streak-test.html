@@ -873,7 +873,7 @@
   <div class="bg-blob"></div>
 
   <nav class="navbar" style="margin-bottom: 20px;">
-    <div class="nav-brand">Speak Up! 🎤</div>
+    <div class="nav-brand" style="display: inline-flex; align-items: center;">Speak Up! 🎤 <span id="db-indicator" class="db-indicator-badge firebase">🔥 Firebase</span></div>
     
     <div class="nav-right" style="display: flex; gap: 15px; align-items: center;">
       <div class="theme-switcher" id="theme-switcher">
@@ -1231,6 +1231,19 @@
     // Global references for filtering
     window.allPracticeDates = [];
     window.allTotalYaps = 0;
+
+    // Set DB indicator immediately on load
+    const usePostgres = localStorage.getItem('speakup-use-postgres') === 'true';
+    const indicator = document.getElementById('db-indicator');
+    if (indicator) {
+      if (usePostgres) {
+        indicator.innerText = '🐘 PostgreSQL';
+        indicator.className = 'db-indicator-badge postgres';
+      } else {
+        indicator.innerText = '🔥 Firebase';
+        indicator.className = 'db-indicator-badge firebase';
+      }
+    }
 
     function populateYearDropdown(practiceDates = []) {
       const select = document.getElementById('heatmap-year-select');

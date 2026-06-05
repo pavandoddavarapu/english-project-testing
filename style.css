@@ -247,6 +247,32 @@ body::before {
   text-shadow: 1px 1px 0 var(--accent2);
 }
 
+.db-indicator-badge {
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.62rem;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 8px;
+  vertical-align: middle;
+  text-shadow: none;
+}
+.db-indicator-badge.firebase {
+  background: rgba(245, 130, 32, 0.12);
+  color: #f58220;
+  border: 1px solid rgba(245, 130, 32, 0.25);
+}
+.db-indicator-badge.postgres {
+  background: rgba(49, 98, 138, 0.12);
+  color: #31628a;
+  border: 1px solid rgba(49, 98, 138, 0.25);
+}
+
 /* ============================================================
    THEME SWITCHER
    ============================================================ */

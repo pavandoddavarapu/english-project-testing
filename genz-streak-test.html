@@ -1087,13 +1087,53 @@
     </div>
   </div>
 
-  <!-- Avatar Picker Modal -->
+  <!-- Edit Profile Modal -->
   <div id="avatar-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(4px);" onclick="closeAvatarPicker(event)">
-    <div style="background:var(--bg); border:1.5px solid var(--accent2); border-radius:var(--radius); padding:28px; max-width:380px; width:90%; box-shadow:0 20px 60px rgba(0,0,0,0.3); animation: fadeSlideIn 0.3s ease both;" onclick="event.stopPropagation()">
-      <div style="font-family:'Fredoka One',cursive; color:var(--primary); font-size:1.2rem; margin-bottom:4px;">Choose Your Avatar</div>
-      <div style="font-size:0.8rem; color:var(--text-muted); font-weight:700; margin-bottom:18px;">Pick an avatar that represents you</div>
-      <div id="avatar-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:20px;"></div>
-      <button onclick="closeAvatarPicker()" style="width:100%; padding:10px; background:var(--primary); color:white; border:none; border-radius:999px; font-family:'Nunito',sans-serif; font-weight:800; cursor:pointer; font-size:0.9rem;">Done ✓</button>
+    <div style="background:var(--bg-card); border:1.5px solid var(--accent2); border-radius:var(--radius); padding:28px; max-width:420px; width:90%; box-shadow:0 20px 60px rgba(0,0,0,0.3); animation: fadeSlideIn 0.3s ease both; overflow-y:auto; max-height:85vh;" onclick="event.stopPropagation()">
+      <div style="font-family:'Fredoka One',cursive; color:var(--primary); font-size:1.35rem; margin-bottom:4px;">Edit Your Profile</div>
+      <div style="font-size:0.8rem; color:var(--text-muted); font-weight:700; margin-bottom:18px;">Customize your appearance and details</div>
+      
+      <!-- Preview Section -->
+      <div style="display:flex; justify-content:center; margin-bottom:20px;">
+        <div style="width:100px; height:100px; border-radius:50%; border:3px solid var(--primary); padding:4px; background:white; overflow:hidden; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 12px var(--shadow);">
+          <img src="" id="edit-avatar-preview" style="width:100%; height:100%; border-radius:50%;" alt="Avatar Preview">
+        </div>
+      </div>
+
+      <!-- Form Fields -->
+      <div style="margin-bottom:14px;">
+        <label style="display:block; font-size:0.75rem; font-weight:900; letter-spacing:1px; text-transform:uppercase; color:var(--primary); margin-bottom:6px;">Your Name</label>
+        <input type="text" id="edit-profile-name" style="width:100%; padding:10px 14px; border:1.5px solid var(--accent2); border-radius:10px; background:var(--white); font-family:'Nunito',sans-serif; font-weight:700; color:var(--text); outline:none; font-size:0.9rem;" placeholder="e.g. Pavan">
+      </div>
+
+      <div style="margin-bottom:14px;">
+        <label style="display:block; font-size:0.75rem; font-weight:900; letter-spacing:1px; text-transform:uppercase; color:var(--primary); margin-bottom:6px;">Gender</label>
+        <select id="edit-profile-gender" style="width:100%; padding:10px 14px; border:1.5px solid var(--accent2); border-radius:10px; background:var(--white); font-family:'Nunito',sans-serif; font-weight:700; color:var(--text); outline:none; font-size:0.9rem; cursor:pointer;">
+          <option value="prefer_not">Prefer not to say</option>
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+        </select>
+      </div>
+
+      <div style="margin-bottom:16px;">
+        <label style="display:block; font-size:0.75rem; font-weight:900; letter-spacing:1px; text-transform:uppercase; color:var(--primary); margin-bottom:6px;">Avatar Background</label>
+        <div id="bg-swatches" style="display:flex; gap:10px; flex-wrap:wrap; margin-top:4px;">
+          <!-- Swatches rendered via script -->
+        </div>
+      </div>
+
+      <div style="margin-bottom:14px;">
+        <label style="display:block; font-size:0.75rem; font-weight:900; letter-spacing:1px; text-transform:uppercase; color:var(--primary); margin-bottom:8px;">Choose Avatar Seed</label>
+        <div id="avatar-grid" style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:10px; background:rgba(255,255,255,0.4); padding:10px; border-radius:12px; border:1.5px solid var(--accent2);"></div>
+      </div>
+
+      <div id="edit-profile-error" style="display:none; color:#d9534f; font-size:0.8rem; font-weight:bold; margin-bottom:12px; text-align:center;"></div>
+      
+      <!-- Action Buttons -->
+      <div style="display:flex; gap:10px; margin-top:20px;">
+        <button type="button" onclick="closeAvatarPicker()" style="flex:1; padding:10px; background:rgba(0,0,0,0.05); color:var(--text); border:1.5px solid var(--accent2); border-radius:999px; font-family:'Nunito',sans-serif; font-weight:800; cursor:pointer; font-size:0.9rem; transition:all 0.2s;">Cancel</button>
+        <button type="button" id="save-profile-btn" onclick="saveUserProfileChanges()" style="flex:1; padding:10px; background:var(--primary); color:white; border:none; border-radius:999px; font-family:'Nunito',sans-serif; font-weight:800; cursor:pointer; font-size:0.9rem; box-shadow:0 3px 12px var(--shadow); transition:all 0.2s;">Save Changes ✓</button>
+      </div>
     </div>
   </div>
 
@@ -1210,51 +1250,7 @@
     });
   </script>
 
-  <script>
-    // Avatar picker logic
-    var _currentAvatarSeed = 'Felix';
-    var _currentAvatarBg = 'b6e3f4';
-    var _currentUserGender = 'prefer_not';
-
-    var AVATAR_SEEDS_MALE   = ['Felix','Aaron','Ryan','Marcus','Alex','Jordan'];
-    var AVATAR_SEEDS_FEMALE = ['Zoe','Sarah','Emma','Lily','Ava','Grace'];
-    var AVATAR_SEEDS_ANY    = ['Sam','Casey','Riley','Jamie','Morgan','Charlie'];
-
-    function getAvatarSeeds(gender) {
-      if (gender === 'female') return AVATAR_SEEDS_FEMALE;
-      if (gender === 'male')   return AVATAR_SEEDS_MALE;
-      return AVATAR_SEEDS_ANY;
-    }
-
-    function openAvatarPicker() {
-      var modal = document.getElementById('avatar-modal');
-      var grid  = document.getElementById('avatar-grid');
-      modal.style.display = 'flex';
-      grid.innerHTML = '';
-      var seeds = getAvatarSeeds(_currentUserGender);
-      seeds.forEach(function(seed) {
-        var card = document.createElement('div');
-        var saved = localStorage.getItem('speakup-avatar-seed') || _currentAvatarSeed;
-        var isActive = seed === saved;
-        card.style.cssText = 'cursor:pointer; border-radius:12px; overflow:hidden; border:3px solid ' + (isActive ? 'var(--primary)' : 'var(--accent2)') + '; transition:all 0.2s; padding:6px; background:rgba(255,255,255,0.6); text-align:center;';
-        card.innerHTML = '<img src="https://api.dicebear.com/7.x/notionists/svg?seed=' + seed + '&backgroundColor=' + _currentAvatarBg + '" style="width:70px;height:70px;" alt="' + seed + '">';
-        card.addEventListener('click', function() {
-          localStorage.setItem('speakup-avatar-seed', seed);
-          _currentAvatarSeed = seed;
-          document.getElementById('profile-img').src = 'https://api.dicebear.com/7.x/notionists/svg?seed=' + seed + '&backgroundColor=' + _currentAvatarBg;
-          grid.querySelectorAll('div').forEach(function(c) { c.style.borderColor = 'var(--accent2)'; });
-          card.style.borderColor = 'var(--primary)';
-        });
-        grid.appendChild(card);
-      });
-    }
-
-    function closeAvatarPicker(event) {
-      if (!event || event.target === document.getElementById('avatar-modal')) {
-        document.getElementById('avatar-modal').style.display = 'none';
-      }
-    }
-  </script>
+  <!-- Profile settings logic is now handled in the main script module below -->
 
   <!-- FIREBASE INTEGRATION -->
   <script type="module">
@@ -1264,6 +1260,198 @@
     // Global references for filtering
     window.allPracticeDates = [];
     window.allTotalYaps = 0;
+
+    // Profile customization state and logic
+    let _currentAvatarSeed = 'Felix';
+    let _currentAvatarBg = 'b6e3f4';
+    let _currentUserGender = 'prefer_not';
+
+    const AVATAR_SEEDS_MALE   = ['Felix','Aaron','Ryan','Marcus','Alex','Jordan','Peter','Dylan'];
+    const AVATAR_SEEDS_FEMALE = ['Zoe','Sarah','Emma','Lily','Ava','Grace','Chloe','Ruby'];
+    const AVATAR_SEEDS_ANY    = ['Sam','Casey','Riley','Jamie','Morgan','Charlie','Taylor','Parker'];
+
+    function getAvatarSeeds(gender) {
+      if (gender === 'female') return AVATAR_SEEDS_FEMALE;
+      if (gender === 'male')   return AVATAR_SEEDS_MALE;
+      return AVATAR_SEEDS_ANY;
+    }
+
+    const BG_COLORS = [
+      { name: 'Sky Blue', hex: 'b6e3f4' },
+      { name: 'Peach', hex: 'ffdfbf' },
+      { name: 'Lavender', hex: 'd1d4f9' },
+      { name: 'Rose', hex: 'ffd6e7' },
+      { name: 'Mint', hex: 'd4f0d6' },
+      { name: 'Banana', hex: 'fff0b3' }
+    ];
+
+    let _tempGender = 'prefer_not';
+    let _tempBg = 'b6e3f4';
+    let _tempSeed = 'Felix';
+
+    function openAvatarPicker() {
+      const currentName = document.getElementById('profile-name').innerText;
+      _tempGender = _currentUserGender;
+      _tempBg = _currentAvatarBg;
+      _tempSeed = _currentAvatarSeed;
+
+      document.getElementById('edit-profile-name').value = currentName === 'Loading...' ? '' : currentName;
+      document.getElementById('edit-profile-gender').value = _tempGender;
+      document.getElementById('edit-profile-error').style.display = 'none';
+
+      // Attach gender select onchange dynamically
+      const genderSelect = document.getElementById('edit-profile-gender');
+      if (genderSelect) {
+        genderSelect.onchange = function(e) {
+          _tempGender = e.target.value;
+          const seeds = getAvatarSeeds(_tempGender);
+          _tempSeed = seeds[0];
+          updateEditPreview();
+          renderAvatarGrid();
+        };
+      }
+
+      renderBgSwatches();
+      renderAvatarGrid();
+      updateEditPreview();
+
+      document.getElementById('avatar-modal').style.display = 'flex';
+    }
+
+    function closeAvatarPicker(event) {
+      if (!event || event.target === document.getElementById('avatar-modal') || event.target.tagName === 'BUTTON') {
+        document.getElementById('avatar-modal').style.display = 'none';
+      }
+    }
+
+    function updateEditPreview() {
+      document.getElementById('edit-avatar-preview').src = 
+        'https://api.dicebear.com/7.x/notionists/svg?seed=' + _tempSeed + '&backgroundColor=' + _tempBg;
+    }
+
+    function renderBgSwatches() {
+      const container = document.getElementById('bg-swatches');
+      if (!container) return;
+      container.innerHTML = '';
+      BG_COLORS.forEach(function(item) {
+        const swatch = document.createElement('div');
+        swatch.style.cssText = 'width:28px; height:28px; border-radius:50%; background:#' + item.hex + '; cursor:pointer; border:2.5px solid ' + (item.hex === _tempBg ? 'var(--primary)' : 'rgba(0,0,0,0.1)') + '; transition:transform 0.15s; box-shadow:0 2px 5px rgba(0,0,0,0.1);';
+        swatch.title = item.name;
+        swatch.addEventListener('click', function() {
+          _tempBg = item.hex;
+          updateEditPreview();
+          renderBgSwatches();
+          renderAvatarGrid();
+        });
+        container.appendChild(swatch);
+      });
+    }
+
+    function renderAvatarGrid() {
+      const grid = document.getElementById('avatar-grid');
+      if (!grid) return;
+      grid.innerHTML = '';
+      const seeds = getAvatarSeeds(_tempGender);
+      seeds.forEach(function(seed) {
+        const card = document.createElement('div');
+        const isActive = seed === _tempSeed;
+        card.style.cssText = 'cursor:pointer; border-radius:8px; overflow:hidden; border:2.5px solid ' + (isActive ? 'var(--primary)' : 'rgba(0,0,0,0.08)') + '; transition:all 0.2s; padding:4px; background:white; display:flex; align-items:center; justify-content:center;';
+        card.innerHTML = '<img src="https://api.dicebear.com/7.x/notionists/svg?seed=' + seed + '&backgroundColor=' + _tempBg + '" style="width:45px;height:45px;" alt="' + seed + '">';
+        card.addEventListener('click', function() {
+          _tempSeed = seed;
+          updateEditPreview();
+          grid.querySelectorAll('div').forEach(function(c) { c.style.borderColor = 'rgba(0,0,0,0.08)'; });
+          card.style.borderColor = 'var(--primary)';
+        });
+        grid.appendChild(card);
+      });
+    }
+
+    async function saveUserProfileChanges() {
+      const nameInput = document.getElementById('edit-profile-name');
+      const nameVal = nameInput.value.trim();
+      const errorDiv = document.getElementById('edit-profile-error');
+      const saveBtn = document.getElementById('save-profile-btn');
+
+      if (!nameVal) {
+        errorDiv.textContent = '⚠️ Please enter your name';
+        errorDiv.style.display = 'block';
+        return;
+      }
+
+      errorDiv.style.display = 'none';
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Saving...';
+
+      try {
+        const user = auth.currentUser;
+        if (!user) throw new Error('You must be signed in to update your profile.');
+
+        const idToken = await user.getIdToken();
+        const response = await fetch('/api/update-profile', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            idToken,
+            uid: user.uid,
+            name: nameVal,
+            gender: _tempGender,
+            avatar_bg: _tempBg,
+            avatar_seed: _tempSeed
+          })
+        });
+
+        if (!response.ok) {
+          const errData = await response.json();
+          throw new Error(errData.error || 'Failed to save changes');
+        }
+
+        const resJson = await response.json();
+        const updated = resJson.data;
+
+        // Update local variables
+        _currentUserGender = updated.gender;
+        _currentAvatarBg = updated.avatar_bg;
+        _currentAvatarSeed = updated.avatar_seed;
+        localStorage.setItem('speakup-avatar-seed', updated.avatar_seed);
+
+        // Update Firebase Profile Name
+        try {
+          const { updateProfile } = await import("https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js");
+          await updateProfile(user, { displayName: updated.name });
+        } catch (fbErr) {
+          console.warn('[Dashboard] Firebase auth profile name update failed:', fbErr.message);
+        }
+
+        // Update local storage cached object
+        const cacheKey = 'speakup-user-data-' + user.uid;
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) {
+          const data = JSON.parse(cached);
+          data.name = updated.name;
+          data.gender = updated.gender;
+          data.avatar_bg = updated.avatar_bg;
+          data.avatar_seed = updated.avatar_seed;
+          localStorage.setItem(cacheKey, JSON.stringify(data));
+          applyUserData(user, data);
+        }
+
+        closeAvatarPicker();
+
+      } catch (err) {
+        console.error('[Dashboard] Error saving profile:', err);
+        errorDiv.textContent = '❌ ' + err.message;
+        errorDiv.style.display = 'block';
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Save Changes ✓';
+      }
+    }
+
+    // Expose functions globally for HTML access
+    window.openAvatarPicker = openAvatarPicker;
+    window.closeAvatarPicker = closeAvatarPicker;
+    window.saveUserProfileChanges = saveUserProfileChanges;
 
     function populateYearDropdown(practiceDates = []) {
       const select = document.getElementById('heatmap-year-select');
@@ -1693,12 +1881,12 @@
       _currentUserGender = userData.gender || 'prefer_not';
       _currentAvatarBg   = userData.avatar_bg || 'b6e3f4';
 
-      var savedSeed = localStorage.getItem('speakup-avatar-seed');
+      var savedSeed = userData.avatar_seed || localStorage.getItem('speakup-avatar-seed');
       if (!savedSeed) {
         const seeds = getAvatarSeeds(_currentUserGender);
         savedSeed = seeds[0];
-        localStorage.setItem('speakup-avatar-seed', savedSeed);
       }
+      localStorage.setItem('speakup-avatar-seed', savedSeed);
       _currentAvatarSeed = savedSeed;
 
       document.getElementById('profile-img').src =

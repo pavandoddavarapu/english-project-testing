@@ -74,8 +74,8 @@ If the user asks about something totally unrelated to language learning, gently 
       console.error("Gemini Chat Fetch Error:", e);
     }
 
-    // Fallback to Groq
-    const GROQ_KEY = process.env.GROQ_API_KEY;
+    // Fallback to Groq (take first key if multiple are supplied)
+    const GROQ_KEY = (process.env.GROQ_API_KEY || '').split(',')[0]?.trim();
     if (GROQ_KEY) {
       try {
         const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {

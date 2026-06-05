@@ -18,6 +18,71 @@ export const config = {
 
 export const maxDuration = 60; // Allow enough time for AI APIs to respond
 
+// Helper to perform fetch requests to Groq with automatic key rotation on rate limits (429)
+async function fetchGroqWithRotation(url, options, keys) {
+  let lastError = new Error("No Groq API keys available");
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[i];
+    const headers = {
+      ...(options.headers || {}),
+      'Authorization': `Bearer ${key}`
+    };
+    try {
+      const res = await fetch(url, { ...options, headers });
+      if (res.status === 429) {
+        console.warn(`[Groq Rotation] Key ${i+1}/${keys.length} hit rate limit (429). Trying next key...`);
+        lastError = new Error(`Groq key ${i+1} was rate limited (429)`);
+        continue;
+      }
+      return { response: res, workingKey: key };
+    } catch (err) {
+      console.warn(`[Groq Rotation] Key ${i+1}/${keys.length} failed: ${err.message}. Trying next key...`);
+      lastError = err;
+    }
+  }
+  throw lastError;
+}
+
+// Fallback to Gemini 1.5 Flash for high-quality audio transcription if Groq fails
+async function transcribeViaGemini(audioBase64, mimeType, geminiKey) {
+  if (!geminiKey) throw new Error("Gemini API key is not configured");
+  const baseMime = (mimeType || 'audio/webm').split(';')[0];
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`;
+  
+  console.log(`[process-queue] Falling back to Gemini 1.5 Flash for audio transcription`);
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{
+        parts: [
+          {
+            inlineData: {
+              mimeType: baseMime,
+              data: audioBase64
+            }
+          },
+          {
+            text: "Provide a direct, accurate transcript of the speech in this audio file. Do not add any filler text, introductory remarks, formatting, or commentary. If there is no speech or it is silent, reply with nothing."
+          }
+        ]
+      }]
+    })
+  });
+
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new Error(`Gemini transcription fallback returned ${response.status}: ${errText}`);
+  }
+
+  const json = await response.json();
+  const transcript = json.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!transcript) {
+    throw new Error("Gemini returned empty transcription response");
+  }
+  return transcript.trim();
+}
+
 export default async function handler(req, res) {
   // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -48,15 +113,17 @@ export default async function handler(req, res) {
     }
 
     const task = lockRes.rows[0];
-    const GROQ_KEY = process.env.GROQ_API_KEY;
+    const groqKeys = (process.env.GROQ_API_KEY || '').split(',').map(k => k.trim()).filter(Boolean);
+    const GEMINI_KEY = process.env.GEMINI_API_KEY;
 
-    if (!GROQ_KEY) {
+    if (groqKeys.length === 0) {
       throw new Error('Missing GROQ_API_KEY environment variable');
     }
 
     let cleanTranscription = task.transcript || '';
+    let activeGroqKey = groqKeys[0];
 
-    // ── PATH B: Transcribe audio server-side via Groq ──
+    // ── PATH B: Transcribe audio server-side ──
     if (!cleanTranscription && task.audio_base64) {
       console.log(`[process-queue] Transcribing audio for taskId=${taskId} via Groq Whisper`);
       const audioBuffer = Buffer.from(task.audio_base64, 'base64');
@@ -79,18 +146,40 @@ export default async function handler(req, res) {
       formData.append('response_format', 'json');
       formData.append('language', 'en');
 
-      const whisperRes = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${GROQ_KEY}` },
-        body: formData,
-      });
+      try {
+        const { response: whisperRes, workingKey } = await fetchGroqWithRotation(
+          'https://api.groq.com/openai/v1/audio/transcriptions',
+          {
+            method: 'POST',
+            body: formData,
+          },
+          groqKeys
+        );
 
-      if (whisperRes.ok) {
-        const whisperData = await whisperRes.json();
-        cleanTranscription = (whisperData.text || '').trim();
-      } else {
-        const errText = await whisperRes.text();
-        console.error(`[process-queue] Whisper error for taskId=${taskId}:`, errText);
+        activeGroqKey = workingKey;
+
+        if (whisperRes.ok) {
+          const whisperData = await whisperRes.json();
+          cleanTranscription = (whisperData.text || '').trim();
+        } else {
+          const errText = await whisperRes.text();
+          console.error(`[process-queue] Whisper error for taskId=${taskId}:`, errText);
+          throw new Error(`Groq Whisper returned status ${whisperRes.status}`);
+        }
+      } catch (whisperErr) {
+        console.warn(`[process-queue] All Groq keys failed for Whisper transcription:`, whisperErr.message);
+
+        if (GEMINI_KEY) {
+          try {
+            cleanTranscription = await transcribeViaGemini(task.audio_base64, task.mime_type, GEMINI_KEY);
+            console.log(`[process-queue] Gemini 1.5 Flash transcription fallback succeeded.`);
+          } catch (geminiErr) {
+            console.error(`[process-queue] Gemini transcription fallback also failed:`, geminiErr.message);
+            throw new Error(`Transcription failed: both Groq Whisper and Gemini fallback failed. Details: ${whisperErr.message} | ${geminiErr.message}`);
+          }
+        } else {
+          throw new Error(`Transcription failed on all Groq keys, and no Gemini API key is configured as fallback.`);
+        }
       }
     }
 
@@ -108,7 +197,7 @@ export default async function handler(req, res) {
 
       await query(`
         UPDATE analysis_queue
-        SET status = 'completed', result = $2, updated_at = NOW()
+        SET status = 'completed', result = $2, audio_base64 = NULL, updated_at = NOW()
         WHERE task_id = $1
       `, [taskId, JSON.stringify(shortResult)]);
 
@@ -135,19 +224,33 @@ Evaluate their speech and return ONLY a valid JSON object (no markdown, no extra
 }`;
 
 
-    const chatRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${GROQ_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'llama-3.1-8b-instant',
-        messages: [{ role: 'user', content: scoringPrompt }],
-        temperature: 0.3,
-        max_tokens: 400,
-      }),
-    });
+    let chatRes;
+    try {
+      // Prioritize the Groq key that successfully worked for Whisper, falling back to others
+      const keysToTry = activeGroqKey ? [activeGroqKey, ...groqKeys.filter(k => k !== activeGroqKey)] : groqKeys;
+
+      const rotationRes = await fetchGroqWithRotation(
+        'https://api.groq.com/openai/v1/chat/completions',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'llama-3.1-8b-instant',
+            messages: [{ role: 'user', content: scoringPrompt }],
+            temperature: 0.3,
+            max_tokens: 400,
+          }),
+        },
+        keysToTry
+      );
+
+      chatRes = rotationRes.response;
+    } catch (scoringErr) {
+      console.error(`[process-queue] Groq scoring API failed on all keys:`, scoringErr.message);
+      throw new Error(`Scoring failed on all Groq keys. Details: ${scoringErr.message}`);
+    }
 
     if (!chatRes.ok) {
       const errText = await chatRes.text();
@@ -167,10 +270,10 @@ Evaluate their speech and return ONLY a valid JSON object (no markdown, no extra
 
     const finalResult = JSON.parse(text);
 
-    // Save final successful result to database
+    // Save final successful result to database and clear raw audio base64 to save DB storage
     await query(`
       UPDATE analysis_queue
-      SET status = 'completed', result = $2, updated_at = NOW()
+      SET status = 'completed', result = $2, audio_base64 = NULL, updated_at = NOW()
       WHERE task_id = $1
     `, [taskId, JSON.stringify(finalResult)]);
 
@@ -180,10 +283,10 @@ Evaluate their speech and return ONLY a valid JSON object (no markdown, no extra
   } catch (err) {
     console.error(`[process-queue] Error processing taskId=${taskId}:`, err.message);
     
-    // Save failure status to database so polling client knows it failed
+    // Save failure status to database and clear raw audio base64 to prevent storage leaks
     await query(`
       UPDATE analysis_queue
-      SET status = 'failed', error_message = $2, updated_at = NOW()
+      SET status = 'failed', error_message = $2, audio_base64 = NULL, updated_at = NOW()
       WHERE task_id = $1
     `, [taskId, err.message]);
 

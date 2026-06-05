@@ -34,3 +34,16 @@ export async function query(text, params) {
   console.log('[DB Query] executed:', { text: text.substring(0, 100), duration: `${duration}ms`, rows: res.rowCount });
   return res;
 }
+
+// Startup Migration: Ensure users table has avatar_seed column
+(async () => {
+  try {
+    await pool.query(`
+      ALTER TABLE users 
+      ADD COLUMN IF NOT EXISTS avatar_seed VARCHAR(100) DEFAULT 'Felix'
+    `);
+    console.log('🔌 [DB Migration] users.avatar_seed column is verified/added.');
+  } catch (err) {
+    console.error('❌ [DB Migration] Failed to ensure users.avatar_seed column:', err.message);
+  }
+})();

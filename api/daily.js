@@ -54,7 +54,8 @@ Other sections:
 - vocab: mix of useful everyday words, idioms, and power phrases — not overly academic`;
 
   const GEMINI_KEY = process.env.GEMINI_API_KEY;
-  const GROQ_KEY = process.env.GROQ_API_KEY;
+  const groqKeys = (process.env.GROQ_API_KEY || '').split(',').map(k => k.trim()).filter(Boolean);
+  const GROQ_KEY = groqKeys[0];
 
   if (!GEMINI_KEY || !GROQ_KEY) {
     return res.status(500).json({ error: "Missing API keys in environment variables." });

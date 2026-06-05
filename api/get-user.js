@@ -37,9 +37,12 @@ export default async function handler(req, res) {
       SELECT 
         u.*,
         COALESCE(
-          (SELECT json_agg(DISTINCT date::date::text ORDER BY date::date::text ASC) 
-           FROM practice_sessions 
-           WHERE user_id = u.uid), 
+          (SELECT json_agg(d) FROM (
+             SELECT DISTINCT date::date::text as d
+             FROM practice_sessions 
+             WHERE user_id = u.uid
+             ORDER BY d ASC
+           ) sub), 
           '[]'::json
         ) as practice_dates,
         COALESCE(
@@ -67,6 +70,7 @@ export default async function handler(req, res) {
           email: user.email,
           gender: user.gender,
           avatar_bg: user.avatar_bg,
+          avatar_seed: user.avatar_seed || 'Felix',
           aura_points: user.aura_points,
           streak: user.streak,
           total_yaps: user.total_yaps,
@@ -97,6 +101,7 @@ export default async function handler(req, res) {
           email: newUser.email,
           gender: newUser.gender,
           avatar_bg: newUser.avatar_bg,
+          avatar_seed: newUser.avatar_seed || 'Felix',
           aura_points: 0,
           streak: 0,
           total_yaps: 0,

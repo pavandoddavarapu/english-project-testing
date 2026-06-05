@@ -27,5 +27,21 @@ CREATE TABLE IF NOT EXISTS practice_sessions (
     confidence INTEGER NOT NULL
 );
 
--- 3. Create Index for Performance
+-- 3. Create Analysis Queue Table (used by speech analysis pipeline)
+CREATE TABLE IF NOT EXISTS analysis_queue (
+    task_id VARCHAR(128) PRIMARY KEY,
+    status VARCHAR(50) DEFAULT 'pending',
+    transcript TEXT,
+    audio_base64 TEXT,
+    mime_type VARCHAR(100),
+    topic VARCHAR(255),
+    image_url TEXT,
+    result TEXT,
+    error_message TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 4. Create Indexes for Performance
 CREATE INDEX IF NOT EXISTS idx_sessions_user_date ON practice_sessions(user_id, date DESC);
+CREATE INDEX IF NOT EXISTS idx_queue_status_created ON analysis_queue(status, created_at);

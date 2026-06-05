@@ -33,7 +33,7 @@ export default async function handler(req, res) {
     const hasFlash = modelNames.some(n => n.includes('flash'));
 
     // --- Test Groq ---
-    const GROQ_KEY = process.env.GROQ_API_KEY;
+    const GROQ_KEY = (process.env.GROQ_API_KEY || '').split(',')[0]?.trim();
     let groqStatus = "NOT_SET";
     let groqModels = [];
     if (GROQ_KEY) {

@@ -33,7 +33,7 @@
 
   <!-- NAV -->
   <nav class="navbar">
-    <div class="nav-brand" style="display: inline-flex; align-items: center;">Small Steps to the podium 🎤 <span id="db-indicator" class="db-indicator-badge firebase">🔥 Firebase</span></div>
+    <div class="nav-brand">Small Steps to the podium 🎤</div>
 
     <div class="nav-tabs">
       <button class="nav-tab active" data-tab="random" id="tab-random">🎲 Random Topics</button>
@@ -86,19 +86,6 @@
   <script type="module">
     import { auth } from './firebase-config.js';
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
-
-    // Set DB indicator immediately on load
-    const usePostgres = localStorage.getItem('speakup-use-postgres') === 'true';
-    const indicator = document.getElementById('db-indicator');
-    if (indicator) {
-      if (usePostgres) {
-        indicator.innerText = '🐘 PostgreSQL';
-        indicator.className = 'db-indicator-badge postgres';
-      } else {
-        indicator.innerText = '🔥 Firebase';
-        indicator.className = 'db-indicator-badge firebase';
-      }
-    }
 
     onAuthStateChanged(auth, (user) => {
       const authBtn = document.getElementById('auth-btn');
@@ -498,19 +485,15 @@
   <script src="image-cache.js?v=2"></script>
   <script src="app.js?v=3"></script>
 
-  <!-- Practice Session Tracker v2 — backend proxy + Firestore fallback -->
+  <!-- Firebase & Core logic -->
   <script type="module">
-    import { auth, db } from './firebase-config.js';
+    import { auth } from './firebase-config.js';
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
-    import { doc, getDoc, updateDoc, setDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
     // ── PRIMARY: save via backend proxy (never blocked by ad blockers) ─────────
     async function saveViaBackend(user, sessionData) {
       const idToken = await user.getIdToken(true); // force-refresh token
-      const usePostgres = localStorage.getItem('speakup-use-postgres') === 'true';
-      const endpoint = usePostgres ? '/api/save-session-pg' : '/api/save-session';
-      
-      const res = await fetch(endpoint, {
+      const res = await fetch('/api/save-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ idToken, uid: user.uid, sessionData, displayName: user.displayName || 'Speaker', email: user.email || '' })
@@ -524,56 +507,6 @@
       return result;
     }
 
-    // ── FALLBACK: direct Firestore write (works when ad blocker is off) ────────
-    async function saveViaFirestore(user, sessionData, now, todayISO, todayDateStr) {
-      const userRef = doc(db, 'users', user.uid);
-      const userDoc = await getDoc(userRef);
-      const cur = userDoc.exists() ? userDoc.data() : {};
-
-      const fluency = Math.min(100, Math.max(0, Number(sessionData.fluency) || 0));
-      const clarity = Math.min(100, Math.max(0, Number(sessionData.clarity) || 0));
-      const confidence = Math.min(100, Math.max(0, Number(sessionData.confidence) || 0));
-      const avgScore = Math.round((fluency + clarity + confidence) / 3);
-
-      const existingDates = cur.practice_dates || [];
-      const uniqueDateStrs = [...new Set(existingDates.map(d => String(d).split('T')[0]))].filter(Boolean).sort();
-      let newStreak = Number(cur.streak) || 0;
-      if (!uniqueDateStrs.includes(todayDateStr)) {
-        if (uniqueDateStrs.length === 0) {
-          newStreak = 1;
-        } else {
-          const last = new Date(uniqueDateStrs[uniqueDateStrs.length - 1] + 'T00:00:00Z');
-          const tod = new Date(todayDateStr + 'T00:00:00Z');
-          const diff = Math.round((tod - last) / 86400000);
-          newStreak = diff === 1 ? newStreak + 1 : 1;
-        }
-      }
-
-      const sessions = Array.isArray(cur.recent_sessions) ? cur.recent_sessions.slice() : [];
-      sessions.unshift({
-        date: todayISO, topic: sessionData.topic || 'General Practice',
-        mode: sessionData.mode || 'random', score: avgScore,
-        fluency, clarity, confidence
-      });
-
-      const scalarPayload = {
-        aura_points: (Number(cur.aura_points) || 0) + 10,
-        total_yaps: (Number(cur.total_yaps) || 0) + 1,
-        streak: newStreak,
-        practice_dates: arrayUnion(todayISO)
-      };
-
-      if (userDoc.exists()) {
-        await updateDoc(userRef, scalarPayload);
-      } else {
-        await setDoc(userRef, Object.assign(
-          { name: user.displayName || 'Speaker', email: user.email || '', gender: 'prefer_not', avatar_bg: 'b6e3f4', created_at: now, recent_sessions: [] },
-          scalarPayload
-        ));
-      }
-      await updateDoc(userRef, { recent_sessions: sessions.slice(0, 20) });
-      console.log('[Tracker] Firestore direct save OK. Streak:', newStreak);
-    }
 
     // ── Orchestrator: try backend first, fall back to Firestore ───────────────
     async function savePracticeSession(user, data) {
@@ -596,25 +529,12 @@
 
       console.log('[Tracker] Initiating session save... Mode:', tabMode);
 
-      const usePostgres = localStorage.getItem('speakup-use-postgres') === 'true';
-
       // Try backend proxy first (immune to ad blockers)
       try {
         await saveViaBackend(user, sessionData);
-        return; // success — done
       } catch (backendErr) {
-        console.warn('[Tracker] Backend proxy failed...', backendErr.message);
-        if (usePostgres) {
-          alert('Failed to save session to PostgreSQL database.');
-          return;
-        }
-      }
-
-      // Fallback to direct Firestore
-      try {
-        await saveViaFirestore(user, sessionData, now, todayISO, todayDateStr);
-      } catch (fsErr) {
-        console.error('[Tracker] Both save methods failed:', fsErr.message);
+        console.error('[Tracker] Failed to save session to PostgreSQL database:', backendErr.message);
+        alert('Failed to save session to database.');
       }
     }
 

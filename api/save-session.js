@@ -1,105 +1,24 @@
 /**
  * /api/save-session.js
- *
- * Server-side Firestore writer. Because this runs on Vercel (Node.js),
- * it is never touched by the user's ad blocker.
- *
- * The client sends:
- *   { idToken, uid, sessionData: { topic, mode, score, fluency, clarity, confidence } }
- *
- * We use the Firestore REST API authenticated with the user's Firebase
- * ID token — no Admin SDK / service-account needed.
+ * 
+ * PostgreSQL version of save-session API route.
+ * Verifies Firebase token, inserts the session row, and updates
+ * the user's streak, aura points, and yaps counter in PostgreSQL.
  */
+
+import { verifyFirebaseIdToken } from './auth-helper.js';
+import { query } from './db.js';
 
 export const config = { api: { bodyParser: { sizeLimit: '1mb' } } };
 export const maxDuration = 15;
 
-const PROJECT_ID = 'speak-up-76a89';
-const FS_BASE = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents`;
-
-// ── Firestore REST helpers ────────────────────────────────────────────────────
-
-function toFSValue(val) {
-  if (val === null || val === undefined) return { nullValue: null };
-  if (typeof val === 'boolean')          return { booleanValue: val };
-  if (typeof val === 'number')           return Number.isInteger(val)
-    ? { integerValue: String(val) }
-    : { doubleValue: val };
-  if (typeof val === 'string')           return { stringValue: val };
-  if (val instanceof Date)               return { timestampValue: val.toISOString() };
-  if (Array.isArray(val))                return { arrayValue: { values: val.map(toFSValue) } };
-  if (typeof val === 'object') {
-    const fields = {};
-    for (const [k, v] of Object.entries(val)) fields[k] = toFSValue(v);
-    return { mapValue: { fields } };
-  }
-  return { stringValue: String(val) };
-}
-
-function fromFSValue(fsVal) {
-  if (!fsVal) return null;
-  if ('nullValue'      in fsVal) return null;
-  if ('booleanValue'   in fsVal) return fsVal.booleanValue;
-  if ('integerValue'   in fsVal) return Number(fsVal.integerValue);
-  if ('doubleValue'    in fsVal) return fsVal.doubleValue;
-  if ('stringValue'    in fsVal) return fsVal.stringValue;
-  if ('timestampValue' in fsVal) return fsVal.timestampValue;
-  if ('arrayValue'     in fsVal) return (fsVal.arrayValue.values || []).map(fromFSValue);
-  if ('mapValue'       in fsVal) {
-    const obj = {};
-    for (const [k, v] of Object.entries(fsVal.mapValue.fields || {})) obj[k] = fromFSValue(v);
-    return obj;
-  }
-  return null;
-}
-
-function docToPlain(doc) {
-  const obj = {};
-  for (const [k, v] of Object.entries(doc.fields || {})) obj[k] = fromFSValue(v);
-  return obj;
-}
-
-async function fsGet(uid, idToken) {
-  const url = `${FS_BASE}/users/${uid}`;
-  const res = await fetch(url, {
-    headers: { Authorization: `Bearer ${idToken}` }
-  });
-  if (res.status === 404) return null;
-  if (!res.ok) throw new Error(`Firestore GET failed: ${res.status} ${await res.text()}`);
-  const json = await res.json();
-  return docToPlain(json);
-}
-
-async function fsPatch(uid, idToken, fields) {
-  // Build field list for partial update
-  const fieldParams = Object.keys(fields)
-    .map(k => `updateMask.fieldPaths=${encodeURIComponent(k)}`)
-    .join('&');
-  const url = `${FS_BASE}/users/${uid}?${fieldParams}`;
-
-  const body = { fields: {} };
-  for (const [k, v] of Object.entries(fields)) body.fields[k] = toFSValue(v);
-
-  const res = await fetch(url, {
-    method: 'PATCH',
-    headers: {
-      Authorization: `Bearer ${idToken}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) throw new Error(`Firestore PATCH failed: ${res.status} ${await res.text()}`);
-  return res.json();
-}
-
-// ── Main handler ──────────────────────────────────────────────────────────────
-
 export default async function handler(req, res) {
+  // CORS Headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'POST')   return res.status(405).json({ error: 'Method not allowed' });
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
     const { idToken, uid, sessionData, displayName, email } = req.body || {};
@@ -108,71 +27,81 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Missing idToken, uid, or sessionData' });
     }
 
-    // ── 1. Read current user document ─────────────────────────────────────────
-    const currentData = await fsGet(uid, idToken) || {};
+    // 1. Verify token & authenticate
+    const verifiedUser = await verifyFirebaseIdToken(idToken);
+    if (verifiedUser.uid !== uid) {
+      return res.status(403).json({ error: 'Unauthorized: UID mismatch' });
+    }
 
+    // 2. Ensure user exists in the users table
+    let userRes = await query('SELECT aura_points, streak FROM users WHERE uid = $1', [uid]);
+    if (userRes.rowCount === 0) {
+      console.log(`[save-session] User ${uid} not found, pre-initializing user row`);
+      const avatarBg = 'b6e3f4';
+      await query(
+        `INSERT INTO users (uid, name, email, gender, avatar_bg, aura_points, streak, total_yaps)
+         VALUES ($1, $2, $3, 'prefer_not', $4, 0, 0, 0)`,
+        [uid, displayName || 'Speaker', email || verifiedUser.email, avatarBg]
+      );
+      userRes = await query('SELECT aura_points, streak FROM users WHERE uid = $1', [uid]);
+    }
+
+    const currentData = userRes.rows[0];
     const now = new Date();
-    const todayISO     = now.toISOString();
+    const todayISO = now.toISOString();
     const todayDateStr = todayISO.split('T')[0];
 
-    const fluency    = Math.min(100, Math.max(0, Number(sessionData.fluency)    || 0));
-    const clarity    = Math.min(100, Math.max(0, Number(sessionData.clarity)    || 0));
+    const fluency = Math.min(100, Math.max(0, Number(sessionData.fluency) || 0));
+    const clarity = Math.min(100, Math.max(0, Number(sessionData.clarity) || 0));
     const confidence = Math.min(100, Math.max(0, Number(sessionData.confidence) || 0));
-    const avgScore   = Math.round((fluency + clarity + confidence) / 3);
+    const avgScore = Math.round((fluency + clarity + confidence) / 3);
 
-    // ── 2. Streak calculation ─────────────────────────────────────────────────
-    const existingDates    = Array.isArray(currentData.practice_dates) ? currentData.practice_dates : [];
-    const uniqueDateStrs   = [...new Set(existingDates.map(d => String(d).split('T')[0]))].filter(Boolean).sort();
+    // 3. Fetch unique practice dates for streak calculation
+    const datesRes = await query(
+      'SELECT DISTINCT date::date::text as practice_date FROM practice_sessions WHERE user_id = $1 ORDER BY practice_date ASC',
+      [uid]
+    );
+    const uniqueDateStrs = datesRes.rows.map(r => r.practice_date);
 
     let newStreak = Number(currentData.streak) || 0;
     if (!uniqueDateStrs.includes(todayDateStr)) {
       if (uniqueDateStrs.length === 0) {
         newStreak = 1;
       } else {
-        const lastDate    = new Date(uniqueDateStrs[uniqueDateStrs.length - 1] + 'T00:00:00Z');
-        const todayMid    = new Date(todayDateStr + 'T00:00:00Z');
-        const diffDays    = Math.round((todayMid - lastDate) / 86400000);
+        const lastDate = new Date(uniqueDateStrs[uniqueDateStrs.length - 1] + 'T00:00:00Z');
+        const todayMid = new Date(todayDateStr + 'T00:00:00Z');
+        const diffDays = Math.round((todayMid - lastDate) / 86400000);
         newStreak = diffDays === 1 ? newStreak + 1 : 1;
       }
     }
 
-    // ── 3. Build updated sessions list ────────────────────────────────────────
-    const existingSessions = Array.isArray(currentData.recent_sessions) ? currentData.recent_sessions : [];
-    const newSession = {
-      date:       todayISO,
-      topic:      String(sessionData.topic || 'General Practice'),
-      mode:       String(sessionData.mode  || 'random'),
-      score:      avgScore,
-      fluency,
-      clarity,
-      confidence,
-    };
-    const trimmedSessions = [newSession, ...existingSessions].slice(0, 20);
+    // 4. Insert practice session row into PostgreSQL
+    await query(
+      `INSERT INTO practice_sessions (user_id, date, topic, mode, score, fluency, clarity, confidence)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+      [uid, now, sessionData.topic || 'General Practice', sessionData.mode || 'random', avgScore, fluency, clarity, confidence]
+    );
 
-    // ── 4. Build updated practice_dates ───────────────────────────────────────
-    const updatedDates = [...new Set([...existingDates, todayISO])];
+    // 5. Update users table (aura points, total yaps, streak)
+    const updateRes = await query(
+      `UPDATE users 
+       SET aura_points = aura_points + 10,
+           total_yaps = total_yaps + 1,
+           streak = $2
+       WHERE uid = $1
+       RETURNING aura_points, streak`,
+      [uid, newStreak]
+    );
 
-    // ── 5. Write everything back ──────────────────────────────────────────────
-    const isNewUser = !currentData || Object.keys(currentData).length === 0;
-    const writePayload = {
-      aura_points:     (Number(currentData.aura_points) || 0) + 10,
-      total_yaps:      (Number(currentData.total_yaps)  || 0) + 1,
-      streak:           newStreak,
-      practice_dates:   updatedDates,
-      recent_sessions:  trimmedSessions,
-    };
-    // For brand-new users: also save profile fields so the dashboard can display them
-    if (isNewUser) {
-      writePayload.name       = displayName || 'Speaker';
-      writePayload.email      = email       || '';
-      writePayload.gender     = 'prefer_not';
-      writePayload.avatar_bg  = 'b6e3f4';
-      writePayload.created_at = now.toISOString();
-    }
-    await fsPatch(uid, idToken, writePayload);
+    const updatedStats = updateRes.rows[0];
 
-    console.log(`[save-session] uid=${uid} mode=${sessionData.mode} score=${avgScore} streak=${newStreak}`);
-    return res.status(200).json({ ok: true, streak: newStreak, aura: (Number(currentData.aura_points) || 0) + 10 });
+    console.log(`[save-session] uid=${uid} score=${avgScore} streak=${updatedStats.streak} aura=${updatedStats.aura_points}`);
+    
+    return res.status(200).json({
+      ok: true,
+      streak: updatedStats.streak,
+      aura: updatedStats.aura_points
+    });
 
   } catch (err) {
     console.error('[save-session] Error:', err.message);

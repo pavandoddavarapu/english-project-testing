@@ -94,7 +94,7 @@ function updateWhisperBadge(state, progress) {
 function initWhisperWorker() {
   try {
     // Module workers need type:'module' so Transformers.js ESM imports work.
-    whisperWorker = new Worker('./whisper-worker.js', { type: 'module' });
+    whisperWorker = new Worker('./assets/js/whisper-worker.js', { type: 'module' });
 
     // Global listener ONLY handles model lifecycle events (loading, progress, ready, error).
     // It intentionally does NOT handle 'complete' or 'transcribing' — those are handled

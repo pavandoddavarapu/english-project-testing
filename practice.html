@@ -12,21 +12,21 @@
   <meta property="og:title" content="Speak Up! – English Speech Practice" />
   <meta property="og:description"
     content="Level up your English fluency with daily AI-generated speaking challenges!" />
-  <meta property="og:image" content="./icon-512.png" />
+  <meta property="og:image" content="./assets/images/icon-512.png" />
   <meta property="og:type" content="website" />
 
   <!-- PWA Setup -->
-  <link rel="manifest" href="manifest.json" />
+  <link rel="manifest" href="assets/manifest.json" />
   <meta name="theme-color" content="#D63384" />
-  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/images/icon-192.png">
+  <link rel="apple-touch-icon" href="assets/images/icon-192.png">
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
     href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&family=Pacifico&display=swap"
     rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=3" />
+  <link rel="stylesheet" href="assets/css/style.css" />
 </head>
 
 <body>
@@ -84,7 +84,7 @@
 
   <!-- Auth Script -->
   <script type="module">
-    import { auth } from './firebase-config.js';
+    import { auth } from './assets/js/firebase-config.js';
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
 
     onAuthStateChanged(auth, (user) => {
@@ -482,12 +482,12 @@
   </div>
 
   <!-- Smart Cached Image System -->
-  <script src="image-cache.js?v=2"></script>
-  <script src="app.js?v=3"></script>
+  <script src="assets/js/image-cache.js"></script>
+  <script src="assets/js/app.js"></script>
 
   <!-- Firebase & Core logic -->
   <script type="module">
-    import { auth } from './firebase-config.js';
+    import { auth } from './assets/js/firebase-config.js';
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
 
     // ── PRIMARY: save via backend proxy (never blocked by ad blockers) ─────────

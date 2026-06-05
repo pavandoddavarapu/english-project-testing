@@ -3,11 +3,11 @@ const CACHE_NAME = 'speakup-cache-v10';
 
 const ASSETS_TO_CACHE = [
   './',
-  './style.css',
-  './app.js',
-  './manifest.json',
-  './icon-192.png',
-  './icon-512.png'
+  './assets/css/style.css',
+  './assets/js/app.js',
+  './assets/manifest.json',
+  './assets/images/icon-192.png',
+  './assets/images/icon-512.png'
   // NOTE: HTML files are intentionally excluded so they are always
   // fetched fresh from the network (network-first for HTML).
 ];

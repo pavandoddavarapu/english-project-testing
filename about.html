@@ -7,14 +7,14 @@
   <title>About Speak Up! - Master English Speaking</title>
   <meta name="description"
     content="Learn how Speak Up! helps budding learners improve English fluency through features, streaks, and AI analysis.">
-  <link rel="manifest" href="manifest.json">
-  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="manifest" href="assets/manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/images/icon-192.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
     href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&family=Pacifico&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=3">
+  <link rel="stylesheet" href="assets/css/style.css">
   <script>(function () { const t = localStorage.getItem("speakup-theme") || "green"; document.documentElement.setAttribute("data-theme", t); })();</script>
   <style>
     * {
@@ -661,7 +661,7 @@
 
   <!-- AUTH SCRIPT -->
   <script type="module">
-    import { auth } from './firebase-config.js';
+    import { auth } from './assets/js/firebase-config.js';
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
     onAuthStateChanged(auth, user => {
       if (user) {

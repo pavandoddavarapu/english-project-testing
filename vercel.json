@@ -29,7 +29,7 @@
   "rewrites": [
     {
       "source": "/dashboard",
-      "destination": "/genz-streak-test.html"
+      "destination": "/genz-streak-test"
     }
   ]
 }

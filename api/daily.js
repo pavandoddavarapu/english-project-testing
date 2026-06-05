@@ -1,6 +1,7 @@
+import { setCorsHeaders, safeError } from './middleware.js';
+
 export default async function handler(req, res) {
-  // Allow CORS and cache the response globally on Vercel Edge for 24 hours
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  setCorsHeaders(req, res);
   res.setHeader('Cache-Control', 'public, s-maxage=86400, stale-while-revalidate=43200');
 
   const { date } = req.query;
@@ -124,5 +125,5 @@ Other sections:
   }
 
   // Both failed
-  return res.status(500).json({ error: "All AI models failed." });
+  return safeError(res, 500, new Error('All AI models failed for daily topics'), '[daily]');
 }

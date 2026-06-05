@@ -1,5 +1,8 @@
+import { setCorsHeaders, safeError } from './middleware.js';
+
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  setCorsHeaders(req, res);
+  if (req.method === 'OPTIONS') return res.status(200).end();
   
   const GEMINI_KEY = process.env.GEMINI_API_KEY;
   
@@ -67,10 +70,6 @@ export default async function handler(req, res) {
     });
 
   } catch (err) {
-    return res.status(200).json({
-      status: "FETCH_ERROR",
-      keyPreview: maskedKey,
-      error: err.message
-    });
+    return safeError(res, 500, err, '[test]');
   }
 }

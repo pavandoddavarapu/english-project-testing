@@ -1488,50 +1488,192 @@ html[data-theme="dark"] .filter-option .check { color: var(--accent); }
 }
 
 /* ============================================================
-   RESPONSIVE
+   RESPONSIVE — TABLET (≤ 900px)
    ============================================================ */
 @media (max-width: 900px) {
   .main-layout {
     grid-template-columns: 1fr;
+    height: auto;
+    min-height: auto;
   }
   .left-panel {
-    padding: 30px 24px 20px;
+    padding: 24px 20px 16px;
   }
   .right-panel {
-    padding: 20px 24px 40px;
+    padding: 20px 20px 40px;
+    min-height: auto;
   }
   .dial-container { display: none; }
+
+  /* Navbar */
   .navbar {
-    flex-direction: column;
-    gap: 12px;
-    padding: 14px 16px;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 12px 16px;
   }
-  .nav-right {
-    width: 100%;
-    justify-content: flex-start;
-    overflow-x: auto;
-    white-space: nowrap;
-    padding-bottom: 6px;
-    -webkit-overflow-scrolling: touch;
-  }
-  .nav-right::-webkit-scrollbar {
-    height: 0px; /* hide scrollbar visually */
-  }
-  /* On mobile, reset absolute centering so tabs stack naturally */
   .nav-tabs {
     position: static;
     transform: none;
-    order: -1; /* tabs first on mobile */
+    order: 2;
+    width: 100%;
+    justify-content: center;
   }
+  .nav-brand { order: 0; }
   .theme-switcher { order: 1; }
-  .nav-brand      { order: 2; }
-  .big-title .title-line { font-size: 3rem; }
-  .big-title .title-line.accent { font-size: 3.4rem; }
+
+  /* Fonts */
+  .big-title .title-line { font-size: 2.8rem; }
+  .big-title .title-line.accent { font-size: 3.2rem; }
+  .interview-title .title-line { font-size: 2.4rem; }
+  .interview-title .title-line.accent { font-size: 2.8rem; }
+  .picture-title .title-line { font-size: 2.6rem; }
+  .picture-title .title-line.accent { font-size: 3rem; }
+
+  /* Timer screen topbar */
+  .timer-screen-topbar {
+    padding: 12px 16px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  #timer-speech-btn {
+    position: static;
+    transform: none;
+    order: 2;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+  .circle-timer {
+    width: 240px;
+    height: 240px;
+  }
+  .circle-countdown { font-size: 3rem; }
+
+  /* Modal */
+  .modal-box {
+    padding: 28px 24px;
+    max-width: 92vw;
+  }
+  .modal-title { font-size: 1.5rem; }
+
+  /* Action row */
+  .action-row {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
 }
 
+/* ============================================================
+   RESPONSIVE — PHONE (≤ 540px)
+   ============================================================ */
 @media (max-width: 540px) {
-  .nav-tab { padding: 7px 12px; font-size: 0.78rem; }
-  .topic-main { font-size: 1.3rem; }
+  .navbar {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+  .nav-tab {
+    padding: 6px 10px;
+    font-size: 0.72rem;
+  }
+  .nav-brand { font-size: 0.9rem; }
+  .theme-toggle-btn {
+    padding: 6px 12px;
+    font-size: 0.75rem;
+  }
+  .theme-label { display: none; }
+
+  /* Panels */
+  .left-panel {
+    padding: 16px 14px 12px;
+  }
+  .right-panel {
+    padding: 16px 14px 32px;
+  }
+
+  /* Fonts */
+  .big-title .title-line { font-size: 2.2rem; }
+  .big-title .title-line.accent { font-size: 2.5rem; }
+  .interview-title .title-line { font-size: 2rem; }
+  .interview-title .title-line.accent { font-size: 2.2rem; }
+  .picture-title .title-line { font-size: 2rem; }
+  .picture-title .title-line.accent { font-size: 2.4rem; }
+  .instructions li { font-size: 1rem; }
+
+  /* Topic */
+  .topic-main { font-size: 1.2rem; padding: 14px 8px; }
+  .topic-area { max-width: 100%; }
+
+  /* Buttons */
+  .btn-spin, .btn-timer {
+    padding: 11px 20px;
+    font-size: 0.85rem;
+  }
+  .btn-primary {
+    padding: 12px 22px;
+    font-size: 0.8rem;
+  }
+  .action-row {
+    gap: 10px;
+  }
+
+  /* Filters */
+  .filters-row {
+    gap: 6px;
+    margin-bottom: 20px;
+  }
+  .filter-pill {
+    padding: 5px 10px;
+    font-size: 0.75rem;
+  }
+
+  /* Timer full screen */
+  .timer-screen-topbar {
+    padding: 10px 12px;
+  }
+  .timer-back-btn { font-size: 0.82rem; }
+  .circle-timer {
+    width: 200px;
+    height: 200px;
+  }
+  .circle-countdown { font-size: 2.5rem; }
+  .circle-countdown.done { font-size: 2.2rem; }
+  .btn-play-pause {
+    width: 56px;
+    height: 56px;
+    font-size: 1.2rem;
+  }
+  .btn-reset-circle {
+    width: 44px;
+    height: 44px;
+    font-size: 1.2rem;
+  }
+  .timer-topic-text {
+    font-size: 0.95rem;
+    padding: 0 16px;
+  }
+  .timer-controls {
+    margin-bottom: 24px;
+  }
+
+  /* Modal */
+  .modal-box {
+    padding: 24px 18px;
+    border-radius: 18px;
+  }
+  .modal-title { font-size: 1.3rem; }
+
+  /* Frameworks */
+  .framework-title { font-size: 0.95rem; }
+  .framework-body { font-size: 0.78rem; }
+
+  /* Theme dropdown */
+  .theme-dropdown {
+    min-width: 200px;
+    padding: 12px 14px;
+    left: auto;
+    right: 0;
+    transform: none;
+  }
 }
 
 /* ============================================================
@@ -1816,11 +1958,9 @@ html[data-theme="dark"] .picture-tips-card {
     border-radius: 14px;
     margin-bottom: 20px;
   }
-
   .picture-tips-card { padding: 12px 14px; }
-  .picture-title .title-line { font-size: 2.8rem; }
-  .picture-title .title-line.accent { font-size: 3.2rem; }
-
+  .picture-title .title-line { font-size: 2.4rem; }
+  .picture-title .title-line.accent { font-size: 2.8rem; }
   .timer-picture-thumb {
     width: 140px;
     height: 88px;
@@ -1828,23 +1968,20 @@ html[data-theme="dark"] .picture-tips-card {
 }
 
 @media (max-width: 540px) {
-  .nav-tab { padding: 7px 12px; font-size: 0.78rem; }
-  .topic-main { font-size: 1.3rem; }
-
   .picture-display-area {
     aspect-ratio: 1;
     border-radius: 12px;
   }
-
   .picture-speak-prompt {
     padding: 6px 14px;
     font-size: 0.75rem;
   }
-}
-
-  z-index: -1;
-  overflow: hidden;
-  pointer-events: none;
+  .picture-title .title-line { font-size: 1.8rem; }
+  .picture-title .title-line.accent { font-size: 2.2rem; }
+  .timer-picture-thumb {
+    width: 110px;
+    height: 68px;
+  }
 }
 
 /* ── Two layers for crossfade ───────────────────────────── */

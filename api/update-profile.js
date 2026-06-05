@@ -7,15 +7,13 @@
 
 import { verifyFirebaseIdToken } from './auth-helper.js';
 import { query } from './db.js';
+import { setCorsHeaders, safeError } from './middleware.js';
 
 export const config = { api: { bodyParser: { sizeLimit: '128kb' } } };
 export const maxDuration = 10;
 
 export default async function handler(req, res) {
-  // CORS Headers
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  setCorsHeaders(req, res);
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
@@ -69,7 +67,6 @@ export default async function handler(req, res) {
     });
 
   } catch (err) {
-    console.error('[update-profile] Error:', err.message);
-    return res.status(500).json({ error: err.message || 'Internal server error while updating profile' });
+    return safeError(res, 500, err, '[update-profile]');
   }
 }

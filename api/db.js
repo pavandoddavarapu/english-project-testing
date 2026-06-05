@@ -19,8 +19,8 @@ export const pool = new Pool({
   ssl: connectionString && !connectionString.includes('localhost') && !connectionString.includes('127.0.0.1')
     ? { rejectUnauthorized: false } // Required for remote databases like Supabase/Neon
     : false,
-  max: 10,
-  idleTimeoutMillis: 30000,
+  max: 3, // Optimized for serverless to prevent connection exhaustion
+  idleTimeoutMillis: 15000, // Faster recycling of idle connections
   connectionTimeoutMillis: 5000,
 });
 

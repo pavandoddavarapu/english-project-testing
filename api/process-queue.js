@@ -7,6 +7,7 @@
  */
 
 import { query } from './db.js';
+import { setCorsHeaders, safeError, verifyWorkerSecret } from './middleware.js';
 
 export const config = {
   api: {
@@ -84,13 +85,14 @@ async function transcribeViaGemini(audioBase64, mimeType, geminiKey) {
 }
 
 export default async function handler(req, res) {
-  // CORS headers
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
+  setCorsHeaders(req, res);
   if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'POST') return res.status(405).json({ error: "Method not allowed" });
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+
+  // Worker auth: reject external callers when WORKER_SECRET is configured
+  if (!verifyWorkerSecret(req)) {
+    return res.status(403).json({ error: 'Access denied' });
+  }
 
   const { taskId } = req.body || {};
 
@@ -278,18 +280,37 @@ Evaluate their speech and return ONLY a valid JSON object (no markdown, no extra
     `, [taskId, JSON.stringify(finalResult)]);
 
     console.log(`[process-queue] Task ${taskId} successfully completed.`);
+
+    // Queue cleanup: delete completed/failed tasks older than 1 hour to prevent unbounded growth
+    try {
+      const cleaned = await query(`
+        DELETE FROM analysis_queue
+        WHERE status IN ('completed', 'failed')
+        AND updated_at < NOW() - INTERVAL '1 hour'
+      `);
+      if (cleaned.rowCount > 0) {
+        console.log(`[process-queue] Cleaned up ${cleaned.rowCount} old queue entries.`);
+      }
+    } catch (cleanupErr) {
+      console.error('[process-queue] Queue cleanup failed (non-fatal):', cleanupErr.message);
+    }
+
     return res.status(200).json({ status: 'completed', taskId });
 
   } catch (err) {
     console.error(`[process-queue] Error processing taskId=${taskId}:`, err.message);
     
     // Save failure status to database and clear raw audio base64 to prevent storage leaks
-    await query(`
-      UPDATE analysis_queue
-      SET status = 'failed', error_message = $2, audio_base64 = NULL, updated_at = NOW()
-      WHERE task_id = $1
-    `, [taskId, err.message]);
+    try {
+      await query(`
+        UPDATE analysis_queue
+        SET status = 'failed', error_message = $2, audio_base64 = NULL, updated_at = NOW()
+        WHERE task_id = $1
+      `, [taskId, err.message]);
+    } catch (dbErr) {
+      console.error('[process-queue] Failed to save error status to DB:', dbErr.message);
+    }
 
-    return res.status(500).json({ error: err.message });
+    return safeError(res, 500, err, '[process-queue]');
   }
 }

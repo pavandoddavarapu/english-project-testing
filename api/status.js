@@ -8,15 +8,12 @@
  */
 
 import { query } from './db.js';
+import { setCorsHeaders, safeError, getWorkerSecret } from './middleware.js';
 
 export default async function handler(req, res) {
-  // CORS Headers
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
+  setCorsHeaders(req, res);
   if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'GET') return res.status(405).json({ error: "Method not allowed" });
+  if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
   const { taskId } = req.query || {};
 
@@ -52,9 +49,12 @@ export default async function handler(req, res) {
       const workerUrl = `${protocol}://${host}/api/process-queue`;
 
       // Call the worker synchronously to finish the job
+      const workerHeaders = { 'Content-Type': 'application/json' };
+      const secret = getWorkerSecret();
+      if (secret) workerHeaders['X-Worker-Secret'] = secret;
       await fetch(workerUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: workerHeaders,
         body: JSON.stringify({ taskId })
       }).catch(err => {
         console.error('[status] Recovery worker fetch failed:', err.message);
@@ -77,7 +77,6 @@ export default async function handler(req, res) {
     return res.status(200).json({ status: task.status });
 
   } catch (err) {
-    console.error('[status] Error retrieving task status:', err.message);
-    return res.status(500).json({ error: 'Internal server error while fetching task status' });
+    return safeError(res, 500, err, '[status]');
   }
 }

@@ -7,6 +7,7 @@
 
 import { query } from './db.js';
 import crypto from 'crypto';
+import { setCorsHeaders, checkRateLimit, safeError, sanitizeString, getWorkerSecret } from './middleware.js';
 
 export const config = {
   api: {
@@ -17,13 +18,10 @@ export const config = {
 };
 
 export default async function handler(req, res) {
-  // CORS Headers
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
+  setCorsHeaders(req, res);
   if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'POST') return res.status(405).json({ error: "Method not allowed" });
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+  if (!checkRateLimit(req, res, { maxRequests: 5, windowMs: 60_000 })) return;
 
   try {
     const { transcript, audioBase64, mimeType, topic, imageUrl } = req.body || {};
@@ -31,6 +29,12 @@ export default async function handler(req, res) {
     if (!transcript && !audioBase64) {
       return res.status(400).json({ error: 'No audio or transcript provided' });
     }
+
+    // Input validation: prevent oversized payloads slipping past bodyParser
+    const cleanTopic = sanitizeString(topic, 500);
+    const cleanImageUrl = sanitizeString(imageUrl, 2000);
+    const cleanTranscript = sanitizeString(transcript, 50000);
+    const cleanMimeType = sanitizeString(mimeType, 100);
 
     // 1. Generate a unique taskId
     const taskId = crypto.randomUUID();
@@ -42,11 +46,11 @@ export default async function handler(req, res) {
       VALUES ($1, 'pending', $2, $3, $4, $5, $6)
     `, [
       taskId,
-      transcript || null,
+      cleanTranscript || null,
       audioBase64 || null,
-      mimeType || null,
-      topic || null,
-      imageUrl || null
+      cleanMimeType || null,
+      cleanTopic || null,
+      cleanImageUrl || null
     ]);
 
     // 3. Trigger the background worker asynchronously (fire-and-forget)
@@ -55,9 +59,12 @@ export default async function handler(req, res) {
     const workerUrl = `${protocol}://${host}/api/process-queue`;
 
     console.log(`[analyze] Triggering worker asynchronously at: ${workerUrl}`);
+    const workerHeaders = { 'Content-Type': 'application/json' };
+    const secret = getWorkerSecret();
+    if (secret) workerHeaders['X-Worker-Secret'] = secret;
     fetch(workerUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: workerHeaders,
       body: JSON.stringify({ taskId })
     }).catch(err => {
       console.error('[analyze] Failed to trigger background worker:', err.message);
@@ -67,7 +74,6 @@ export default async function handler(req, res) {
     return res.status(200).json({ taskId, status: 'pending' });
 
   } catch (err) {
-    console.error('[analyze] Error enqueuing task:', err.message);
-    return res.status(500).json({ error: 'Internal server error while enqueuing task' });
+    return safeError(res, 500, err, '[analyze]');
   }
 }

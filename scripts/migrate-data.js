@@ -15,15 +15,20 @@
  * node migrate-data.js
  */
 
-const fs = require('fs');
-const path = require('path');
-const admin = require('firebase-admin');
-const { Pool } = require('pg');
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import admin from 'firebase-admin';
+import pg from 'pg';
+const { Pool } = pg;
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // ── 1. Load Configurations ──────────────────────────────────────────────────
 // Try to load env variables from a local .env file if it exists
 try {
-  const envPath = path.join(__dirname, '.env');
+  const envPath = path.join(__dirname, '..', '.env');
   if (fs.existsSync(envPath)) {
     const envConfig = fs.readFileSync(envPath, 'utf-8');
     envConfig.split('\n').forEach(line => {
@@ -65,7 +70,7 @@ const pool = new Pool({
 });
 
 console.log('🔌 Initializing Firebase Admin SDK...');
-const serviceAccount = require(path.resolve(serviceAccountPath));
+const serviceAccount = JSON.parse(fs.readFileSync(path.resolve(serviceAccountPath), 'utf8'));
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
 });

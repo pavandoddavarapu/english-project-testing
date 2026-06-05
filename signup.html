@@ -255,6 +255,29 @@
     .dot-1 { width: 50px; height: 50px; top: -15px; left: -15px; }
     .dot-2 { width: 45px; height: 45px; bottom: 20px; right: -20px; background: var(--accent3); }
     .dot-3 { width: 30px; height: 30px; top: 30px; right: -10px; background: var(--primary); }
+
+    @media (max-width: 540px) {
+      .auth-card {
+        padding: 28px 18px;
+        border-radius: 16px;
+      }
+      .auth-logo { font-size: 1.8rem; }
+      .auth-title { font-size: 1.2rem; margin-bottom: 18px; }
+      .input-row {
+        grid-template-columns: 1fr;
+        gap: 0;
+      }
+      .auth-input { padding: 10px 14px; font-size: 0.9rem; }
+      .gender-pill { padding: 6px 10px; font-size: 0.78rem; }
+      .btn-google { font-size: 0.88rem; padding: 10px; }
+      .auth-links { font-size: 0.82rem; }
+      .theme-switcher {
+        position: fixed;
+        top: 12px;
+        right: 12px;
+        z-index: 100;
+      }
+    }
   </style>
 </head>
 <body>

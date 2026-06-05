@@ -9,6 +9,7 @@
  * so the module-level `imageCache` array persists across requests
  * within the same instance – giving us free in-memory caching.
  */
+import { setCorsHeaders } from './middleware.js';
 
 // ─── CONFIG ────────────────────────────────────────────────────────────────
 const UNSPLASH_KEY = process.env.UNSPLASH_ACCESS_KEY;
@@ -371,8 +372,8 @@ let globalFallbackIdx = Math.floor(Math.random() * FALLBACK_IMAGES.length);
 // ─── HANDLER ────────────────────────────────────────────────────────────────
 
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET');
+  setCorsHeaders(req, res);
+  if (req.method === 'OPTIONS') return res.status(200).end();
 
   // Force refill if requested or first cold start
   if (req.query.refill === '1' || imageCache.length === 0) {

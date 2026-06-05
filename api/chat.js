@@ -1,15 +1,10 @@
+import { setCorsHeaders, checkRateLimit, safeError } from './middleware.js';
+
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: "Method not allowed" });
-  }
+  setCorsHeaders(req, res);
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+  if (!checkRateLimit(req, res, { maxRequests: 20, windowMs: 60_000 })) return;
 
   try {
     const { messages } = req.body;
@@ -108,7 +103,6 @@ If the user asks about something totally unrelated to language learning, gently 
     return res.status(500).json({ error: "All AI providers failed to respond." });
 
   } catch (err) {
-    console.error("Chat Error:", err);
-    return res.status(500).json({ error: "Internal server error during chat" });
+    return safeError(res, 500, err, '[chat]');
   }
 }

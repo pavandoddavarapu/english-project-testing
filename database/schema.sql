@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS users (
     email VARCHAR(255) UNIQUE NOT NULL,
     gender VARCHAR(50) DEFAULT 'prefer_not',
     avatar_bg VARCHAR(50) DEFAULT 'b6e3f4',
+    avatar_seed VARCHAR(100) DEFAULT 'Felix',
     aura_points INTEGER DEFAULT 0,
     streak INTEGER DEFAULT 0,
     total_yaps INTEGER DEFAULT 0,

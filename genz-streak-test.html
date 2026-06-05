@@ -856,12 +856,134 @@
       color: var(--primary);
     }
     
+    /* ── Dashboard Responsive: Tablet ── */
     @media (max-width: 900px) {
       .dashboard {
         grid-template-columns: 1fr;
+        padding: 0 4px;
       }
       .top-widgets {
         grid-template-columns: 1fr;
+      }
+    }
+
+    /* ── Dashboard Responsive: Phone ── */
+    @media (max-width: 540px) {
+      .dashboard {
+        gap: 16px;
+      }
+      .panel {
+        padding: 16px 14px;
+        border-radius: 12px;
+      }
+      .profile-info {
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+      .profile-img {
+        width: 60px;
+        height: 60px;
+      }
+      .profile-img-wrapper {
+        width: 60px;
+        height: 60px;
+      }
+      .profile-names h1 {
+        font-size: 1.1rem;
+      }
+      .profile-names p {
+        font-size: 0.8rem;
+      }
+      .section-title {
+        font-size: 0.72rem;
+        letter-spacing: 1.5px;
+      }
+      .stat-row {
+        font-size: 0.82rem;
+        padding: 6px 8px;
+      }
+      .stat-row span:last-child {
+        font-size: 0.78rem;
+        padding: 2px 8px;
+      }
+      .heatmap-title .highlight {
+        font-size: 1.3rem;
+      }
+      .heatmap-stats {
+        font-size: 0.78rem;
+        gap: 8px;
+        padding: 4px 10px;
+      }
+      .heatmap-square {
+        width: 7px;
+        height: 7px;
+      }
+      .recent-item {
+        padding: 10px 12px;
+        flex-wrap: wrap;
+        gap: 4px;
+      }
+      .recent-name {
+        font-size: 0.85rem;
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .recent-time {
+        font-size: 0.72rem;
+        flex-shrink: 0;
+      }
+      .follow-btn {
+        padding: 10px;
+        font-size: 0.82rem;
+      }
+      .badge {
+        width: 42px;
+        height: 42px;
+        font-size: 1.1rem;
+      }
+      .circle-chart {
+        width: 80px;
+        height: 80px;
+      }
+      .circle-inner {
+        width: 64px;
+        height: 64px;
+      }
+      .circle-inner span {
+        font-size: 1rem;
+      }
+      .diff-item {
+        font-size: 0.75rem;
+        padding: 5px 10px;
+      }
+      .tabs {
+        gap: 8px;
+      }
+      .tab {
+        font-size: 0.8rem;
+        padding: 6px 10px;
+      }
+      /* Welcome banner stacks on mobile */
+      .welcome-banner {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 12px;
+        padding: 14px 16px !important;
+      }
+      /* Navbar on dashboard */
+      .navbar .nav-right {
+        flex-wrap: wrap;
+        gap: 8px !important;
+      }
+      .navbar .nav-right a {
+        font-size: 0.78rem !important;
+        padding: 6px 14px !important;
+      }
+      .navbar .nav-brand {
+        font-size: 0.9rem;
       }
     }
   </style>

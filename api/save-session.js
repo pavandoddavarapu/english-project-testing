@@ -8,17 +8,16 @@
 
 import { verifyFirebaseIdToken } from './auth-helper.js';
 import { query } from './db.js';
+import { setCorsHeaders, checkRateLimit, safeError, sanitizeString, clampInt } from './middleware.js';
 
 export const config = { api: { bodyParser: { sizeLimit: '1mb' } } };
 export const maxDuration = 15;
 
 export default async function handler(req, res) {
-  // CORS Headers
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  setCorsHeaders(req, res);
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+  if (!checkRateLimit(req, res, { maxRequests: 10, windowMs: 60_000 })) return;
 
   try {
     const { idToken, uid, sessionData, displayName, email } = req.body || {};
@@ -51,10 +50,12 @@ export default async function handler(req, res) {
     const todayISO = now.toISOString();
     const todayDateStr = todayISO.split('T')[0];
 
-    const fluency = Math.min(100, Math.max(0, Number(sessionData.fluency) || 0));
-    const clarity = Math.min(100, Math.max(0, Number(sessionData.clarity) || 0));
-    const confidence = Math.min(100, Math.max(0, Number(sessionData.confidence) || 0));
+    const fluency = clampInt(sessionData.fluency, 0, 100);
+    const clarity = clampInt(sessionData.clarity, 0, 100);
+    const confidence = clampInt(sessionData.confidence, 0, 100);
     const avgScore = Math.round((fluency + clarity + confidence) / 3);
+    const cleanTopic = sanitizeString(sessionData.topic, 255) || 'General Practice';
+    const cleanMode = sanitizeString(sessionData.mode, 50) || 'random';
 
     // 3. Fetch the last session date to calculate the new streak
     const lastSessionRes = await query(
@@ -79,7 +80,7 @@ export default async function handler(req, res) {
     await query(
       `INSERT INTO practice_sessions (user_id, date, topic, mode, score, fluency, clarity, confidence)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-      [uid, now, sessionData.topic || 'General Practice', sessionData.mode || 'random', avgScore, fluency, clarity, confidence]
+      [uid, now, cleanTopic, cleanMode, avgScore, fluency, clarity, confidence]
     );
 
     // 5. Update users table (aura points, total yaps, streak)
@@ -104,7 +105,6 @@ export default async function handler(req, res) {
     });
 
   } catch (err) {
-    console.error('[save-session] Error:', err.message);
-    return res.status(500).json({ error: err.message || 'Internal error' });
+    return safeError(res, 500, err, '[save-session]');
   }
 }

@@ -492,7 +492,7 @@
 
     // ── PRIMARY: save via backend proxy (never blocked by ad blockers) ─────────
     async function saveViaBackend(user, sessionData) {
-      const idToken = await user.getIdToken(true); // force-refresh token
+      const idToken = await user.getIdToken(); // use cached token if valid
       const res = await fetch('/api/save-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

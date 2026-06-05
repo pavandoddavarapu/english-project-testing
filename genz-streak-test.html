@@ -1613,7 +1613,7 @@
     async function loadFromBackend(user) {
       try {
         console.log('[Dashboard] Fetching data from backend...');
-        const idToken = await user.getIdToken(true);
+        const idToken = await user.getIdToken();
         const res = await fetch('/api/get-user', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -1623,6 +1623,8 @@
         const { exists, data: userData } = await res.json();
 
         if (exists && userData) {
+          // Cache the data in localStorage for instant rendering next time
+          localStorage.setItem(`speakup-user-data-${user.uid}`, JSON.stringify(userData));
           applyUserData(user, userData);
           console.log('[Dashboard] Backend load OK. Sessions:', (userData.recent_sessions||[]).length);
         } else {
@@ -1631,7 +1633,10 @@
         }
       } catch (err) {
         console.error('[Dashboard] Backend load failed:', err.message);
-        renderZeros();
+        // If there's no cache at all, render zeros
+        if (!localStorage.getItem(`speakup-user-data-${user.uid}`)) {
+          renderZeros();
+        }
       }
     }
 
@@ -1701,6 +1706,18 @@
         // Show basic auth info immediately while data loads
         document.getElementById('profile-name').innerText  = user.displayName || 'Speaker';
         document.getElementById('profile-email').innerText = user.email || '';
+
+        // Instant paint: Load from local storage if cached data exists
+        const cached = localStorage.getItem(`speakup-user-data-${user.uid}`);
+        if (cached) {
+          try {
+            const cachedData = JSON.parse(cached);
+            console.log('[Dashboard] Loaded cached user data instantly');
+            applyUserData(user, cachedData);
+          } catch (e) {
+            console.error('[Dashboard] Failed to parse cached user data:', e);
+          }
+        }
 
         await loadFromBackend(user);
       } else {

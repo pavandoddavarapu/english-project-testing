@@ -412,7 +412,7 @@
     // Helper to create a user document in PostgreSQL if it doesn't exist
     async function initializeUserProfile(user, name, gender) {
       console.log('[Signup] Initializing user profile via backend database...');
-      const idToken = await user.getIdToken(true);
+      const idToken = await user.getIdToken();
       const res = await fetch('/api/get-user', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

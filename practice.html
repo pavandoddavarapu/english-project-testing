@@ -508,7 +508,7 @@
     }
 
 
-    // ── Orchestrator: try backend first, fall back to Firestore ───────────────
+    // ── Orchestrator: save session via backend proxy to PostgreSQL ───────────────
     async function savePracticeSession(user, data) {
       const now = new Date();
       const todayISO = now.toISOString();

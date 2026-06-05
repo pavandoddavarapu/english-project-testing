@@ -1,5 +1,5 @@
-// v9 — updated theme variables cache bust
-const CACHE_NAME = 'speakup-cache-v9';
+// v10 — updated color scheme dark mode cache bust
+const CACHE_NAME = 'speakup-cache-v10';
 
 const ASSETS_TO_CACHE = [
   './',

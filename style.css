@@ -125,6 +125,7 @@ html[data-theme="teal"] {
 
 /* ── 7. LeetCode Dark ── */
 html[data-theme="dark"] {
+  color-scheme:   dark;
   --bg:           #1a1a1a;
   --bg-card:      #282828;
   --primary:      #ffa116;

@@ -18,7 +18,7 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    const { idToken, uid, name, gender, avatar_bg, avatar_seed } = req.body || {};
+    const { idToken, uid, name, gender, avatar_bg, avatar_seed, linkedin_url, instagram_url } = req.body || {};
 
     if (!idToken || !uid) {
       return res.status(400).json({ error: 'Missing idToken or uid' });
@@ -36,6 +36,8 @@ export default async function handler(req, res) {
     const cleanGender = validGenders.includes(gender) ? gender : 'prefer_not';
     const cleanAvatarBg = (avatar_bg || 'b6e3f4').replace(/[^a-fA-F0-9]/g, '').substring(0, 6);
     const cleanAvatarSeed = (avatar_seed || 'Felix').replace(/[^a-zA-Z0-9_-]/g, '').substring(0, 50);
+    const cleanLinkedin = (linkedin_url || '').trim().substring(0, 255);
+    const cleanInstagram = (instagram_url || '').trim().substring(0, 255);
 
     if (!cleanName) {
       return res.status(400).json({ error: 'Name cannot be empty' });
@@ -44,10 +46,10 @@ export default async function handler(req, res) {
     // 3. Update PostgreSQL database
     const updateRes = await query(`
       UPDATE public.users
-      SET name = $2, gender = $3, avatar_bg = $4, avatar_seed = $5
+      SET name = $2, gender = $3, avatar_bg = $4, avatar_seed = $5, linkedin_url = $6, instagram_url = $7
       WHERE uid = $1
       RETURNING *
-    `, [uid, cleanName, cleanGender, cleanAvatarBg, cleanAvatarSeed]);
+    `, [uid, cleanName, cleanGender, cleanAvatarBg, cleanAvatarSeed, cleanLinkedin || null, cleanInstagram || null]);
 
     if (updateRes.rowCount === 0) {
       return res.status(404).json({ error: 'User profile not found' });
@@ -62,7 +64,9 @@ export default async function handler(req, res) {
         name: cleanName,
         gender: cleanGender,
         avatar_bg: cleanAvatarBg,
-        avatar_seed: cleanAvatarSeed
+        avatar_seed: cleanAvatarSeed,
+        linkedin_url: cleanLinkedin,
+        instagram_url: cleanInstagram
       }
     });
 

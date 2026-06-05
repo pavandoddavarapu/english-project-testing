@@ -12,6 +12,8 @@ CREATE TABLE IF NOT EXISTS users (
     aura_points INTEGER DEFAULT 0,
     streak INTEGER DEFAULT 0,
     total_yaps INTEGER DEFAULT 0,
+    linkedin_url VARCHAR(255),
+    instagram_url VARCHAR(255),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 

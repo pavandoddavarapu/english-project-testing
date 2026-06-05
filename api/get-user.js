@@ -72,6 +72,8 @@ export default async function handler(req, res) {
           aura_points: user.aura_points,
           streak: user.streak,
           total_yaps: user.total_yaps,
+          linkedin_url: user.linkedin_url || '',
+          instagram_url: user.instagram_url || '',
           created_at: user.created_at,
           practice_dates: user.practice_dates || [],
           recent_sessions: user.recent_sessions || []
@@ -103,6 +105,8 @@ export default async function handler(req, res) {
           aura_points: 0,
           streak: 0,
           total_yaps: 0,
+          linkedin_url: '',
+          instagram_url: '',
           created_at: newUser.created_at,
           practice_dates: [],
           recent_sessions: []

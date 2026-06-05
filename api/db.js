@@ -40,9 +40,11 @@ export async function query(text, params) {
   try {
     await pool.query(`
       ALTER TABLE public.users 
-      ADD COLUMN IF NOT EXISTS avatar_seed VARCHAR(100) DEFAULT 'Felix'
+      ADD COLUMN IF NOT EXISTS avatar_seed VARCHAR(100) DEFAULT 'Felix',
+      ADD COLUMN IF NOT EXISTS linkedin_url VARCHAR(255),
+      ADD COLUMN IF NOT EXISTS instagram_url VARCHAR(255)
     `);
-    console.log('🔌 [DB Migration] public.users.avatar_seed column is verified/added.');
+    console.log('🔌 [DB Migration] public.users columns (avatar_seed, linkedin_url, instagram_url) are verified/added.');
   } catch (err) {
     console.error('❌ [DB Migration] Failed to ensure users.avatar_seed column:', err.message);
   }

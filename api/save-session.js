@@ -56,19 +56,19 @@ export default async function handler(req, res) {
     const confidence = Math.min(100, Math.max(0, Number(sessionData.confidence) || 0));
     const avgScore = Math.round((fluency + clarity + confidence) / 3);
 
-    // 3. Fetch unique practice dates for streak calculation
-    const datesRes = await query(
-      'SELECT DISTINCT date::date::text as practice_date FROM practice_sessions WHERE user_id = $1 ORDER BY practice_date ASC',
+    // 3. Fetch the last session date to calculate the new streak
+    const lastSessionRes = await query(
+      'SELECT date::date::text as last_date FROM practice_sessions WHERE user_id = $1 ORDER BY date DESC LIMIT 1',
       [uid]
     );
-    const uniqueDateStrs = datesRes.rows.map(r => r.practice_date);
 
     let newStreak = Number(currentData.streak) || 0;
-    if (!uniqueDateStrs.includes(todayDateStr)) {
-      if (uniqueDateStrs.length === 0) {
-        newStreak = 1;
-      } else {
-        const lastDate = new Date(uniqueDateStrs[uniqueDateStrs.length - 1] + 'T00:00:00Z');
+    if (lastSessionRes.rowCount === 0) {
+      newStreak = 1;
+    } else {
+      const lastDateStr = lastSessionRes.rows[0].last_date;
+      if (lastDateStr !== todayDateStr) {
+        const lastDate = new Date(lastDateStr + 'T00:00:00Z');
         const todayMid = new Date(todayDateStr + 'T00:00:00Z');
         const diffDays = Math.round((todayMid - lastDate) / 86400000);
         newStreak = diffDays === 1 ? newStreak + 1 : 1;

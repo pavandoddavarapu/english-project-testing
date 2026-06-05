@@ -32,33 +32,32 @@ export default async function handler(req, res) {
       return res.status(403).json({ error: 'Unauthorized: UID mismatch' });
     }
 
-    // 2. Query user from PostgreSQL
-    const userRes = await query('SELECT * FROM users WHERE uid = $1', [uid]);
+    // 2. Query user, practice_dates and recent_sessions in a single optimized query
+    const userRes = await query(`
+      SELECT 
+        u.*,
+        COALESCE(
+          (SELECT json_agg(DISTINCT date::date::text ORDER BY date::date::text ASC) 
+           FROM practice_sessions 
+           WHERE user_id = u.uid), 
+          '[]'::json
+        ) as practice_dates,
+        COALESCE(
+          (SELECT json_agg(s) FROM (
+             SELECT date, topic, mode, score, fluency, clarity, confidence 
+             FROM practice_sessions 
+             WHERE user_id = u.uid 
+             ORDER BY date DESC 
+             LIMIT 20
+           ) s), 
+          '[]'::json
+        ) as recent_sessions
+      FROM users u 
+      WHERE u.uid = $1
+    `, [uid]);
     
     if (userRes.rowCount > 0) {
       const user = userRes.rows[0];
-
-      // Query practice_dates
-      const datesRes = await query(
-        'SELECT DISTINCT date::date::text as practice_date FROM practice_sessions WHERE user_id = $1 ORDER BY practice_date ASC',
-        [uid]
-      );
-      const practice_dates = datesRes.rows.map(r => r.practice_date);
-
-      // Query recent_sessions
-      const sessionsRes = await query(
-        'SELECT date, topic, mode, score, fluency, clarity, confidence FROM practice_sessions WHERE user_id = $1 ORDER BY date DESC LIMIT 20',
-        [uid]
-      );
-      const recent_sessions = sessionsRes.rows.map(s => ({
-        date: s.date.toISOString ? s.date.toISOString() : s.date,
-        topic: s.topic,
-        mode: s.mode,
-        score: s.score,
-        fluency: s.fluency,
-        clarity: s.clarity,
-        confidence: s.confidence
-      }));
 
       return res.status(200).json({
         exists: true,
@@ -72,8 +71,8 @@ export default async function handler(req, res) {
           streak: user.streak,
           total_yaps: user.total_yaps,
           created_at: user.created_at,
-          practice_dates,
-          recent_sessions
+          practice_dates: user.practice_dates || [],
+          recent_sessions: user.recent_sessions || []
         }
       });
     }

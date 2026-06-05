@@ -1,6 +1,7 @@
 {
   "cleanUrls": true,
   "trailingSlash": false,
+  "regions": ["sin1"],
   "rewrites": [
     {
       "source": "/dashboard",

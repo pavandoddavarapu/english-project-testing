@@ -1029,6 +1029,12 @@
     </div>
   </nav>
 
+  <!-- Public View Banner -->
+  <div id="public-view-banner" style="display: none; max-width: 1100px; margin: 0 auto 20px auto; padding: 14px 28px; background: linear-gradient(135deg, var(--primary), #7B2FBE); color: white; border-radius: var(--radius); align-items: center; justify-content: space-between; box-shadow: 0 4px 15px var(--shadow-lg); font-family: 'Nunito', sans-serif; font-weight: 700; gap: 16px; flex-wrap: wrap;">
+    <span style="font-size: 0.95rem;">👋 You are viewing <span id="public-view-name" style="font-weight: 800;"></span>'s public practice profile! Ready to level up your English fluency?</span>
+    <a href="signup.html" style="background: white; color: var(--primary); text-decoration: none; padding: 8px 18px; border-radius: 20px; font-weight: 800; font-size: 0.85rem; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">Get Started Free 🚀</a>
+  </div>
+
   <!-- Welcome Banner -->
   <div class="welcome-banner" id="welcome-banner" style="
     max-width: 1100px;
@@ -1094,7 +1100,10 @@
           <span><strong>0</strong> Followers</span>
         </div>
         
-        <button class="follow-btn" onclick="window.location.href='practice.html'"><span>🎤</span> Practice Speaking</button>
+        <div style="display: flex; flex-direction: column; gap: 10px; width: 100%; margin-bottom: 15px;">
+          <button class="follow-btn" id="practice-btn" onclick="window.location.href='practice.html'" style="margin-bottom: 0;"><span>🎤</span> Practice Speaking</button>
+          <button class="follow-btn" id="share-profile-btn" onclick="shareUserProfile()" style="background: rgba(255,255,255,0.7); color: var(--primary); border: 1.5px solid var(--accent2); margin-bottom: 0;"><span>🔗</span> Share Profile</button>
+        </div>
         
         <div class="location">📍 Based in: India</div>
       </div>
@@ -1281,6 +1290,11 @@
   <script>
     (function() {
       try {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('uid')) {
+          // Skip pre-paint cache when viewing someone else's public profile
+          return;
+        }
         const lastUid = localStorage.getItem('speakup-last-uid');
         if (lastUid) {
           const cached = localStorage.getItem('speakup-user-data-' + lastUid);
@@ -1419,6 +1433,11 @@
     // Global references for filtering
     window.allPracticeDates = [];
     window.allTotalYaps = 0;
+
+    // Public Profile Share view config
+    const urlParams = new URLSearchParams(window.location.search);
+    const viewUid = urlParams.get('uid');
+    const isPublicView = !!viewUid;
 
     // Profile customization state and logic
     let _currentAvatarSeed = 'Felix';
@@ -2048,6 +2067,33 @@
       }
     }
 
+    // ── Backend: fetch public profile (no token required) ──
+    async function loadPublicProfile(uid) {
+      try {
+        console.log('[Dashboard] Fetching public profile data...');
+        const res = await fetch(`/api/get-public-profile?uid=${encodeURIComponent(uid)}`);
+        if (!res.ok) throw new Error(`/api/get-public-profile returned ${res.status}`);
+        const { exists, data: userData } = await res.json();
+
+        if (exists && userData) {
+          applyUserData(null, userData);
+          
+          // Update the public banner name specifically
+          const publicNameEl = document.getElementById('public-view-name');
+          if (publicNameEl) {
+            publicNameEl.innerText = userData.name || 'Speaker';
+          }
+          console.log('[Dashboard] Public profile load OK. Sessions:', (userData.recent_sessions||[]).length);
+        } else {
+          console.error('[Dashboard] Public profile not found.');
+          renderZeros();
+        }
+      } catch (err) {
+        console.error('[Dashboard] Public profile load failed:', err.message);
+        renderZeros();
+      }
+    }
+
     // ── Apply a userData object to all dashboard elements ─────────────────────
     function applyUserData(user, userData) {
       _currentUserGender = userData.gender || 'prefer_not';
@@ -2058,16 +2104,24 @@
         const seeds = getAvatarSeeds(_currentUserGender);
         savedSeed = seeds[0];
       }
-      localStorage.setItem('speakup-avatar-seed', savedSeed);
+      
+      // Do not write public avatar seed to current visitor's cache
+      if (!isPublicView) {
+        localStorage.setItem('speakup-avatar-seed', savedSeed);
+      }
       _currentAvatarSeed = savedSeed;
 
       document.getElementById('profile-img').src =
         `https://api.dicebear.com/7.x/notionists/svg?seed=${_currentAvatarSeed}&backgroundColor=${_currentAvatarBg}`;
 
-      const displayName = userData.name || user.displayName || 'Speaker';
+      const displayName = userData.name || (user && user.displayName) || 'Speaker';
       const firstName   = displayName.split(' ')[0];
       document.getElementById('profile-name').innerText    = displayName;
-      document.getElementById('welcome-title').innerText   = `Welcome back, ${firstName}! 👋`;
+      
+      const welcomeTitleEl = document.getElementById('welcome-title');
+      if (welcomeTitleEl) {
+        welcomeTitleEl.innerText = `Welcome back, ${firstName}! 👋`;
+      }
 
       // Render social links
       _currentLinkedinUrl = userData.linkedin_url || '';
@@ -2090,8 +2144,16 @@
       const auraPoints = userData.aura_points || 0;
       const streak     = userData.streak      || 0;
       document.getElementById('profile-aura').innerText   = auraPoints.toLocaleString();
-      document.getElementById('banner-aura').innerText    = auraPoints.toLocaleString();
-      document.getElementById('banner-streak').innerText  = streak;
+      
+      const bannerAuraEl = document.getElementById('banner-aura');
+      if (bannerAuraEl) {
+        bannerAuraEl.innerText = auraPoints.toLocaleString();
+      }
+      const bannerStreakEl = document.getElementById('banner-streak');
+      if (bannerStreakEl) {
+        bannerStreakEl.innerText = streak;
+      }
+      
       document.getElementById('streak-count').innerText   = streak;
 
       window.allPracticeDates = userData.practice_dates || [];
@@ -2112,8 +2174,10 @@
     // ── Render zeros (used when no data is available) ─────────────────────────
     function renderZeros() {
       document.getElementById('profile-aura').innerText  = '0';
-      document.getElementById('banner-aura').innerText   = '0';
-      document.getElementById('banner-streak').innerText = '0';
+      const bannerAuraEl = document.getElementById('banner-aura');
+      if (bannerAuraEl) bannerAuraEl.innerText = '0';
+      const bannerStreakEl = document.getElementById('banner-streak');
+      if (bannerStreakEl) bannerStreakEl.innerText = '0';
       document.getElementById('streak-count').innerText  = '0';
       
       window.allPracticeDates = [];
@@ -2127,7 +2191,81 @@
       renderRecentSessions([]);
     }
 
+    // ── Share Profile Function ──
+    async function shareUserProfile() {
+      const user = auth.currentUser;
+      if (!user) {
+        alert("Please sign in first to share your profile!");
+        return;
+      }
+
+      const shareUrl = `${window.location.origin}/dashboard?uid=${user.uid}`;
+
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        const btn = document.getElementById('share-profile-btn');
+        const origContent = btn.innerHTML;
+        btn.innerHTML = '<span>✓</span> Link Copied!';
+        btn.style.background = 'var(--primary)';
+        btn.style.color = 'white';
+        setTimeout(() => {
+          btn.innerHTML = origContent;
+          btn.style.background = 'rgba(255,255,255,0.7)';
+          btn.style.color = 'var(--primary)';
+        }, 2000);
+      } catch (err) {
+        console.error('Failed to copy link via clipboard API:', err);
+        prompt("Copy your profile link below:", shareUrl);
+      }
+    }
+    window.shareUserProfile = shareUserProfile;
+
+    // ── Public View Mode layout changes ──
+    if (isPublicView) {
+      document.addEventListener('DOMContentLoaded', () => {
+        // Hide private/interactive controls
+        const avatarChangeHint = document.querySelector('.avatar-change-hint');
+        if (avatarChangeHint) avatarChangeHint.style.display = 'none';
+        
+        const profileImgWrapper = document.querySelector('.profile-img-wrapper');
+        if (profileImgWrapper) {
+          profileImgWrapper.onclick = null;
+          profileImgWrapper.title = '';
+          profileImgWrapper.style.cursor = 'default';
+        }
+        
+        const practiceBtn = document.getElementById('practice-btn');
+        if (practiceBtn) practiceBtn.style.display = 'none';
+        
+        const shareBtn = document.getElementById('share-profile-btn');
+        if (shareBtn) shareBtn.style.display = 'none';
+        
+        const hamburgerMenu = document.getElementById('hamburger-menu');
+        if (hamburgerMenu) hamburgerMenu.style.display = 'none';
+        
+        const welcomeBanner = document.getElementById('welcome-banner');
+        if (welcomeBanner) welcomeBanner.style.display = 'none';
+        
+        const profileEmail = document.getElementById('profile-email');
+        if (profileEmail) profileEmail.style.display = 'none';
+        
+        const publicBanner = document.getElementById('public-view-banner');
+        if (publicBanner) publicBanner.style.display = 'flex';
+      });
+
+      // Load public profile data immediately
+      loadPublicProfile(viewUid);
+    }
+
     onAuthStateChanged(auth, async (user) => {
+      if (isPublicView) {
+        // In public view mode, we do not redirect or reload the dashboard with visitor's data
+        if (user) {
+          localStorage.setItem('speakup-last-uid', user.uid);
+        }
+        return;
+      }
+
       if (user) {
         localStorage.setItem('speakup-last-uid', user.uid);
         // Show basic auth info immediately while data loads

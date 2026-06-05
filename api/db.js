@@ -1,0 +1,36 @@
+/**
+ * api/db.js
+ * 
+ * PostgreSQL connection pool configuration.
+ * Automatically selects either DATABASE_URL or POSTGRES_URL from environment variables.
+ */
+
+import pg from 'pg';
+const { Pool } = pg;
+
+const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_URL;
+
+if (!connectionString) {
+  console.warn("DB WARNING: Neither DATABASE_URL nor POSTGRES_URL is configured in environment variables.");
+}
+
+export const pool = new Pool({
+  connectionString,
+  ssl: connectionString && !connectionString.includes('localhost') && !connectionString.includes('127.0.0.1')
+    ? { rejectUnauthorized: false } // Required for remote databases like Supabase/Neon
+    : false,
+  max: 10,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 5000,
+});
+
+/**
+ * Helper to run query with automatic client release.
+ */
+export async function query(text, params) {
+  const start = Date.now();
+  const res = await pool.query(text, params);
+  const duration = Date.now() - start;
+  console.log('[DB Query] executed:', { text: text.substring(0, 100), duration: `${duration}ms`, rows: res.rowCount });
+  return res;
+}

@@ -7,3 +7,11 @@
 
 # Node
 node_modules/
+
+# Credentials / Private Keys
+firebase-service-account.json
+credentials.json
+*firebase-adminsdk*.json
+speak-up-*.json
+*.local.json
+*.json.local

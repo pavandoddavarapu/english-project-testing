@@ -494,7 +494,10 @@
     // ── PRIMARY: save via backend proxy (never blocked by ad blockers) ─────────
     async function saveViaBackend(user, sessionData) {
       const idToken = await user.getIdToken(true); // force-refresh token
-      const res = await fetch('/api/save-session', {
+      const usePostgres = localStorage.getItem('speakup-use-postgres') === 'true';
+      const endpoint = usePostgres ? '/api/save-session-pg' : '/api/save-session';
+      
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ idToken, uid: user.uid, sessionData, displayName: user.displayName || 'Speaker', email: user.email || '' })
@@ -580,12 +583,18 @@
 
       console.log('[Tracker] Initiating session save... Mode:', tabMode);
 
+      const usePostgres = localStorage.getItem('speakup-use-postgres') === 'true';
+
       // Try backend proxy first (immune to ad blockers)
       try {
         await saveViaBackend(user, sessionData);
         return; // success — done
       } catch (backendErr) {
-        console.warn('[Tracker] Backend proxy failed, trying Firestore directly...', backendErr.message);
+        console.warn('[Tracker] Backend proxy failed...', backendErr.message);
+        if (usePostgres) {
+          alert('Failed to save session to PostgreSQL database.');
+          return;
+        }
       }
 
       // Fallback to direct Firestore

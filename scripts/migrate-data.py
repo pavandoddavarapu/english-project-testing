@@ -90,7 +90,7 @@ try:
         # 1. Insert/Update User Profile
         cursor.execute(
             """
-            INSERT INTO users (uid, name, email, gender, avatar_bg, aura_points, streak, total_yaps, created_at)
+            INSERT INTO public.users (uid, name, email, gender, avatar_bg, aura_points, streak, total_yaps, created_at)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
             ON CONFLICT (uid) DO UPDATE 
             SET name = EXCLUDED.name,

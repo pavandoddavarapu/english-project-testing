@@ -33,16 +33,16 @@ export default async function handler(req, res) {
     }
 
     // 2. Ensure user exists in the users table
-    let userRes = await query('SELECT aura_points, streak FROM users WHERE uid = $1', [uid]);
+    let userRes = await query('SELECT aura_points, streak FROM public.users WHERE uid = $1', [uid]);
     if (userRes.rowCount === 0) {
       console.log(`[save-session] User ${uid} not found, pre-initializing user row`);
       const avatarBg = 'b6e3f4';
       await query(
-        `INSERT INTO users (uid, name, email, gender, avatar_bg, aura_points, streak, total_yaps)
+        `INSERT INTO public.users (uid, name, email, gender, avatar_bg, aura_points, streak, total_yaps)
          VALUES ($1, $2, $3, 'prefer_not', $4, 0, 0, 0)`,
         [uid, displayName || 'Speaker', email || verifiedUser.email, avatarBg]
       );
-      userRes = await query('SELECT aura_points, streak FROM users WHERE uid = $1', [uid]);
+      userRes = await query('SELECT aura_points, streak FROM public.users WHERE uid = $1', [uid]);
     }
 
     const currentData = userRes.rows[0];
@@ -85,7 +85,7 @@ export default async function handler(req, res) {
 
     // 5. Update users table (aura points, total yaps, streak)
     const updateRes = await query(
-      `UPDATE users 
+      `UPDATE public.users 
        SET aura_points = aura_points + 10,
            total_yaps = total_yaps + 1,
            streak = $2

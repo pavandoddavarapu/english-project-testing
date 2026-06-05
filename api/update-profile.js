@@ -43,7 +43,7 @@ export default async function handler(req, res) {
 
     // 3. Update PostgreSQL database
     const updateRes = await query(`
-      UPDATE users
+      UPDATE public.users
       SET name = $2, gender = $3, avatar_bg = $4, avatar_seed = $5
       WHERE uid = $1
       RETURNING *

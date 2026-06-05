@@ -122,7 +122,7 @@ async function runMigration() {
 
       // 1. Insert/Update User Profile
       await pgClient.query(
-        `INSERT INTO users (uid, name, email, gender, avatar_bg, aura_points, streak, total_yaps, created_at)
+        `INSERT INTO public.users (uid, name, email, gender, avatar_bg, aura_points, streak, total_yaps, created_at)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
          ON CONFLICT (uid) DO UPDATE 
          SET name = EXCLUDED.name,

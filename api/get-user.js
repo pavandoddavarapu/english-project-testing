@@ -53,7 +53,7 @@ export default async function handler(req, res) {
            ) s), 
           '[]'::json
         ) as recent_sessions
-      FROM users u 
+      FROM public.users u 
       WHERE u.uid = $1
     `, [uid]);
     
@@ -84,7 +84,7 @@ export default async function handler(req, res) {
       console.log(`[get-user] Initializing new user profile for uid=${uid}`);
       const avatarBg = gender === 'female' ? 'ffdfbf' : gender === 'male' ? 'b6e3f4' : 'd1d4f9';
       const insertRes = await query(
-        `INSERT INTO users (uid, name, email, gender, avatar_bg, aura_points, streak, total_yaps)
+        `INSERT INTO public.users (uid, name, email, gender, avatar_bg, aura_points, streak, total_yaps)
          VALUES ($1, $2, $3, $4, $5, 0, 0, 0)
          RETURNING *`,
         [uid, displayName || 'Speaker', email || verifiedUser.email, gender || 'prefer_not', avatarBg]

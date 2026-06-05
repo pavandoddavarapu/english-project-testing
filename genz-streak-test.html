@@ -585,15 +585,57 @@
     .heatmap-square[data-level="4"] { background-color: var(--primary-dark); border-color: var(--primary); box-shadow: 0 0 5px var(--shadow-lg); }
 
     .months {
+      display: none;
+    }
+
+    .heatmap-months-container {
       display: flex;
-      justify-content: space-between;
-      color: var(--text-muted);
-      font-size: 0.75rem;
-      margin-top: 6px;
-      font-weight: 800;
-      padding-inline: 2px;
-      min-width: max-content;
+      flex-wrap: wrap;
+      gap: 16px;
+      justify-content: flex-start;
       width: 100%;
+    }
+
+    .heatmap-month-block {
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid var(--accent2);
+      border-radius: 10px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    html[data-theme="dark"] .heatmap-month-block {
+      background: rgba(45, 45, 45, 0.4) !important;
+      border-color: var(--accent2);
+    }
+
+    .heatmap-month-title {
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    .heatmap-month-grid {
+      display: flex;
+      gap: 3px;
+    }
+
+    .heatmap-month-col {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .heatmap-square.placeholder {
+      background-color: transparent !important;
+      border-color: transparent !important;
+      box-shadow: none !important;
+      cursor: default;
+      pointer-events: none;
     }
 
     /* Recent AC */
@@ -948,14 +990,13 @@
       <div class="panel">
         <div class="heatmap-header">
           <div class="heatmap-title">
-            <span class="highlight" id="heatmap-total-yaps">0</span> sessions this year 🗣️
+            <span class="highlight" id="heatmap-total-yaps">0</span> <span id="heatmap-timeframe-label">sessions this year</span> 🗣️
           </div>
           <div class="heatmap-stats">
             <span>Total active days: <span id="heatmap-active-days">0</span></span>
             <span>Max streak: <span id="heatmap-max-streak">0</span></span>
-            <select class="filter-dropdown">
-              <option>Current</option>
-              <option>2023</option>
+            <select class="filter-dropdown" id="heatmap-year-select">
+              <option value="Current">Current</option>
             </select>
           </div>
         </div>
@@ -1113,73 +1154,146 @@
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
     import { doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
-    // Helpers for Heatmap and Badges
-    function renderHeatmap(practiceDates = [], totalYaps = 0) {
-      const grid = document.getElementById('heatmap-grid');
-      grid.innerHTML = '';
-      const cols = 52;
-      const rows = 7;
+    // Global references for filtering
+    window.allPracticeDates = [];
+    window.allTotalYaps = 0;
 
-      // Create a map of date string (YYYY-MM-DD) to count
-      const dateCounts = {};
-      practiceDates.forEach(isoString => {
-        const dateStr = isoString.split('T')[0];
-        dateCounts[dateStr] = (dateCounts[dateStr] || 0) + 1;
+    function populateYearDropdown(practiceDates = []) {
+      const select = document.getElementById('heatmap-year-select');
+      if (!select) return;
+
+      const currentSelected = select.value || 'Current';
+      select.innerHTML = '<option value="Current">Current</option>';
+
+      const years = new Set();
+      practiceDates.forEach(d => {
+        try {
+          const yr = new Date(d).getFullYear();
+          if (!isNaN(yr)) years.add(yr);
+        } catch(e) {}
       });
 
-      // Calculate the start date (52 weeks ago from today)
-      const today = new Date();
-      const startDate = new Date(today);
-      startDate.setDate(today.getDate() - (cols * rows) + 1);
+      const thisYear = new Date().getFullYear();
+      years.add(thisYear);
 
-      let currentDate = new Date(startDate);
-
-      for (let col = 0; col < cols; col++) {
-        const colDiv = document.createElement('div');
-        colDiv.className = 'heatmap-col';
-        
-        for (let row = 0; row < rows; row++) {
-          const square = document.createElement('div');
-          square.className = 'heatmap-square';
-          
-          const dateStr = currentDate.toISOString().split('T')[0];
-          const count = dateCounts[dateStr] || 0;
-          
-          let level = 0;
-          if (count >= 15) level = 4;
-          else if (count >= 7) level = 3;
-          else if (count >= 3) level = 2;
-          else if (count >= 1) level = 1;
-
-          square.setAttribute('data-level', level);
-
-          const tooltip = document.createElement('div');
-          tooltip.className = 'tooltip';
-          
-          let yapText = "No practice today";
-          if (level === 1) yapText = "1 session ✅";
-          if (level === 2) yapText = "3 sessions 🔥";
-          if (level === 3) yapText = "7 sessions 🚀";
-          if (level === 4) yapText = count + " sessions — on a roll! 👑";
-
-          tooltip.innerText = yapText + ` (${dateStr})`;
-          square.appendChild(tooltip);
-
-          colDiv.appendChild(square);
-          
-          // Next day
-          currentDate.setDate(currentDate.getDate() + 1);
+      const sortedYears = Array.from(years).sort((a, b) => b - a);
+      sortedYears.forEach(yr => {
+        if (yr !== thisYear) {
+          const opt = document.createElement('option');
+          opt.value = yr;
+          opt.innerText = yr;
+          select.appendChild(opt);
+        } else {
+          select.options[0].innerText = `Current (${thisYear})`;
         }
-        grid.appendChild(colDiv);
+      });
+
+      select.value = currentSelected;
+    }
+
+    // Set up year selector change listener
+    const yearSelect = document.getElementById('heatmap-year-select');
+    if (yearSelect) {
+      yearSelect.addEventListener('change', (e) => {
+        const selectedYear = e.target.value;
+        renderHeatmap(window.allPracticeDates || [], window.allTotalYaps || 0, selectedYear);
+      });
+    }
+
+    // Helper to get week columns for a specific month
+    function getMonthWeeks(year, monthIndex) {
+      const weeks = [];
+      const firstDay = new Date(year, monthIndex, 1);
+      const lastDay = new Date(year, monthIndex + 1, 0);
+      
+      const numDays = lastDay.getDate();
+      const startDayOfWeek = firstDay.getDay(); // 0 = Sunday, ..., 6 = Saturday
+      
+      let currentDay = 1;
+      let done = false;
+      
+      while (!done) {
+        const week = [];
+        for (let d = 0; d < 7; d++) {
+          if (weeks.length === 0 && d < startDayOfWeek) {
+            week.push(null); // placeholder
+          } else if (currentDay > numDays) {
+            week.push(null); // placeholder
+            done = true;
+          } else {
+            week.push(new Date(year, monthIndex, currentDay));
+            currentDay++;
+          }
+        }
+        weeks.push(week);
+      }
+      return weeks;
+    }
+
+    function renderHeatmap(practiceDates = [], totalYaps = 0, selectedYear = 'Current') {
+      const grid = document.getElementById('heatmap-grid');
+      grid.innerHTML = '';
+
+      // Determine months to render based on selection
+      const monthsToRender = [];
+      const today = new Date();
+      const currentYear = today.getFullYear();
+      const currentMonth = today.getMonth();
+
+      if (selectedYear === 'Current') {
+        for (let i = 11; i >= 0; i--) {
+          const d = new Date(currentYear, currentMonth - i, 1);
+          monthsToRender.push({
+            year: d.getFullYear(),
+            month: d.getMonth()
+          });
+        }
+      } else {
+        const yr = parseInt(selectedYear);
+        for (let m = 0; m < 12; m++) {
+          monthsToRender.push({
+            year: yr,
+            month: m
+          });
+        }
+      }
+
+      // Find start and end date range for stats & counting
+      const startRange = new Date(monthsToRender[0].year, monthsToRender[0].month, 1);
+      const endRange = new Date(monthsToRender[11].year, monthsToRender[11].month + 1, 0, 23, 59, 59, 999);
+
+      // Create a map of date string (YYYY-MM-DD) to count using local dates, and filter by range
+      let yapsInRange = 0;
+      const dateCounts = {};
+      practiceDates.forEach(isoString => {
+        const d = new Date(isoString);
+        if (!isNaN(d) && d >= startRange && d <= endRange) {
+          yapsInRange++;
+          const year = d.getFullYear();
+          const month = String(d.getMonth() + 1).padStart(2, '0');
+          const day = String(d.getDate()).padStart(2, '0');
+          const dateStr = `${year}-${month}-${day}`;
+          dateCounts[dateStr] = (dateCounts[dateStr] || 0) + 1;
+        }
+      });
+
+      // Update header label dynamically based on year
+      const labelEl = document.getElementById('heatmap-timeframe-label');
+      if (labelEl) {
+        if (selectedYear === 'Current') {
+          labelEl.innerText = "sessions this year";
+        } else {
+          labelEl.innerText = `sessions in ${selectedYear}`;
+        }
       }
 
       // Update header stats
-      document.getElementById('heatmap-total-yaps').innerText = totalYaps.toLocaleString();
+      document.getElementById('heatmap-total-yaps').innerText = yapsInRange.toLocaleString();
       
       const uniqueDaysList = Object.keys(dateCounts).sort();
       document.getElementById('heatmap-active-days').innerText = uniqueDaysList.length;
-      
-      // Basic streak calculation
+
+      // Calculate streak within this year
       let maxStreak = 0;
       let currentStreak = 0;
       if (uniqueDaysList.length > 0) {
@@ -1198,7 +1312,83 @@
         }
       }
       document.getElementById('heatmap-max-streak').innerText = maxStreak;
+
+      // Hide old static months list
+      const monthsDiv = document.querySelector('.months');
+      if (monthsDiv) {
+        monthsDiv.style.display = 'none';
+      }
+
+      // Render the monthly calendar blocks
+      const container = document.createElement('div');
+      container.className = 'heatmap-months-container';
+      
+      const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+      monthsToRender.forEach(({ year, month }) => {
+        const monthBlock = document.createElement('div');
+        monthBlock.className = 'heatmap-month-block';
+
+        const title = document.createElement('div');
+        title.className = 'heatmap-month-title';
+        title.innerText = `${monthNames[month]} ${year}`;
+        monthBlock.appendChild(title);
+
+        const monthGrid = document.createElement('div');
+        monthGrid.className = 'heatmap-month-grid';
+
+        const weeks = getMonthWeeks(year, month);
+        weeks.forEach(week => {
+          const colDiv = document.createElement('div');
+          colDiv.className = 'heatmap-month-col';
+
+          week.forEach(dayDate => {
+            const square = document.createElement('div');
+            square.className = 'heatmap-square';
+
+            if (!dayDate) {
+              square.classList.add('placeholder');
+            } else {
+              const y = dayDate.getFullYear();
+              const m = String(dayDate.getMonth() + 1).padStart(2, '0');
+              const d = String(dayDate.getDate()).padStart(2, '0');
+              const dateStr = `${y}-${m}-${d}`;
+              const count = dateCounts[dateStr] || 0;
+
+              let level = 0;
+              if (count >= 15) level = 4;
+              else if (count >= 7) level = 3;
+              else if (count >= 3) level = 2;
+              else if (count >= 1) level = 1;
+
+              square.setAttribute('data-level', level);
+
+              const tooltip = document.createElement('div');
+              tooltip.className = 'tooltip';
+
+              let yapText = "No practice today";
+              if (level === 1) yapText = "1 session ✅";
+              if (level === 2) yapText = "3 sessions 🔥";
+              if (level === 3) yapText = "7 sessions 🚀";
+              if (level === 4) yapText = count + " sessions — on a roll! 👑";
+
+              tooltip.innerText = yapText + ` (${dateStr})`;
+              square.appendChild(tooltip);
+            }
+
+            colDiv.appendChild(square);
+          });
+
+          monthGrid.appendChild(colDiv);
+        });
+
+        monthBlock.appendChild(monthGrid);
+        container.appendChild(monthBlock);
+      });
+
+      grid.appendChild(container);
     }
+
 
     function renderBadges(practiceDates = [], auraPoints = 0) {
       const container = document.getElementById('badges-container');
@@ -1412,7 +1602,15 @@
       document.getElementById('banner-streak').innerText  = streak;
       document.getElementById('streak-count').innerText   = streak;
 
-      renderHeatmap(userData.practice_dates   || [], userData.total_yaps  || 0);
+      window.allPracticeDates = userData.practice_dates || [];
+      window.allTotalYaps = userData.total_yaps || 0;
+
+      populateYearDropdown(window.allPracticeDates);
+
+      const yearSelect = document.getElementById('heatmap-year-select');
+      const selectedYear = yearSelect ? yearSelect.value : 'Current';
+
+      renderHeatmap(window.allPracticeDates, window.allTotalYaps, selectedYear);
       renderBadges(userData.practice_dates    || [], userData.aura_points  || 0);
       renderSkillsProfile(userData.recent_sessions || []);
       renderCloutAndDialects(userData);
@@ -1425,7 +1623,12 @@
       document.getElementById('banner-aura').innerText   = '0';
       document.getElementById('banner-streak').innerText = '0';
       document.getElementById('streak-count').innerText  = '0';
-      renderHeatmap([], 0);
+      
+      window.allPracticeDates = [];
+      window.allTotalYaps = 0;
+      populateYearDropdown([]);
+      
+      renderHeatmap([], 0, 'Current');
       renderBadges([], 0);
       renderSkillsProfile([]);
       renderCloutAndDialects({});

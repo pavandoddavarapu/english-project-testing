@@ -117,9 +117,12 @@ export default async function handler(req, res) {
 
     // ── STEP 2: Score the transcription using Groq LLM ──
     console.log(`[process-queue] Scoring transcription for taskId=${taskId}`);
+    const escapedTranscriptionForJSON = JSON.stringify(cleanTranscription);
+    const escapedTopicForPrompt = (task.topic || 'General speaking practice').replace(/"/g, "'");
+
     const scoringPrompt = `You are an expert, incredibly warm, and encouraging English speech coach.
-The student was asked to speak about: "${task.topic || 'General speaking practice'}"
-Their speech transcription is: "${cleanTranscription || '(no transcription available)'}"
+The student was asked to speak about: "${escapedTopicForPrompt}"
+Their speech transcription is: ${escapedTranscriptionForJSON}
 
 Your philosophy: ALWAYS be incredibly warm, friendly, and highly motivating. Use encouraging language, cheer them on, and make them feel amazing about practicing. Reward effort, natural expression, and flow. However, if the speech is completely off-topic, just a few random words, or gibberish, score them strictly (e.g., 0-10) but gently and warmly encourage them to try speaking directly about the topic next time.
 Evaluate their speech and return ONLY a valid JSON object (no markdown, no extra text):
@@ -128,8 +131,9 @@ Evaluate their speech and return ONLY a valid JSON object (no markdown, no extra
   "clarity": <number 0-100, focus on comprehensibility not perfect pronunciation>,
   "confidence": <number 0-100, reward effort and self-expression>,
   "feedback": "<2-3 extremely encouraging and friendly sentences: warmly praise their effort, give one gentle improvement tip, and add a motivating cheer at the end>",
-  "transcription": "${cleanTranscription.replace(/"/g, '\\"')}"
+  "transcription": ${escapedTranscriptionForJSON}
 }`;
+
 
     const chatRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',

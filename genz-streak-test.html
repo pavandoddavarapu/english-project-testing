@@ -544,10 +544,27 @@
       flex-shrink: 0;
     }
 
-    /* LeetCode Dark empty square overrides */
+    /* LeetCode Dark empty and active square overrides */
     html[data-theme="dark"] .heatmap-square {
       background-color: rgba(255, 255, 255, 0.06);
       border-color: rgba(255, 255, 255, 0.03);
+    }
+    html[data-theme="dark"] .heatmap-square[data-level="1"] {
+      background-color: #3b280c;
+      border-color: #593e15;
+    }
+    html[data-theme="dark"] .heatmap-square[data-level="2"] {
+      background-color: #704d16;
+      border-color: #8c611f;
+    }
+    html[data-theme="dark"] .heatmap-square[data-level="3"] {
+      background-color: #a87322;
+      border-color: var(--primary);
+    }
+    html[data-theme="dark"] .heatmap-square[data-level="4"] {
+      background-color: var(--primary);
+      border-color: #ffe082;
+      box-shadow: 0 0 6px rgba(255, 161, 22, 0.6);
     }
 
     .heatmap-square:hover {

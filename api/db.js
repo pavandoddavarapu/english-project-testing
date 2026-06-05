@@ -35,17 +35,18 @@ export async function query(text, params) {
   return res;
 }
 
-// Startup Migration: Ensure users table has avatar_seed column
+// Startup Migration: Ensure users table has avatar_seed, linkedin_url, instagram_url, and username columns
 (async () => {
   try {
     await pool.query(`
       ALTER TABLE public.users 
       ADD COLUMN IF NOT EXISTS avatar_seed VARCHAR(100) DEFAULT 'Felix',
       ADD COLUMN IF NOT EXISTS linkedin_url VARCHAR(255),
-      ADD COLUMN IF NOT EXISTS instagram_url VARCHAR(255)
+      ADD COLUMN IF NOT EXISTS instagram_url VARCHAR(255),
+      ADD COLUMN IF NOT EXISTS username VARCHAR(50) UNIQUE
     `);
-    console.log('🔌 [DB Migration] public.users columns (avatar_seed, linkedin_url, instagram_url) are verified/added.');
+    console.log('🔌 [DB Migration] public.users columns (avatar_seed, linkedin_url, instagram_url, username) are verified/added.');
   } catch (err) {
-    console.error('❌ [DB Migration] Failed to ensure users.avatar_seed column:', err.message);
+    console.error('❌ [DB Migration] Failed to ensure users columns:', err.message);
   }
 })();

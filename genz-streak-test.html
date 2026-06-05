@@ -1247,6 +1247,11 @@
       </div>
 
       <div style="margin-bottom:14px;">
+        <label style="display:block; font-size:0.75rem; font-weight:900; letter-spacing:1px; text-transform:uppercase; color:var(--primary); margin-bottom:6px;">Username (Unique, no spaces)</label>
+        <input type="text" id="edit-profile-username" style="width:100%; padding:10px 14px; border:1.5px solid var(--accent2); border-radius:10px; background:var(--white); font-family:'Nunito',sans-serif; font-weight:700; color:var(--text); outline:none; font-size:0.9rem;" placeholder="e.g. pavan_7">
+      </div>
+
+      <div style="margin-bottom:14px;">
         <label style="display:block; font-size:0.75rem; font-weight:900; letter-spacing:1px; text-transform:uppercase; color:var(--primary); margin-bottom:6px;">Gender</label>
         <select id="edit-profile-gender" style="width:100%; padding:10px 14px; border:1.5px solid var(--accent2); border-radius:10px; background:var(--white); font-family:'Nunito',sans-serif; font-weight:700; color:var(--text); outline:none; font-size:0.9rem; cursor:pointer;">
           <option value="prefer_not">Prefer not to say</option>
@@ -1291,7 +1296,7 @@
     (function() {
       try {
         const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('uid')) {
+        if (urlParams.get('uid') || urlParams.get('username')) {
           // Skip pre-paint cache when viewing someone else's public profile
           return;
         }
@@ -1436,7 +1441,7 @@
 
     // Public Profile Share view config
     const urlParams = new URLSearchParams(window.location.search);
-    const viewUid = urlParams.get('uid');
+    const viewUid = urlParams.get('uid') || urlParams.get('username');
     const isPublicView = !!viewUid;
 
     // Profile customization state and logic
@@ -1445,6 +1450,7 @@
     let _currentUserGender = 'prefer_not';
     let _currentLinkedinUrl = '';
     let _currentInstagramUrl = '';
+    let _currentUsername = '';
 
     const AVATAR_SEEDS_MALE   = ['Felix','Aaron','Ryan','Marcus','Alex','Jordan','Peter','Dylan'];
     const AVATAR_SEEDS_FEMALE = ['Zoe','Sarah','Emma','Lily','Ava','Grace','Chloe','Ruby'];
@@ -1476,6 +1482,7 @@
       _tempSeed = _currentAvatarSeed;
 
       document.getElementById('edit-profile-name').value = currentName === 'Loading...' ? '' : currentName;
+      document.getElementById('edit-profile-username').value = _currentUsername || '';
       document.getElementById('edit-profile-gender').value = _tempGender;
       document.getElementById('edit-profile-linkedin').value = _currentLinkedinUrl || '';
       document.getElementById('edit-profile-instagram').value = _currentInstagramUrl || '';
@@ -1561,6 +1568,17 @@
         return;
       }
 
+      const usernameInput = document.getElementById('edit-profile-username');
+      const usernameVal = usernameInput.value.trim().toLowerCase();
+      if (usernameVal) {
+        const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
+        if (!usernameRegex.test(usernameVal)) {
+          errorDiv.textContent = '⚠️ Username must be 3-20 characters, containing only letters, numbers, or underscores.';
+          errorDiv.style.display = 'block';
+          return;
+        }
+      }
+
       errorDiv.style.display = 'none';
       saveBtn.disabled = true;
       saveBtn.textContent = 'Saving...';
@@ -1584,7 +1602,8 @@
             avatar_bg: _tempBg,
             avatar_seed: _tempSeed,
             linkedin_url: linkedinVal,
-            instagram_url: instagramVal
+            instagram_url: instagramVal,
+            username: usernameVal
           })
         });
 
@@ -1602,6 +1621,7 @@
         _currentAvatarSeed = updated.avatar_seed;
         _currentLinkedinUrl = updated.linkedin_url || '';
         _currentInstagramUrl = updated.instagram_url || '';
+        _currentUsername = updated.username || '';
         localStorage.setItem('speakup-avatar-seed', updated.avatar_seed);
 
         // Update Firebase Profile Name
@@ -1623,6 +1643,7 @@
           data.avatar_seed = updated.avatar_seed;
           data.linkedin_url = updated.linkedin_url || '';
           data.instagram_url = updated.instagram_url || '';
+          data.username = updated.username || '';
           localStorage.setItem(cacheKey, JSON.stringify(data));
           applyUserData(user, data);
         }
@@ -2126,6 +2147,7 @@
       // Render social links
       _currentLinkedinUrl = userData.linkedin_url || '';
       _currentInstagramUrl = userData.instagram_url || '';
+      _currentUsername = userData.username || '';
       const liEl = document.getElementById('profile-linkedin');
       if (_currentLinkedinUrl) {
         liEl.href = _currentLinkedinUrl;
@@ -2199,7 +2221,9 @@
         return;
       }
 
-      const shareUrl = `${window.location.origin}/dashboard?uid=${user.uid}`;
+      const shareUrl = _currentUsername
+        ? `${window.location.origin}/dashboard?username=${_currentUsername}`
+        : `${window.location.origin}/dashboard?uid=${user.uid}`;
 
       try {
         await navigator.clipboard.writeText(shareUrl);

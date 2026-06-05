@@ -74,6 +74,7 @@ export default async function handler(req, res) {
           total_yaps: user.total_yaps,
           linkedin_url: user.linkedin_url || '',
           instagram_url: user.instagram_url || '',
+          username: user.username || '',
           created_at: user.created_at,
           practice_dates: user.practice_dates || [],
           recent_sessions: user.recent_sessions || []
@@ -110,6 +111,7 @@ export default async function handler(req, res) {
           total_yaps: 0,
           linkedin_url: newUser.linkedin_url || '',
           instagram_url: newUser.instagram_url || '',
+          username: newUser.username || '',
           created_at: newUser.created_at,
           practice_dates: [],
           recent_sessions: []

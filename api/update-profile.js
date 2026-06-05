@@ -18,7 +18,7 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    const { idToken, uid, name, gender, avatar_bg, avatar_seed, linkedin_url, instagram_url } = req.body || {};
+    const { idToken, uid, name, gender, avatar_bg, avatar_seed, linkedin_url, instagram_url, username } = req.body || {};
 
     if (!idToken || !uid) {
       return res.status(400).json({ error: 'Missing idToken or uid' });
@@ -39,6 +39,26 @@ export default async function handler(req, res) {
     const cleanLinkedin = (linkedin_url || '').trim().substring(0, 255);
     const cleanInstagram = (instagram_url || '').trim().substring(0, 255);
 
+    // Validate unique username
+    const rawUsername = (username || '').trim().toLowerCase().substring(0, 50);
+    let cleanUsername = null;
+    if (rawUsername) {
+      const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
+      if (!usernameRegex.test(rawUsername)) {
+        return res.status(400).json({ error: 'Username must be between 3 and 20 characters and contain only letters, numbers, or underscores.' });
+      }
+      cleanUsername = rawUsername;
+
+      // Check if username is already taken by another user
+      const takenRes = await query(
+        'SELECT uid FROM public.users WHERE LOWER(username) = LOWER($1) AND uid != $2',
+        [cleanUsername, uid]
+      );
+      if (takenRes.rowCount > 0) {
+        return res.status(400).json({ error: 'Username is already taken by another user.' });
+      }
+    }
+
     if (!cleanName) {
       return res.status(400).json({ error: 'Name cannot be empty' });
     }
@@ -46,10 +66,10 @@ export default async function handler(req, res) {
     // 3. Update PostgreSQL database
     const updateRes = await query(`
       UPDATE public.users
-      SET name = $2, gender = $3, avatar_bg = $4, avatar_seed = $5, linkedin_url = $6, instagram_url = $7
+      SET name = $2, gender = $3, avatar_bg = $4, avatar_seed = $5, linkedin_url = $6, instagram_url = $7, username = $8
       WHERE uid = $1
       RETURNING *
-    `, [uid, cleanName, cleanGender, cleanAvatarBg, cleanAvatarSeed, cleanLinkedin || null, cleanInstagram || null]);
+    `, [uid, cleanName, cleanGender, cleanAvatarBg, cleanAvatarSeed, cleanLinkedin || null, cleanInstagram || null, cleanUsername]);
 
     if (updateRes.rowCount === 0) {
       return res.status(404).json({ error: 'User profile not found' });
@@ -66,7 +86,8 @@ export default async function handler(req, res) {
         avatar_bg: cleanAvatarBg,
         avatar_seed: cleanAvatarSeed,
         linkedin_url: cleanLinkedin,
-        instagram_url: cleanInstagram
+        instagram_url: cleanInstagram,
+        username: cleanUsername || ''
       }
     });
 

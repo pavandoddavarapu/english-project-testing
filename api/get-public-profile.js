@@ -22,24 +22,25 @@ export default async function handler(req, res) {
   if (!checkRateLimit(req, res, { maxRequests: 30, windowMs: 60_000 })) return;
 
   try {
-    const uid = sanitizeString(req.query.uid || req.body.uid, 128);
+    const identifier = sanitizeString(req.query.uid || req.body.uid || req.query.username || req.body.username, 128);
 
-    if (!uid) {
-      return res.status(400).json({ error: 'Missing uid parameter' });
+    if (!identifier) {
+      return res.status(400).json({ error: 'Missing uid or username parameter' });
     }
 
-    // 1. Fetch public user details
+    // 1. Fetch public user details by uid or username
     const userRes = await query(`
-      SELECT name, gender, avatar_bg, avatar_seed, aura_points, streak, total_yaps, created_at, linkedin_url, instagram_url
+      SELECT name, gender, avatar_bg, avatar_seed, aura_points, streak, total_yaps, created_at, linkedin_url, instagram_url, username, uid as user_id
       FROM public.users
-      WHERE uid = $1
-    `, [uid]);
+      WHERE uid = $1 OR LOWER(username) = LOWER($1)
+    `, [identifier]);
 
     if (userRes.rowCount === 0) {
       return res.status(404).json({ exists: false, error: 'User not found' });
     }
 
     const user = userRes.rows[0];
+    const actualUid = user.user_id;
 
     // 2. Fetch practice dates for heatmap
     const datesRes = await query(`
@@ -47,7 +48,7 @@ export default async function handler(req, res) {
       FROM public.practice_sessions 
       WHERE user_id = $1
       ORDER BY d ASC
-    `, [uid]);
+    `, [actualUid]);
     const practiceDates = datesRes.rows.map(r => r.d);
 
     // 3. Fetch recent practice sessions
@@ -57,7 +58,7 @@ export default async function handler(req, res) {
       WHERE user_id = $1 
       ORDER BY date DESC 
       LIMIT 20
-    `, [uid]);
+    `, [actualUid]);
 
     return res.status(200).json({
       exists: true,
@@ -72,6 +73,7 @@ export default async function handler(req, res) {
         created_at: user.created_at,
         linkedin_url: user.linkedin_url || '',
         instagram_url: user.instagram_url || '',
+        username: user.username || '',
         practice_dates: practiceDates,
         recent_sessions: sessionsRes.rows || []
       }

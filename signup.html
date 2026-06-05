@@ -452,10 +452,34 @@
     document.getElementById('signup-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const name = document.getElementById('name').value;
-      const email = document.getElementById('email').value;
+      const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
       const confirmPassword = document.getElementById('confirm-password').value;
       const gender = document.querySelector('input[name="gender"]:checked')?.value || 'prefer_not';
+
+      // ── Restrict signups to recognized personal email providers ──
+      const domain = email.split('@')[1]?.toLowerCase();
+      const allowedDomains = [
+        'gmail.com',
+        'yahoo.com',
+        'outlook.com',
+        'hotmail.com',
+        'live.com',
+        'msn.com',
+        'icloud.com',
+        'proton.me',
+        'protonmail.com',
+        'zoho.com',
+        'aol.com',
+        'ymail.com',
+        'gmx.com',
+        'mail.com'
+      ];
+
+      if (!allowedDomains.includes(domain)) {
+        alert("Please use a recognized personal email provider (like Gmail, Outlook, Yahoo, or iCloud) to sign up.");
+        return;
+      }
 
       if (password !== confirmPassword) {
         alert("Passwords do not match!");

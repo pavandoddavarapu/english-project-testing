@@ -914,8 +914,46 @@ recordBtn.addEventListener("click", async () => {
             const errorData = await res.json().catch(() => ({}));
             throw new Error(errorData.error || `Analysis failed (${res.status})`);
           }
-          const data = await res.json();
-          showRealAnalysis(data);
+          
+          const enqueueData = await res.json();
+          const taskId = enqueueData.taskId;
+
+          if (!taskId) {
+            throw new Error('Server did not return a valid analysis task ID.');
+          }
+
+          // Poll /api/status?taskId=xxx until completed or failed
+          let pollAttempts = 0;
+          const maxAttempts = 60; // 60 seconds timeout limit
+
+          const pollStatus = async () => {
+            if (pollAttempts >= maxAttempts) {
+              throw new Error('Speech analysis timed out. Please try again.');
+            }
+            pollAttempts++;
+
+            const statusRes = await fetch(`/api/status?taskId=${taskId}`);
+            if (!statusRes.ok) {
+              throw new Error(`Failed to check analysis status (${statusRes.status})`);
+            }
+
+            const statusData = await statusRes.json();
+
+            if (statusData.status === 'completed') {
+              const parsedResult = typeof statusData.result === 'string'
+                ? JSON.parse(statusData.result)
+                : statusData.result;
+              showRealAnalysis(parsedResult);
+            } else if (statusData.status === 'failed') {
+              throw new Error(statusData.error || 'AI analysis failed on the server.');
+            } else {
+              // Wait 1.2 seconds and poll again
+              await new Promise(resolve => setTimeout(resolve, 1200));
+              await pollStatus();
+            }
+          };
+
+          await pollStatus();
         } catch (err) {
           console.error(err);
           recordStatus.textContent = `⚠️ ${err.message || 'Error analysing speech. Try again.'}`;

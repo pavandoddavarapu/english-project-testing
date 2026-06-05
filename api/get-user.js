@@ -19,7 +19,7 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    const { idToken, uid, displayName, email, gender } = req.body || {};
+    const { idToken, uid, displayName, email, gender, linkedin_url, instagram_url } = req.body || {};
     if (!idToken || !uid) {
       return res.status(400).json({ error: 'Missing idToken or uid' });
     }
@@ -85,11 +85,14 @@ export default async function handler(req, res) {
     if (displayName || email) {
       console.log(`[get-user] Initializing new user profile for uid=${uid}`);
       const avatarBg = gender === 'female' ? 'ffdfbf' : gender === 'male' ? 'b6e3f4' : 'd1d4f9';
+      const cleanLinkedin = (linkedin_url || '').trim().substring(0, 255);
+      const cleanInstagram = (instagram_url || '').trim().substring(0, 255);
+
       const insertRes = await query(
-        `INSERT INTO public.users (uid, name, email, gender, avatar_bg, aura_points, streak, total_yaps)
-         VALUES ($1, $2, $3, $4, $5, 0, 0, 0)
+        `INSERT INTO public.users (uid, name, email, gender, avatar_bg, aura_points, streak, total_yaps, linkedin_url, instagram_url)
+         VALUES ($1, $2, $3, $4, $5, 0, 0, 0, $6, $7)
          RETURNING *`,
-        [uid, displayName || 'Speaker', email || verifiedUser.email, gender || 'prefer_not', avatarBg]
+        [uid, displayName || 'Speaker', email || verifiedUser.email, gender || 'prefer_not', avatarBg, cleanLinkedin || null, cleanInstagram || null]
       );
       
       const newUser = insertRes.rows[0];
@@ -105,8 +108,8 @@ export default async function handler(req, res) {
           aura_points: 0,
           streak: 0,
           total_yaps: 0,
-          linkedin_url: '',
-          instagram_url: '',
+          linkedin_url: newUser.linkedin_url || '',
+          instagram_url: newUser.instagram_url || '',
           created_at: newUser.created_at,
           practice_dates: [],
           recent_sessions: []

@@ -1,5 +1,5 @@
-// v8 — updated dark theme toggle button background cache bust
-const CACHE_NAME = 'speakup-cache-v8';
+// v9 — updated theme variables cache bust
+const CACHE_NAME = 'speakup-cache-v9';
 
 const ASSETS_TO_CACHE = [
   './',

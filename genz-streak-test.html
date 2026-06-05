@@ -325,11 +325,11 @@
       text-align: center;
     }
 
-    /* Right Column */
     .right-col {
       display: flex;
       flex-direction: column;
       gap: 24px;
+      min-width: 0;
     }
 
     .top-widgets {
@@ -519,6 +519,8 @@
       background: rgba(255,255,255,0.4);
       border: 1.5px solid var(--accent2);
       border-radius: 12px;
+      width: 100%;
+      min-width: 0;
     }
 
     .heatmap-wrapper::-webkit-scrollbar { height: 6px; }

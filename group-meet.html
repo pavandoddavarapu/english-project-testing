@@ -849,6 +849,7 @@
       setDoc, 
       getDoc, 
       updateDoc, 
+      deleteDoc, 
       onSnapshot, 
       arrayUnion, 
       arrayRemove 
@@ -1058,6 +1059,9 @@
       // Listen for real-time Firestore changes in the room
       roomUnsubscribe = onSnapshot(roomRef, (docSnap) => {
         if (!docSnap.exists()) {
+          // Reset then set modal close handler to avoid stale listener stacking
+          const closeBtn = document.getElementById('btn-modal-close');
+          closeBtn.onclick = null;
           showCustomModal(
             "Room Disbanded",
             "This room was disbanded or closed.",
@@ -1065,8 +1069,7 @@
             "",
             "Return to Dashboard"
           );
-          // Wait for button click
-          document.getElementById('btn-modal-close').onclick = () => {
+          closeBtn.onclick = () => {
             window.location.href = 'genz-streak-test.html';
           };
           return;
@@ -1076,12 +1079,35 @@
         renderRoomState(data);
       });
 
-      // Handle window closure to clean up participant record
-      window.addEventListener('beforeunload', leaveRoomCleanup);
-      document.getElementById('btn-hangup').onclick = () => {
-        leaveRoomCleanup();
+      // Handle window/tab closure: sendBeacon is the only reliable way to
+      // run async-like cleanup on beforeunload because fetch/await is blocked.
+      window.addEventListener('beforeunload', () => {
+        if (currentRoomId && currentUserProfile) {
+          // sendBeacon fires even when the page is being closed
+          // We do a best-effort inline cleanup instead
+          leaveRoomCleanup();
+        }
+      });
+
+      // Intercept exit links in header to await database cleanup
+      const exitLinks = document.querySelectorAll('header.room-header a');
+      exitLinks.forEach(link => {
+        link.onclick = async (e) => {
+          e.preventDefault();
+          const targetHref = link.getAttribute('href');
+          await leaveRoomCleanup();
+          window.location.href = targetHref;
+        };
+      });
+
+      document.getElementById('btn-hangup').onclick = async () => {
+        await leaveRoomCleanup();
         window.location.href = 'genz-streak-test.html';
       };
+
+      // Attach room action buttons AFTER joining (so currentRoomId is guaranteed set)
+      document.getElementById('btn-spin-wheel').onclick = triggerWheelSpin;
+      document.getElementById('btn-toggle-timer').onclick = handleTimerToggle;
     }
 
     function showToast() {
@@ -1091,7 +1117,7 @@
     }
 
     // ── 4. LEAVE ROOM CLEANUP ──
-    function leaveRoomCleanup() {
+    async function leaveRoomCleanup() {
       if (roomUnsubscribe) {
         roomUnsubscribe();
         roomUnsubscribe = null;
@@ -1099,11 +1125,30 @@
 
       if (currentRoomId && currentUserProfile) {
         const roomRef = doc(db, 'group_rooms', currentRoomId);
-        // Synchronously try to update the database to remove this participant
-        // Use keep-alive fetch or Firestore sync update if possible
-        updateDoc(roomRef, {
-          participants: arrayRemove(currentUserProfile)
-        }).catch(err => console.error("[Cleanup] Failed to remove participant:", err));
+        try {
+          // Fetch current document state to check remaining participant size
+          const docSnap = await getDoc(roomRef);
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            const currentParticipants = data.participants || [];
+            // Filter out current user profile
+            const remaining = currentParticipants.filter(p => p.uid !== currentUserProfile.uid);
+            
+            if (remaining.length === 0) {
+              // No users left in this room, delete the Firestore room document!
+              await deleteDoc(roomRef);
+              console.log(`[Cleanup] Room ${currentRoomId} deleted since no participants remain.`);
+            } else {
+              // Active participants still remain, just update the participants array
+              await updateDoc(roomRef, {
+                participants: remaining
+              });
+              console.log(`[Cleanup] Removed participant from room ${currentRoomId}.`);
+            }
+          }
+        } catch (err) {
+          console.error("[Cleanup] Error during room cleanup:", err);
+        }
       }
 
       // Disconnect Jitsi
@@ -1122,11 +1167,15 @@
       document.getElementById('participant-count').textContent = room.participants.length;
 
       // Check active Jitsi members to see if someone is muted
+      // NOTE: getParticipantsInfo is deprecated in newer Jitsi versions - wrap safely
       let activeJitsiParticipants = [];
       if (jitsiApi) {
         try {
-          activeJitsiParticipants = jitsiApi.getParticipantsInfo() || [];
-        } catch(e){}
+          const info = jitsiApi.getParticipantsInfo();
+          if (Array.isArray(info)) activeJitsiParticipants = info;
+        } catch(e){
+          console.warn('[Jitsi] getParticipantsInfo unavailable:', e.message);
+        }
       }
 
       room.participants.forEach(p => {
@@ -1435,10 +1484,12 @@
       }
     }
 
-    document.getElementById('btn-spin-wheel').onclick = triggerWheelSpin;
+    // NOTE: btn-spin-wheel and btn-toggle-timer onclick handlers are now
+    // attached inside joinRoom() so currentRoomId is guaranteed to be set.
+    // The handler functions are defined below for reference.
 
-    // Handle Timer toggle
-    document.getElementById('btn-toggle-timer').onclick = async () => {
+    // Handle Timer toggle (referenced in joinRoom via handleTimerToggle)
+    async function handleTimerToggle() {
       if (!currentRoomId) return;
       const roomRef = doc(db, 'group_rooms', currentRoomId);
       try {
@@ -1463,7 +1514,7 @@
         console.error("[Timer Toggle Error]", err);
         showCustomModal("Timer Error", "Failed to control timer: " + err.message, "❌");
       }
-    };
+    }
 
     // ── 7. JITSI MEET VOICE INTEGRATION ──
     function connectVoice(roomId) {
@@ -1539,7 +1590,7 @@
 
     function disconnectVoice() {
       const statusText = document.getElementById('voice-status-text');
-      statusText.textContent = "Connecting Voice...";
+      statusText.textContent = "Voice Disconnected";
       document.getElementById('voice-control-bar').style.display = 'none';
 
       if (jitsiApi) {

@@ -267,7 +267,8 @@
           <input type="password" id="password" class="auth-input" placeholder="Password" required>
         </div>
         
-        <button type="submit" class="btn-primary btn-auth">Let's Yap 🗣️</button>
+        <button type="submit" class="btn-primary btn-auth" id="login-submit-btn">Let's Yap 🗣️</button>
+        <div id="login-error" style="display:none; margin-top:12px; padding:10px 14px; background:rgba(217,83,79,0.1); border:1.5px solid rgba(217,83,79,0.3); border-radius:10px; color:#d9534f; font-size:0.85rem; font-weight:800; text-align:center;"></div>
       </form>
       
       <div class="divider">
@@ -352,15 +353,40 @@
       }
     });
 
+    // Friendly error message mapping
+    function getFriendlyError(code) {
+      const msgs = {
+        'auth/user-not-found': 'No account found with this email. Did you mean to sign up?',
+        'auth/wrong-password': 'Incorrect password. Please try again.',
+        'auth/invalid-credential': 'Invalid email or password. Please try again.',
+        'auth/too-many-requests': 'Too many attempts. Please wait a moment and try again.',
+        'auth/network-request-failed': 'Network error. Please check your connection.',
+        'auth/popup-closed-by-user': 'Sign-in popup was closed. Please try again.',
+        'auth/cancelled-popup-request': null // silent - user cancelled
+      };
+      return msgs[code] || null;
+    }
+
+    function showLoginError(msg) {
+      const el = document.getElementById('login-error');
+      if (el) { el.textContent = '⚠️ ' + msg; el.style.display = 'block'; }
+    }
+
     // Handle Google Login
     document.getElementById('google-login-btn').addEventListener('click', async () => {
+      const btn = document.getElementById('google-login-btn');
+      btn.disabled = true;
+      btn.textContent = 'Signing in...';
       try {
         await signInWithPopup(auth, provider);
-        // Successful login, redirect
         window.location.href = redirectUrl;
       } catch (error) {
         console.error("Google Sign-In Error:", error);
-        alert(error.message);
+        const msg = getFriendlyError(error.code);
+        if (msg) showLoginError(msg);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google Logo" class="google-logo"> Continue with Google';
       }
     });
 
@@ -369,14 +395,23 @@
       e.preventDefault();
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
+      const btn = document.getElementById('login-submit-btn');
+      const errEl = document.getElementById('login-error');
       
+      if (errEl) errEl.style.display = 'none';
+      btn.disabled = true;
+      btn.textContent = 'Signing in...';
+
       try {
         await signInWithEmailAndPassword(auth, email, password);
-        // Successful login, redirect
         window.location.href = redirectUrl;
       } catch (error) {
         console.error("Email Login Error:", error);
-        alert(error.message);
+        const msg = getFriendlyError(error.code) || error.message;
+        showLoginError(msg);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Let's Yap 🗣️";
       }
     });
   </script>

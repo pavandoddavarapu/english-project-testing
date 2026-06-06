@@ -1118,7 +1118,6 @@
           <div class="profile-names">
             <h1 id="profile-name">Loading...</h1>
             <p id="profile-username" class="profile-username" style="display:none;"></p>
-            <p id="profile-email">Please wait</p>
             <!-- Social links -->
             <div id="profile-socials" style="display: flex; gap: 8px; margin-top: 6px;">
               <a id="profile-linkedin" href="#" target="_blank" title="LinkedIn Profile" style="display: none; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: #0077b5; color: white; text-decoration: none; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
@@ -1352,7 +1351,6 @@
             const displayName = data.name || 'Speaker';
             const firstName = displayName.split(' ')[0];
             document.getElementById('profile-name').innerText = displayName;
-            document.getElementById('profile-email').innerText = data.email || '';
             // Show @username from cache
             const usernameEl = document.getElementById('profile-username');
             if (usernameEl && data.username) {
@@ -2417,7 +2415,6 @@
         localStorage.setItem('speakup-last-uid', user.uid);
         // Show basic auth info immediately while data loads
         document.getElementById('profile-name').innerText  = user.displayName || 'Speaker';
-        document.getElementById('profile-email').innerText = user.email || '';
 
         // Instant paint: Load from local storage if cached data exists
         const cached = localStorage.getItem(`speakup-user-data-${user.uid}`);

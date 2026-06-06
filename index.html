@@ -373,10 +373,11 @@
       width: 100%;
     }
 
-    /* ── FEATURES ── */
+    /* ── FEATURES & STORYTELLING ── */
     .features-sec {
-      padding: 90px 24px 80px;
+      padding: 100px 24px;
       background: var(--white);
+      position: relative;
     }
 
     html[data-theme="dark"] .features-sec {
@@ -385,93 +386,566 @@
 
     .sec-head {
       text-align: center;
-      margin-bottom: 60px;
+      margin-bottom: 80px;
     }
 
     .sec-eyebrow {
-      font-size: .78rem;
-      font-weight: 900;
-      letter-spacing: 2.5px;
+      font-size: .8rem;
+      font-weight: 800;
+      letter-spacing: 1.5px;
       text-transform: uppercase;
       color: var(--primary);
-      margin-bottom: 10px;
+      margin-bottom: 16px;
+      display: inline-block;
+      background: rgba(var(--primary-rgb), 0.08);
+      padding: 6px 16px;
+      border-radius: 99px;
+      border: 1px solid rgba(var(--primary-rgb), 0.15);
     }
 
     .sec-title {
       font-family: 'Fredoka One', cursive;
       font-size: clamp(2rem, 5vw, 3rem);
       color: var(--text);
-      margin-bottom: 10px;
+      margin-bottom: 12px;
     }
 
     .sec-sub {
       color: var(--text-muted);
-      font-weight: 600;
-      font-size: 1.05rem;
-    }
-
-    .feat-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
-      gap: 28px;
-      max-width: 1180px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      max-width: 600px;
       margin: 0 auto;
     }
 
-    .feat-card {
-      background: var(--bg);
-      border: 2px solid var(--accent2);
-      border-radius: 28px;
-      padding: 40px 32px;
-      text-align: center;
-      transition: all .35s cubic-bezier(.34, 1.56, .64, 1);
-      cursor: default;
+    .story-container {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 120px;
     }
 
-    .feat-card:hover {
-      transform: translateY(-12px);
-      box-shadow: 0 24px 48px var(--shadow-lg);
-      border-color: var(--accent);
+    .story-step {
+      display: flex;
+      align-items: center;
+      gap: 60px;
+    }
+
+    .story-step:nth-child(even) {
+      flex-direction: row-reverse;
+    }
+
+    .story-info {
+      flex: 1;
+      text-align: left;
+    }
+
+    .story-visual {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .story-num {
+      font-family: 'Fredoka One', cursive;
+      font-size: 0.9rem;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+      display: inline-block;
+      background: rgba(var(--primary-rgb), 0.08);
+      padding: 4px 12px;
+      border-radius: 99px;
+    }
+
+    .story-heading {
+      font-family: 'Fredoka One', cursive;
+      font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+      color: var(--text);
+      margin-bottom: 18px;
+      line-height: 1.25;
+    }
+
+    .story-text {
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 1.05rem;
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+
+    .story-features {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .story-tag {
+      background: var(--bg);
+      border: 1.5px solid var(--accent2);
+      color: var(--text);
+      padding: 8px 16px;
+      border-radius: 99px;
+      font-weight: 800;
+      font-size: 0.88rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
+    }
+
+    /* ── MOCKUPS ── */
+    .mock-card {
       background: var(--white);
+      border: 3px solid var(--accent2);
+      border-radius: 28px;
+      padding: 28px;
+      box-shadow: 0 20px 48px var(--shadow-lg);
+      position: relative;
+      overflow: hidden;
+      width: 100%;
+      max-width: 400px;
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    html[data-theme="dark"] .feat-card {
-      background: var(--bg);
-    }
-
-    html[data-theme="dark"] .feat-card:hover {
+    html[data-theme="dark"] .mock-card {
       background: var(--bg-card);
+      border-color: var(--accent2);
     }
 
-    .feat-icon-wrap {
-      width: 80px;
-      height: 80px;
-      border-radius: 24px;
-      background: var(--accent2);
+    @media (hover: hover) {
+      .story-step:hover .mock-card {
+        transform: translateY(-8px) scale(1.02);
+        box-shadow: 0 28px 56px var(--shadow-lg);
+      }
+    }
+
+    /* Stage 1: Prompt Mock */
+    .mock-badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: var(--primary);
+      background: rgba(var(--primary-rgb), 0.1);
+      padding: 4px 12px;
+      border-radius: 99px;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .mock-prompt-text {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.2rem;
+      color: var(--text);
+      line-height: 1.4;
+      margin-bottom: 24px;
+      min-height: 60px;
+      text-align: left;
+    }
+
+    .mock-timer {
+      font-family: monospace;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    .mock-mic-btn {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: #fff;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin: 0 auto 20px;
-      font-size: 2.4rem;
-      transition: transform .3s;
+      margin: 0 auto 16px;
+      font-size: 1.6rem;
+      position: relative;
+      box-shadow: 0 8px 24px rgba(var(--primary-rgb), 0.3);
     }
 
-    .feat-card:hover .feat-icon-wrap {
-      transform: scale(1.15) rotate(-5deg);
+    .mic-wave {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: var(--primary);
+      opacity: 0.4;
+      animation: wavePulse 2s infinite ease-out;
+      pointer-events: none;
     }
 
-    .feat-card h3 {
-      font-family: 'Fredoka One', cursive;
-      color: var(--primary);
-      font-size: 1.45rem;
-      margin-bottom: 12px;
+    .mic-wave:nth-child(2) {
+      animation-delay: 1s;
     }
 
-    .feat-card p {
+    @keyframes wavePulse {
+      0% { transform: scale(1); opacity: 0.4; }
+      100% { transform: scale(1.6); opacity: 0; }
+    }
+
+    .mock-status {
+      font-size: 0.85rem;
+      font-weight: 700;
       color: var(--text-muted);
+    }
+
+    /* Stage 2: Framework Mock */
+    .framework-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      font-weight: 800;
+      font-size: 0.95rem;
+      color: var(--text);
+    }
+
+    .framework-tag {
+      font-size: 0.75rem;
+      background: rgba(var(--primary-rgb), 0.08);
+      color: var(--primary);
+      padding: 4px 10px;
+      border-radius: 99px;
+    }
+
+    .framework-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .f-step {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: var(--bg);
+      padding: 12px 16px;
+      border-radius: 16px;
+      border: 1px solid transparent;
+      transition: all 0.3s;
+    }
+
+    .f-step.active {
+      background: var(--white);
+      border-color: var(--primary);
+      box-shadow: 0 4px 15px rgba(var(--primary-rgb), 0.08);
+    }
+
+    html[data-theme="dark"] .f-step.active {
+      background: var(--bg-card);
+    }
+
+    .f-bullet {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: var(--accent2);
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .f-step.active .f-bullet {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .f-desc {
+      font-size: 0.88rem;
+      color: var(--text);
+      font-weight: 700;
+      text-align: left;
+    }
+
+    .f-desc strong {
+      color: var(--primary);
+    }
+
+    /* Stage 3: Score Mock */
+    .score-overall {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 24px;
+    }
+
+    .score-circle {
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      background: rgba(var(--primary-rgb), 0.04);
+      border: 4px solid var(--accent2);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 15px rgba(var(--primary-rgb), 0.08);
+    }
+
+    .score-value {
+      font-family: 'Fredoka One', cursive;
+      font-size: 2.2rem;
+      color: var(--primary);
+      line-height: 1;
+    }
+
+    .score-label {
+      font-size: 0.65rem;
+      font-weight: 900;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    .score-bars {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .score-bar-row {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      text-align: left;
+    }
+
+    .score-bar-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .score-track {
+      height: 8px;
+      background: var(--bg);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .score-fill {
+      height: 100%;
+      border-radius: 99px;
+      background: var(--primary);
+    }
+
+    .score-fill.fluency { background: var(--primary); }
+    .score-fill.clarity { background: var(--accent); }
+    .score-fill.confidence { background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+
+    .score-tip {
+      background: var(--bg);
+      border-radius: 16px;
+      padding: 12px 16px;
+      font-size: 0.85rem;
       font-weight: 600;
-      line-height: 1.6;
-      font-size: .95rem;
+      color: var(--text);
+      line-height: 1.4;
+      border: 1px solid rgba(var(--primary-rgb), 0.08);
+      text-align: left;
+    }
+
+    /* Stage 4: Group Mock */
+    .group-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 800;
+      font-size: 0.95rem;
+      color: var(--text);
+      margin-bottom: 20px;
+    }
+
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #EF4444;
+      animation: liveBlink 1.5s infinite;
+    }
+
+    @keyframes liveBlink {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 1; }
+    }
+
+    .group-avatars {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin: 24px 0;
+    }
+
+    .avatar-circle {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .avatar-img {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      border: 3px solid var(--accent2);
+      background: var(--bg);
+      object-fit: cover;
+    }
+
+    .avatar-circle.active-speaking .avatar-img {
+      border-color: var(--primary);
+      box-shadow: 0 0 15px rgba(var(--primary-rgb), 0.3);
+    }
+
+    .speaking-pulse {
+      position: absolute;
+      top: -3px;
+      left: -3px;
+      width: 62px;
+      height: 62px;
+      border-radius: 50%;
+      border: 2px solid var(--primary);
+      opacity: 0.6;
+      animation: speakerPulse 1.5s infinite ease-out;
+      pointer-events: none;
+    }
+
+    @keyframes speakerPulse {
+      0% { transform: scale(0.9); opacity: 0.8; }
+      100% { transform: scale(1.25); opacity: 0; }
+    }
+
+    .avatar-name {
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .group-topic {
+      background: var(--bg);
+      border-radius: 16px;
+      padding: 14px;
+      border: 1px solid rgba(var(--primary-rgb), 0.08);
+      text-align: left;
+    }
+
+    .topic-label {
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .topic-name {
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.4;
+    }
+
+    /* Stage 5: Habit Mock */
+    .habit-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .streak-badge {
+      background: rgba(var(--primary-rgb), 0.08);
+      color: var(--primary);
+      font-weight: 900;
+      font-size: 0.85rem;
+      padding: 6px 14px;
+      border-radius: 99px;
+      border: 1px solid rgba(var(--primary-rgb), 0.15);
+    }
+
+    .aura-badge {
+      background: rgba(var(--primary-rgb), 0.04);
+      color: var(--text-muted);
+      font-weight: 800;
+      font-size: 0.85rem;
+      padding: 6px 14px;
+      border-radius: 99px;
+      border: 1px solid rgba(var(--primary-rgb), 0.08);
+    }
+
+    .heatmap-title, .theme-chooser-title {
+      font-size: 0.78rem;
+      font-weight: 900;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 8px;
+      text-align: left;
+    }
+
+    .heatmap-row {
+      display: flex;
+      gap: 5px;
+      justify-content: center;
+      margin-bottom: 24px;
+    }
+
+    .h-cell {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      background: var(--bg);
+    }
+
+    .h-cell.l-1 { background: rgba(var(--primary-rgb), 0.2); }
+    .h-cell.l-2 { background: rgba(var(--primary-rgb), 0.45); }
+    .h-cell.l-3 { background: rgba(var(--primary-rgb), 0.7); }
+    .h-cell.l-4 { background: var(--primary); }
+
+    .theme-dots-row {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .theme-dot {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 2px solid var(--white);
+      box-shadow: 0 0 0 1.5px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s;
+    }
+
+    .theme-dot.t-pink { background: #D63384; }
+    .theme-dot.t-green { background: #2D6A4F; }
+    .theme-dot.t-blue { background: #1A6FA8; }
+    .theme-dot.t-purple { background: #7B2FBE; }
+    .theme-dot.t-orange { background: #D4580A; }
+    .theme-dot.t-teal { background: #0D9488; }
+    .theme-dot.t-dark { background: #ffa116; }
+
+    html[data-theme="pink"] .theme-dot.t-pink,
+    html[data-theme="green"] .theme-dot.t-green,
+    html[data-theme="blue"] .theme-dot.t-blue,
+    html[data-theme="purple"] .theme-dot.t-purple,
+    html[data-theme="orange"] .theme-dot.t-orange,
+    html[data-theme="teal"] .theme-dot.t-teal,
+    html[data-theme="dark"] .theme-dot.t-dark {
+      transform: scale(1.25);
+      box-shadow: 0 0 0 2.5px var(--primary);
     }
 
     /* ── HOW IT WORKS ── */
@@ -726,6 +1200,45 @@
       .fi {
         display: none;
       }
+
+      /* Storytelling Mobile Overrides */
+      .story-container {
+        gap: 70px;
+      }
+
+      .story-step {
+        flex-direction: column !important;
+        gap: 24px;
+        text-align: center;
+      }
+
+      .story-info {
+        text-align: center;
+      }
+
+      .story-heading {
+        margin-bottom: 12px;
+      }
+
+      .story-text {
+        margin-bottom: 20px;
+        font-size: 0.98rem;
+      }
+
+      .story-features {
+        justify-content: center;
+      }
+
+      .mock-card {
+        max-width: 340px;
+        padding: 20px;
+      }
+
+      /* Disable performance-heavy animations on mobile scrolling */
+      .mic-wave,
+      .speaking-pulse {
+        animation: none !important;
+      }
     }
 
     @media(max-width: 540px) {
@@ -752,18 +1265,11 @@
       .sec-head {
         margin-bottom: 36px;
       }
-      .feat-card {
-        padding: 28px 20px;
-        border-radius: 20px;
+      .story-heading {
+        font-size: 1.4rem;
       }
-      .feat-card h3 {
-        font-size: 1.2rem;
-      }
-      .feat-icon-wrap {
-        width: 60px;
-        height: 60px;
-        border-radius: 18px;
-        font-size: 1.8rem;
+      .mock-card {
+        padding: 18px;
       }
       .step-num {
         width: 60px;
@@ -892,58 +1398,205 @@
     </div>
   </div>
 
-  <!-- FEATURES -->
+  <!-- FEATURES (STORYTELLING) -->
   <section class="features-sec" id="features">
     <div class="sec-head">
-      <div class="sec-eyebrow">✦ Everything You Need</div>
-      <h2 class="sec-title">Built for Real Fluency</h2>
-      <p class="sec-sub">Not just practice - actual growth you can feel.</p>
+      <div class="sec-eyebrow">✦ Built for Real Fluency</div>
+      <h2 class="sec-title">Your Journey to Natural Speaking</h2>
+      <p class="sec-sub">Not just practice — a curated, step-by-step path to confidence.</p>
     </div>
-    <div class="feat-grid">
-      <div class="feat-card">
-        <div class="feat-icon-wrap">🎲</div>
-        <h3>Random Topics</h3>
-        <p>Get AI-generated speaking prompts and practice thinking on your feet with a 1-minute timer.</p>
+
+    <div class="story-container">
+      <!-- Stage 1 -->
+      <div class="story-step">
+        <div class="story-info">
+          <div class="story-num">Stage 01</div>
+          <h3 class="story-heading">Find Your Voice, Spontaneously</h3>
+          <p class="story-text">Break the ice with AI-generated scenarios and real-world image prompts. By speaking under a gentle 1-minute timer, you train your brain to think directly in English and stop translating word-for-word in your head.</p>
+          <div class="story-features">
+            <span class="story-tag"><span class="tag-icon">🎲</span> Random Topics</span>
+            <span class="story-tag"><span class="tag-icon">🖼️</span> Picture Talk</span>
+          </div>
+        </div>
+        <div class="story-visual">
+          <div class="mock-card">
+            <div class="mock-badge">Spontaneous Practice</div>
+            <div class="mock-prompt-text">"If you could travel back in time, where would you go?"</div>
+            <div class="mock-timer">⏱️ 0:48</div>
+            <div class="mock-mic-btn">
+              <span class="mic-wave"></span>
+              <span class="mic-wave"></span>
+              🎤
+            </div>
+            <div class="mock-status">Recording... Speak now!</div>
+          </div>
+        </div>
       </div>
-      <div class="feat-card">
-        <div class="feat-icon-wrap">💼</div>
-        <h3>Interview Prep</h3>
-        <p>Prepare for real interviews with built-in frameworks like STAR, PREP, and PPF to structure your answers.</p>
+
+      <!-- Stage 2 -->
+      <div class="story-step">
+        <div class="story-info">
+          <div class="story-num">Stage 02</div>
+          <h3 class="story-heading">Structure Your Thoughts Like a Leader</h3>
+          <p class="story-text">Never ramble again. Learn to express yourself with logical clarity using built-in, industry-standard formulas like STAR, PREP, and PPF. Perfect for acing job interviews, presentations, and team meetings.</p>
+          <div class="story-features">
+            <span class="story-tag"><span class="tag-icon">💼</span> Interview Prep</span>
+            <span class="story-tag"><span class="tag-icon">🏛️</span> STAR Framework</span>
+          </div>
+        </div>
+        <div class="story-visual">
+          <div class="mock-card">
+            <div class="framework-header">
+              <span>STAR Interview Framework</span>
+              <span class="framework-tag">Active</span>
+            </div>
+            <div class="framework-steps">
+              <div class="f-step active">
+                <span class="f-bullet">S</span>
+                <div class="f-desc"><strong>Situation</strong>: Set the context of your story</div>
+              </div>
+              <div class="f-step">
+                <span class="f-bullet">T</span>
+                <div class="f-desc"><strong>Task</strong>: Explain the challenge or goal</div>
+              </div>
+              <div class="f-step">
+                <span class="f-bullet">A</span>
+                <div class="f-desc"><strong>Action</strong>: Detail what you specifically did</div>
+              </div>
+              <div class="f-step">
+                <span class="f-bullet">R</span>
+                <div class="f-desc"><strong>Result</strong>: Highlight the positive outcome</div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="feat-card">
-        <div class="feat-icon-wrap">📖</div>
-        <h3>Vocab Builder</h3>
-        <p>Learn new words and idioms with definitions, examples, and speaking angles — then use them in practice.</p>
+
+      <!-- Stage 3 -->
+      <div class="story-step">
+        <div class="story-info">
+          <div class="story-num">Stage 03</div>
+          <h3 class="story-heading">Refine with Precision AI Feedback</h3>
+          <p class="story-text">Get an instant, objective analysis of your pronunciation, fluency, and vocabulary size right after you finish speaking. See exactly where you stumbled and get smart recommendations to elevate your word choices.</p>
+          <div class="story-features">
+            <span class="story-tag"><span class="tag-icon">📊</span> AI Speech Scoring</span>
+            <span class="story-tag"><span class="tag-icon">📖</span> Vocab Builder</span>
+          </div>
+        </div>
+        <div class="story-visual">
+          <div class="mock-card">
+            <div class="score-overall">
+              <div class="score-circle">
+                <span class="score-value">88</span>
+                <span class="score-label">Fluency Score</span>
+              </div>
+            </div>
+            <div class="score-bars">
+              <div class="score-bar-row">
+                <div class="score-bar-label"><span>Clarity</span><span>90%</span></div>
+                <div class="score-track"><div class="score-fill clarity" style="width: 90%"></div></div>
+              </div>
+              <div class="score-bar-row">
+                <div class="score-bar-label"><span>Vocabulary Range</span><span>82%</span></div>
+                <div class="score-track"><div class="score-fill fluency" style="width: 82%"></div></div>
+              </div>
+              <div class="score-bar-row">
+                <div class="score-bar-label"><span>Confidence Voice Metric</span><span>95%</span></div>
+                <div class="score-track"><div class="score-fill confidence" style="width: 95%"></div></div>
+              </div>
+            </div>
+            <div class="score-tip">
+              💡 <strong>AI Tip:</strong> Replace filler words like "um" with 1-second strategic pauses.
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="feat-card">
-        <div class="feat-icon-wrap">🖼️</div>
-        <h3>Picture Talk</h3>
-        <p>Describe real-world images to sharpen your observational vocabulary and descriptive fluency.</p>
+
+      <!-- Stage 4 -->
+      <div class="story-step">
+        <div class="story-info">
+          <div class="story-num">Stage 04</div>
+          <h3 class="story-heading">Step Into Real Conversations</h3>
+          <p class="story-text">Practice makes perfect, but real-world conversations make you fluent. Join secure, active multi-participant voice rooms where you can debate, chat, and connect in real time with fellow learners worldwide.</p>
+          <div class="story-features">
+            <span class="story-tag"><span class="tag-icon">👥</span> Group Discussions</span>
+            <span class="story-tag"><span class="tag-icon">⚡</span> Peer Practice</span>
+          </div>
+        </div>
+        <div class="story-visual">
+          <div class="mock-card">
+            <div class="group-header">
+              <span class="live-dot"></span> Live Speaking Room
+            </div>
+            <div class="group-avatars">
+              <div class="avatar-circle active-speaking">
+                <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=Pavan" alt="Pavan" class="avatar-img">
+                <span class="speaking-pulse"></span>
+                <span class="avatar-name">You</span>
+              </div>
+              <div class="avatar-circle">
+                <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=Emma" alt="Emma" class="avatar-img">
+                <span class="avatar-name">Emma</span>
+              </div>
+              <div class="avatar-circle">
+                <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=Leo" alt="Leo" class="avatar-img">
+                <span class="avatar-name">Leo</span>
+              </div>
+            </div>
+            <div class="group-topic">
+              <div class="topic-label">Current Discussion Topic:</div>
+              <div class="topic-name">"Will AI replace traditional language classrooms?"</div>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="feat-card">
-        <div class="feat-icon-wrap">📊</div>
-        <h3>AI Speech Scoring</h3>
-        <p>Get instant scores on Fluency, Clarity, and Confidence plus a full transcript after every session.</p>
-      </div>
-      <div class="feat-card">
-        <div class="feat-icon-wrap">👥</div>
-        <h3>Group Discussions</h3>
-        <p>Join live, multi-participant speaking rooms to practice real-time conversations with other learners.</p>
-      </div>
-      <div class="feat-card">
-        <div class="feat-icon-wrap">🔥</div>
-        <h3>Streaks & Badges</h3>
-        <p>Earn Aura Points, maintain daily streaks, unlock badges, and track it all on a GitHub-style heatmap.</p>
-      </div>
-      <div class="feat-card">
-        <div class="feat-icon-wrap">👤</div>
-        <h3>Shareable Profiles</h3>
-        <p>Custom avatars, unique usernames, social links — share your public practice profile with anyone.</p>
-      </div>
-      <div class="feat-card">
-        <div class="feat-icon-wrap">🎨</div>
-        <h3>7 Stunning Themes</h3>
-        <p>Forest, Dark, Blossom, Ocean, Royal, Sunset, and Teal. Your app, your vibe — switch anytime.</p>
+
+      <!-- Stage 5 -->
+      <div class="story-step">
+        <div class="story-info">
+          <div class="story-num">Stage 05</div>
+          <h3 class="story-heading">Make Consistency Your Superpower</h3>
+          <p class="story-text">Fluency is built day by day. Track your progress with GitHub-style heatmaps, keep your streak alive, level up your custom public profile, and switch between 7 stunning themes to make practice feel uniquely yours.</p>
+          <div class="story-features">
+            <span class="story-tag"><span class="tag-icon">🔥</span> Daily Streaks</span>
+            <span class="story-tag"><span class="tag-icon">🎨</span> 7 Custom Themes</span>
+          </div>
+        </div>
+        <div class="story-visual">
+          <div class="mock-card">
+            <div class="habit-header">
+              <div class="streak-badge">🔥 12 Days</div>
+              <div class="aura-badge">✨ 240 Aura</div>
+            </div>
+            <div class="heatmap-title">Daily Practice Heatmap</div>
+            <div class="heatmap-row">
+              <span class="h-cell l-4"></span>
+              <span class="h-cell l-2"></span>
+              <span class="h-cell l-0"></span>
+              <span class="h-cell l-3"></span>
+              <span class="h-cell l-4"></span>
+              <span class="h-cell l-1"></span>
+              <span class="h-cell l-4"></span>
+              <span class="h-cell l-3"></span>
+              <span class="h-cell l-0"></span>
+              <span class="h-cell l-4"></span>
+              <span class="h-cell l-2"></span>
+              <span class="h-cell l-4"></span>
+              <span class="h-cell l-4"></span>
+              <span class="h-cell l-3"></span>
+            </div>
+            <div class="theme-chooser-title">7 Stunning Themes</div>
+            <div class="theme-dots-row">
+              <span class="theme-dot t-pink"></span>
+              <span class="theme-dot t-green"></span>
+              <span class="theme-dot t-blue"></span>
+              <span class="theme-dot t-purple"></span>
+              <span class="theme-dot t-orange"></span>
+              <span class="theme-dot t-teal"></span>
+              <span class="theme-dot t-dark"></span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </section>

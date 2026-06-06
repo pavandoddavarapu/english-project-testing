@@ -34,6 +34,7 @@ export default async function handler(req, res) {
     const userRes = await query(`
       SELECT 
         u.*,
+        (SELECT COUNT(*) + 1 FROM public.users WHERE aura_points > u.aura_points) as rank,
         COALESCE(
           (SELECT json_agg(d) FROM (
              SELECT DISTINCT date::date::text as d
@@ -76,6 +77,7 @@ export default async function handler(req, res) {
           instagram_url: user.instagram_url || '',
           username: user.username || '',
           created_at: user.created_at,
+          rank: Number(user.rank) || 1,
           practice_dates: user.practice_dates || [],
           recent_sessions: user.recent_sessions || []
         }
@@ -108,6 +110,9 @@ export default async function handler(req, res) {
         [uid, displayName || 'Speaker', email || verifiedUser.email, gender || 'prefer_not', avatarBg, cleanLinkedin || null, cleanInstagram || null, cleanUsername || null]
       );
       
+      const countRes = await query('SELECT COUNT(*) as total FROM public.users');
+      const totalUsers = Number(countRes.rows[0]?.total) || 1;
+
       const newUser = insertRes.rows[0];
       return res.status(200).json({
         exists: true,
@@ -125,6 +130,7 @@ export default async function handler(req, res) {
           instagram_url: newUser.instagram_url || '',
           username: newUser.username || '',
           created_at: newUser.created_at,
+          rank: totalUsers,
           practice_dates: [],
           recent_sessions: []
         }

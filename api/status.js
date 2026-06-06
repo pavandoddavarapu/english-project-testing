@@ -39,10 +39,13 @@ export default async function handler(req, res) {
       return res.status(200).json({ status: 'failed', error: task.error_message });
     }
 
-    // 3. Check for timeout / stalled state (e.g., worker container died)
+    // 3. Check if task is pending or stalled (e.g., worker container died or Vercel background execution froze)
     const timeSinceUpdate = Date.now() - new Date(task.updated_at).getTime();
-    if (timeSinceUpdate > 12000) { // 12 seconds
-      console.log(`[status] Task ${taskId} has stalled (active for ${timeSinceUpdate}ms). Triggering synchronous recovery...`);
+    const isPending = task.status === 'pending';
+    const isStalled = task.status === 'processing' && timeSinceUpdate > 12000;
+
+    if (isPending || isStalled) {
+      console.log(`[status] Task ${taskId} is ${isPending ? 'pending' : 'stalled'} (active for ${timeSinceUpdate}ms). Triggering queue processing...`);
       
       const host = req.headers.host;
       const protocol = req.headers['x-forwarded-proto'] || 'http';
@@ -57,7 +60,7 @@ export default async function handler(req, res) {
         headers: workerHeaders,
         body: JSON.stringify({ taskId })
       }).catch(err => {
-        console.error('[status] Recovery worker fetch failed:', err.message);
+        console.error('[status] Worker fetch failed:', err.message);
       });
 
       // Fetch the updated task state

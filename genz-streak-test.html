@@ -1165,7 +1165,7 @@
         </div>
         <div class="stat-row">
           <span>👑 Global Rank</span>
-          <span>#1</span>
+          <span id="clout-global-rank">#1</span>
         </div>
       </div>
 
@@ -1497,6 +1497,10 @@
     let _currentLinkedinUrl = '';
     let _currentInstagramUrl = '';
     let _currentUsername = '';
+
+    let _heatmapAnimated = false;
+    let _badgesAnimated = false;
+    let _sessionsAnimated = false;
 
     const AVATAR_SEEDS_MALE   = ['Felix','Aaron','Ryan','Marcus','Alex','Jordan','Peter','Dylan'];
     const AVATAR_SEEDS_FEMALE = ['Zoe','Sarah','Emma','Lily','Ava','Grace','Chloe','Ruby'];
@@ -1918,7 +1922,11 @@
           week.forEach(dayDate => {
             const square = document.createElement('div');
             square.className = 'heatmap-square';
-            square.style.animationDelay = `${colIndex * 12}ms`;
+            if (!_heatmapAnimated) {
+              square.style.animationDelay = `${colIndex * 12}ms`;
+            } else {
+              square.style.animation = 'none';
+            }
 
             if (!dayDate) {
               square.classList.add('placeholder');
@@ -1968,6 +1976,7 @@
       });
 
       grid.appendChild(container);
+      _heatmapAnimated = true;
     }
 
 
@@ -2006,12 +2015,18 @@
           badgeDiv.style.color = b.color;
           badgeDiv.innerText = b.emoji;
           badgeDiv.title = b.title + ' - ' + b.text;
-          badgeDiv.style.animation = 'popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) both';
-          badgeDiv.style.animationDelay = `${index * 60}ms`;
+          if (!_badgesAnimated) {
+            badgeDiv.style.animation = 'popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) both';
+            badgeDiv.style.animationDelay = `${index * 60}ms`;
+          } else {
+            badgeDiv.style.animation = 'none';
+          }
           container.appendChild(badgeDiv);
         });
+        _badgesAnimated = true;
       } else {
         latestText.innerText = 'No badges yet. Start practicing!';
+        _badgesAnimated = true;
       }
     }
 
@@ -2027,8 +2042,12 @@
       sessions.forEach((session, index) => {
         const item = document.createElement('div');
         item.className = 'recent-item';
-        item.style.animation = 'fadeSlideIn 0.4s ease both';
-        item.style.animationDelay = `${index * 50}ms`;
+        if (!_sessionsAnimated) {
+          item.style.animation = 'fadeSlideIn 0.4s ease both';
+          item.style.animationDelay = `${index * 50}ms`;
+        } else {
+          item.style.animation = 'none';
+        }
         
         // Topic Name
         const nameSpan = document.createElement('span');
@@ -2064,6 +2083,7 @@
         item.appendChild(timeSpan);
         listEl.appendChild(item);
       });
+      _sessionsAnimated = true;
     }
 
     function renderCloutAndDialects(userData = {}) {
@@ -2074,6 +2094,11 @@
       // Update Community Clout
       document.getElementById('clout-total-yaps').innerText = totalYaps;
       document.getElementById('clout-aura').innerText = aura.toLocaleString();
+      
+      const rankEl = document.getElementById('clout-global-rank');
+      if (rankEl) {
+        rankEl.innerText = userData.rank ? `#${userData.rank}` : '#1';
+      }
       
       const bigBrainCount = sessions.filter(s => s.score >= 80).length;
       document.getElementById('clout-big-brain').innerText = bigBrainCount;

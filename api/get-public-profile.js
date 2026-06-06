@@ -30,9 +30,10 @@ export default async function handler(req, res) {
 
     // 1. Fetch public user details by uid or username
     const userRes = await query(`
-      SELECT name, gender, avatar_bg, avatar_seed, aura_points, streak, total_yaps, created_at, linkedin_url, instagram_url, username, uid as user_id
-      FROM public.users
-      WHERE uid = $1 OR LOWER(username) = LOWER($1)
+      SELECT u.name, u.gender, u.avatar_bg, u.avatar_seed, u.aura_points, u.streak, u.total_yaps, u.created_at, u.linkedin_url, u.instagram_url, u.username, u.uid as user_id,
+             (SELECT COUNT(*) + 1 FROM public.users WHERE aura_points > u.aura_points) as rank
+      FROM public.users u
+      WHERE u.uid = $1 OR LOWER(u.username) = LOWER($1)
     `, [identifier]);
 
     if (userRes.rowCount === 0) {
@@ -74,6 +75,7 @@ export default async function handler(req, res) {
         linkedin_url: user.linkedin_url || '',
         instagram_url: user.instagram_url || '',
         username: user.username || '',
+        rank: Number(user.rank) || 1,
         practice_dates: practiceDates,
         recent_sessions: sessionsRes.rows || []
       }

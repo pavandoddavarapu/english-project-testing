@@ -123,43 +123,57 @@
     /* Container Layout */
     .container {
       max-width: 1280px;
-      margin: 100px auto 0;
+      margin: 20px auto 0;
       display: grid;
       grid-template-columns: 380px 1fr;
       gap: 32px;
       animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
     }
 
+    /* Premium Navbar Overrides */
+    .navbar {
+      background: var(--glass-bg);
+      border-bottom: 1px solid var(--glass-border);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: var(--glass-shadow);
+      padding: 16px 40px;
+      margin-bottom: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      z-index: 1000;
+    }
+
+    .btn-back {
+      padding: 10px 22px;
+      border-radius: var(--radius-pill);
+      background: rgba(var(--primary-rgb), 0.08);
+      border: 1px solid var(--accent2);
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.9rem;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-back:hover {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 4px 15px var(--shadow);
+      transform: translateX(-3px);
+    }
+
     @media (max-width: 992px) {
       .container {
         grid-template-columns: 1fr;
         gap: 24px;
-        margin-top: 90px;
+        margin-top: 20px;
       }
-    }
-
-    /* Custom Header Styling */
-    .room-header {
-      background: rgba(var(--primary-rgb), 0.05);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--glass-border);
-      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.03);
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 1000;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 16px 40px;
-      transition: all 0.3s ease;
-    }
-
-    html[data-theme="dark"] .room-header {
-      background: rgba(20, 20, 20, 0.6);
-      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
     }
 
     .brand {
@@ -175,24 +189,6 @@
       transform: scale(1.05);
     }
 
-    .btn-back {
-      padding: 10px 22px;
-      border-radius: var(--radius-pill);
-      font-weight: 800;
-      font-size: 0.88rem;
-      background: rgba(var(--primary-rgb), 0.1);
-      border: 1px solid rgba(var(--primary-rgb), 0.2);
-      color: var(--primary);
-      cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-      text-decoration: none;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .btn-back:hover {
-      background: var(--primary);
       color: white;
       box-shadow: 0 4px 15px var(--shadow);
       transform: translateX(-3px);
@@ -218,7 +214,7 @@
     /* Lobby Redesign */
     .lobby-card {
       max-width: 540px;
-      margin: 140px auto 0;
+      margin: 40px auto 0;
       text-align: center;
       padding: 48px;
       border-radius: 32px;
@@ -1057,8 +1053,9 @@
         padding: 0 12px 120px;
       }
       
-      .room-header {
+      .navbar {
         padding: 12px 16px;
+        margin-bottom: 20px;
       }
       
       .brand {
@@ -1076,7 +1073,7 @@
       
       .lobby-card {
         padding: 24px 16px;
-        margin-top: 110px;
+        margin-top: 20px;
         border-radius: 20px;
       }
       
@@ -1180,11 +1177,33 @@
     <div class="bg-blob blob-accent3"></div>
   </div>
 
-  <!-- HEADER -->
-  <header class="room-header">
-    <a href="genz-streak-test.html" class="brand">Speak Up!</a>
-    <a href="genz-streak-test.html" class="btn-back">← Dashboard</a>
-  </header>
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="nav-brand">Speak Up! 🎤</div>
+    
+    <div class="nav-right" style="display: flex; gap: 15px; align-items: center;">
+      <div class="theme-switcher" id="theme-switcher">
+        <button class="theme-toggle-btn" id="theme-toggle-btn" title="Change Theme" style="border-color: var(--accent2);">
+          <span class="theme-icon">🎨</span>
+          <span class="theme-label">Theme</span>
+          <span class="theme-arrow">▾</span>
+        </button>
+        <div class="theme-dropdown hidden" id="theme-dropdown">
+          <div class="theme-dropdown-title">Choose a Theme</div>
+          <div class="theme-grid">
+            <button class="theme-swatch" data-theme="green" title="Forest Green" style="--sw:#2D6A4F"><span class="swatch-dot" style="background:#2D6A4F"></span>Forest</button>
+            <button class="theme-swatch" data-theme="dark" title="Dark" style="--sw:#ffa116"><span class="swatch-dot" style="background:#ffa116"></span>Dark</button>
+            <button class="theme-swatch" data-theme="pink" title="Blossom Pink" style="--sw:#D63384"><span class="swatch-dot" style="background:#D63384"></span>Blossom</button>
+            <button class="theme-swatch" data-theme="blue" title="Ocean Blue" style="--sw:#1A6FA8"><span class="swatch-dot" style="background:#1A6FA8"></span>Ocean</button>
+            <button class="theme-swatch" data-theme="purple" title="Royal Purple" style="--sw:#7B2FBE"><span class="swatch-dot" style="background:#7B2FBE"></span>Royal</button>
+            <button class="theme-swatch" data-theme="orange" title="Sunset Orange" style="--sw:#D4580A"><span class="swatch-dot" style="background:#D4580A"></span>Sunset</button>
+            <button class="theme-swatch" data-theme="teal" title="Teal Breeze" style="--sw:#0D9488"><span class="swatch-dot" style="background:#0D9488"></span>Teal</button>
+          </div>
+        </div>
+      </div>
+      <a href="genz-streak-test.html" class="btn-back">← Dashboard</a>
+    </div>
+  </nav>
 
   <!-- TOAST -->
   <div id="toast" class="toast">Link copied! 🔗</div>
@@ -2201,6 +2220,58 @@
 
       // Log success
       console.log("[Confetti] Congratulated speaker!");
+    }
+
+    // ── 9. THEME SWITCHER INTEGRATION ──
+    const themeToggleBtn = document.getElementById("theme-toggle-btn");
+    const themeDropdown = document.getElementById("theme-dropdown");
+    const themeSwatches = document.querySelectorAll(".theme-swatch");
+    
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const isOpen = !themeDropdown.classList.contains("hidden");
+        themeDropdown.classList.toggle("hidden", isOpen);
+        themeToggleBtn.classList.toggle("open", !isOpen);
+      });
+      
+      document.addEventListener("click", (e) => {
+        if (!e.target.closest("#theme-switcher")) {
+          themeDropdown.classList.add("hidden");
+          themeToggleBtn.classList.remove("open");
+        }
+      });
+      
+      themeSwatches.forEach(swatch => {
+        swatch.addEventListener("click", () => {
+          const theme = swatch.dataset.theme;
+          applyTheme(theme);
+          themeSwatches.forEach(s => s.classList.remove("active"));
+          swatch.classList.add("active");
+          setTimeout(() => {
+            themeDropdown.classList.add("hidden");
+            themeToggleBtn.classList.remove("open");
+          }, 220);
+        });
+      });
+      
+      function applyTheme(theme) {
+        document.documentElement.setAttribute("data-theme", theme);
+        localStorage.setItem("speakup-theme", theme);
+        const THEME_COLORS = { pink: "#D63384", green: "#2D6A4F", blue: "#1A6FA8", purple: "#7B2FBE", orange: "#D4580A", teal: "#0D9488", dark: "#ffa116" };
+        const color = THEME_COLORS[theme] || THEME_COLORS.pink;
+        themeToggleBtn.style.borderColor = color + "80";
+      }
+      
+      function initTheme() {
+        const saved = localStorage.getItem("speakup-theme") || "green";
+        themeSwatches.forEach(s => s.classList.toggle("active", s.dataset.theme === saved));
+        const THEME_COLORS = { pink: "#D63384", green: "#2D6A4F", blue: "#1A6FA8", purple: "#7B2FBE", orange: "#D4580A", teal: "#0D9488", dark: "#ffa116" };
+        const color = THEME_COLORS[saved] || THEME_COLORS.green;
+        themeToggleBtn.style.borderColor = color + "80";
+      }
+      
+      initTheme();
     }
   </script>
 </body>

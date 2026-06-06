@@ -1241,7 +1241,8 @@
         <h4 style="font-weight: 800; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1.5px; display: flex; align-items: center; gap: 6px;">
           <span>🎙️</span> Voice Room Widget
         </h4>
-        <div id="jitsi-meet-frame" style="width: 100%; height: 160px; border-radius: 16px; border: 1.5px solid var(--accent2); background: rgba(var(--primary-rgb), 0.03); overflow: hidden; position: relative;"></div>
+        <div id="jitsi-meet-frame" style="width: 100%; height: 280px; border-radius: 16px; border: 1.5px solid var(--accent2); background: rgba(var(--primary-rgb), 0.03); overflow: hidden; position: relative;"></div>
+        <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 10px; line-height: 1.4; text-align: center; background: rgba(var(--primary-rgb), 0.04); padding: 8px 12px; border-radius: 10px; border: 1px solid rgba(var(--primary-rgb), 0.08);">💡 Using <strong>Brave</strong> or <strong>Safari</strong>? Turn off Shields/ad-blockers and grant microphone access if audio fails to connect.</div>
       </div>
     </section>
 
@@ -2023,8 +2024,11 @@
           configOverwrite: {
             startWithAudioMuted: false,
             startWithVideoMuted: true,
-            startAudioOnly: true,
+            startAudioOnly: false,
             prejoinPageEnabled: false,
+            prejoinConfig: {
+              enabled: false
+            },
             toolbarButtons: ['microphone'], // show microphone button
             enableWelcomePage: false,
             disableDeepLinking: true

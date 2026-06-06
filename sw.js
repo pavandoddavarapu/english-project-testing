@@ -42,6 +42,10 @@ self.addEventListener('fetch', event => {
     url.includes('jsdelivr.net') ||
     url.includes('huggingface.co') ||
     url.includes('hf.co') ||
+    url.includes('systemli.org') ||
+    url.includes('jit.si') ||
+    url.includes('ffmuc.net') ||
+    url.includes('8x8.vc') ||
     url.includes('/api/')
   ) {
     return; // let the browser handle it normally

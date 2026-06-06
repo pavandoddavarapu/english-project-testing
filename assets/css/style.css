@@ -162,7 +162,11 @@ html[data-theme="dark"] .btn-primary { color: #1a1a1a; }
 /* --- Reset & Base --- */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+  /* Prevent iOS rubber-band flicker */
+  -webkit-overflow-scrolling: touch;
+}
 
 /* ============================================================
    PAGE TRANSITION SYSTEM
@@ -177,6 +181,10 @@ body {
   overflow-x: hidden;
   position: relative;
   animation: speakup-page-enter 0.35s ease both;
+  /* Prevent layout thrashing during animations */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeSpeed;
 }
 
 @keyframes speakup-page-enter {
@@ -233,6 +241,9 @@ body::before {
     radial-gradient(circle at 50% 50%, rgba(255,218,158,0.08) 0%, transparent 60%);
   pointer-events: none;
   z-index: 0;
+  /* GPU-composited layer to avoid repaint on scroll */
+  transform: translateZ(0);
+  will-change: auto;
 }
 
 /* ============================================================
@@ -255,11 +266,14 @@ body::before {
   border-radius: var(--radius-pill);
   padding: 5px 8px;
   backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   box-shadow: 0 4px 20px var(--shadow);
   /* Perfect center regardless of side elements */
   position: absolute;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translateX(-50%) translateZ(0);
+  /* Isolate compositing layer */
+  contain: layout style;
 }
 
 
@@ -442,6 +456,8 @@ html[data-theme="dark"] .theme-swatch:hover {
   height: calc(100vh - 70px);
   position: relative;
   z-index: 1;
+  /* Isolate paint to prevent full-page repaints */
+  contain: layout style;
 }
 
 /* ============================================================
@@ -1063,11 +1079,14 @@ html[data-theme="dark"] .filter-option .check { color: var(--accent); }
   inset: 0;
   background: rgba(74,16,48,0.4);
   backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 100;
   animation: fadeIn 0.3s ease;
+  /* Force GPU compositing for the overlay */
+  transform: translateZ(0);
 }
 
 .modal-box {
@@ -1186,6 +1205,8 @@ html[data-theme="dark"] .filter-option .check { color: var(--accent); }
   inset: 0;
   pointer-events: none;
   z-index: 200;
+  /* GPU layer — avoids repainting the DOM behind the canvas */
+  transform: translateZ(0);
 }
 
 /* ============================================================
@@ -2582,3 +2603,256 @@ html[data-theme="dark"] .chatbot-window {
   }
 }
 /* trigger rebuild 2 */
+
+/* ============================================================
+   MOBILE PERFORMANCE OPTIMIZATIONS
+   Pure performance — zero visual changes on desktop.
+   Targets: flickering, jank, GPU overdraw, battery drain.
+   ============================================================ */
+
+/* ── 1. Reduce expensive backdrop-filter blur on mobile ──── */
+@media (max-width: 768px) {
+  .nav-tabs,
+  .filter-pill,
+  .btn-timer,
+  .btn-adjust,
+  .btn-reset-circle,
+  .theme-toggle-btn,
+  .frameworks-box,
+  .vocab-card,
+  .filter-dropdown-menu,
+  .picture-tips-card,
+  .picture-speak-prompt,
+  #next-image-btn,
+  .chatbot-window,
+  body.has-bg-image .left-panel,
+  body.has-bg-image .btn-timer,
+  body.has-bg-image .topic-main {
+    /* Reduce blur from 6-16px → 4px — saves massive GPU time */
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+
+  .modal-overlay {
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+  }
+}
+
+/* ── 2. Reduce continuous animation overhead on mobile ───── */
+@media (max-width: 768px) {
+  /* Disable the chatbot pointer bounce — runs 24/7 */
+  .chatbot-pointer {
+    animation: none;
+  }
+
+  /* Disable blob floating animations — very GPU-heavy */
+  .bg-blob {
+    animation: none !important;
+  }
+
+  /* Reduce background shift animation — runs 18s continuously */
+  body::before {
+    animation: none;
+  }
+
+  /* Simplify skeleton shimmer — reduce GPU overdraw */
+  .skeleton-shimmer,
+  .image-skeleton.visible {
+    animation-duration: 2.5s;
+  }
+
+  /* Slow down the progress bar shimmer */
+  #speakup-progress-bar {
+    animation-duration: 3s;
+  }
+
+  /* Reduce spin sparkle count visually with faster cleanup */
+  .spin-sparkle {
+    animation-duration: 0.5s;
+  }
+}
+
+/* ── 3. Optimize transitions for 60fps on mobile ─────────── */
+@media (max-width: 768px) {
+  /* Shorten transition durations to reduce frame drops */
+  .nav-tab,
+  .theme-swatch,
+  .framework-item,
+  .filter-option,
+  .filter-pill {
+    transition-duration: 0.15s;
+  }
+
+  /* Simplify box-shadows — each shadow triggers GPU composition */
+  .btn-primary,
+  .btn-spin {
+    box-shadow: 0 4px 12px var(--shadow);
+  }
+
+  .btn-primary:hover,
+  .btn-spin:hover {
+    box-shadow: 0 6px 16px var(--shadow);
+  }
+
+  /* Reduce panel hover transform complexity */
+  .panel:hover {
+    transform: none;
+    box-shadow: 0 6px 20px var(--shadow-lg);
+  }
+
+  /* GPU-accelerate the chatbot window open/close */
+  .chatbot-window {
+    will-change: transform, opacity;
+  }
+  .chatbot-window.hidden {
+    will-change: auto;
+  }
+
+  /* Reduce image crossfade duration for snappier feel */
+  .picture-img-layer,
+  .img-layer {
+    transition-duration: 0.6s;
+  }
+}
+
+/* ── 4. Touch device optimizations (no hover) ──────────── */
+@media (hover: none) and (pointer: coarse) {
+  /* Eliminate hover-only effects that cause flash on touch */
+  .btn-spin:hover,
+  .btn-timer:hover,
+  .btn-primary:hover,
+  .btn-adjust:hover,
+  .btn-reset-circle:hover,
+  .theme-swatch:hover,
+  .filter-pill:hover,
+  .framework-item:hover,
+  .badge:hover,
+  .heatmap-square:hover,
+  .theme-toggle-btn:hover,
+  .btn-play-pause:hover,
+  #next-image-btn:hover,
+  #chatbot-send:hover,
+  .chatbot-toggle:hover,
+  .filter-option:hover,
+  .stat-row:hover,
+  .profile-img:hover {
+    transform: none;
+  }
+
+  /* Active state instead of hover for touch feedback */
+  .btn-spin:active,
+  .btn-timer:active,
+  .btn-primary:active {
+    transform: scale(0.97);
+    transition-duration: 0.08s;
+  }
+
+  .chatbot-toggle:active {
+    transform: scale(0.95);
+    transition-duration: 0.1s;
+  }
+
+  /* Prevent 300ms tap delay on iOS */
+  a, button, input, select, textarea, [role="button"] {
+    touch-action: manipulation;
+  }
+}
+
+/* ── 5. GPU compositing for fixed/animated elements ──────── */
+@media (max-width: 768px) {
+  /* Force GPU layers for fixed elements to prevent scroll jank */
+  .lp-nav,
+  .timer-screen,
+  .chatbot-container,
+  .chatbot-window,
+  #confetti-canvas {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  /* Contain paint for scrollable containers */
+  .chatbot-messages,
+  .heatmap-wrapper,
+  .scrollable-menu {
+    contain: content;
+    transform: translateZ(0);
+  }
+
+  /* Isolate the timer screen from triggering full repaints */
+  .timer-screen {
+    contain: layout style paint;
+  }
+
+  .circle-timer {
+    contain: layout style;
+    transform: translateZ(0);
+  }
+}
+
+/* ── 6. Reduce paint areas and CLS ───────────────────────── */
+@media (max-width: 768px) {
+  /* Prevent body::before from repainting during scroll */
+  body::before {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    /* Static on mobile — no animation needed */
+    opacity: 0.85;
+  }
+
+  /* Prevent topic area repaints during spin */
+  .topic-area {
+    contain: layout style;
+    transform: translateZ(0);
+  }
+
+  /* Reduce confetti particle count via CSS cap */
+  #confetti-canvas {
+    /* Composite as separate layer */
+    isolation: isolate;
+  }
+}
+
+/* ── 7. Reduce motion for battery/performance ──────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.15s !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ── 8. Low-end device optimizations ───────────────────── */
+@media (max-width: 768px) and (max-resolution: 1.5dppx) {
+  /* Disable all backdrop-filter on low-res (likely low-end) devices */
+  .nav-tabs,
+  .filter-pill,
+  .btn-timer,
+  .btn-adjust,
+  .btn-reset-circle,
+  .theme-toggle-btn,
+  .frameworks-box,
+  .vocab-card,
+  .filter-dropdown-menu,
+  .picture-tips-card,
+  .picture-speak-prompt,
+  #next-image-btn,
+  .chatbot-window,
+  .modal-overlay,
+  body.has-bg-image .left-panel,
+  body.has-bg-image .btn-timer,
+  body.has-bg-image .topic-main {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  /* Use opaque backgrounds instead */
+  .nav-tabs { background: rgba(255,255,255,0.92); }
+  .filter-pill { background: rgba(255,255,255,0.90); }
+  .btn-timer { background: rgba(255,255,255,0.90); }
+  .chatbot-window { background: rgba(255,255,255,0.95); }
+  .modal-overlay { background: rgba(74,16,48,0.55); }
+}

@@ -55,6 +55,8 @@ let isRecording = false;
 let mediaRecorder = null;
 let confettiAnimId = null;
 let confettiParticles = [];
+const _isMobileDevice = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+  || (window.innerWidth <= 768);
 
 // ── IN-BROWSER WHISPER (Transformers.js) ──────────────────────────────────
 // Runs Whisper speech-to-text inside the user's browser.
@@ -186,7 +188,13 @@ async function audioBlobToFloat32(blob) {
 }
 
 // Kick off the worker as soon as the page loads.
-initWhisperWorker();
+// On mobile, delay Whisper init to avoid blocking the main thread during page load.
+if (_isMobileDevice) {
+  requestIdleCallback ? requestIdleCallback(initWhisperWorker) 
+    : setTimeout(initWhisperWorker, 2000);
+} else {
+  initWhisperWorker();
+}
 
 // ─── AI CONFIG & FILTER STATE ───────────────────────────
 // Keys are now securely stored in Vercel Environment Variables
@@ -512,7 +520,10 @@ function showVocabTopic(v) {
 const SPARKLE_EMOJIS = ['✨', '⭐', '💫', '🌟', '🎉', '🌈', '💥', '🔮'];
 
 function launchSparkles(container) {
-  const count = 5 + Math.floor(Math.random() * 4);
+  // Fewer sparkles on mobile to reduce DOM additions and GPU overdraw
+  const baseCount = _isMobileDevice ? 3 : 5;
+  const extraRange = _isMobileDevice ? 2 : 4;
+  const count = baseCount + Math.floor(Math.random() * extraRange);
   for (let i = 0; i < count; i++) {
     const span = document.createElement('span');
     span.className = 'spin-sparkle';
@@ -530,7 +541,8 @@ function launchSparkles(container) {
     span.style.setProperty('--tr', `${(Math.random() - 0.5) * 200}deg`);
     span.style.animationDelay = `${Math.random() * 0.2}s`;
     container.appendChild(span);
-    setTimeout(() => span.remove(), 900);
+    // Faster cleanup on mobile
+    setTimeout(() => span.remove(), _isMobileDevice ? 600 : 900);
   }
 }
 
@@ -562,11 +574,16 @@ spinBtn.addEventListener("click", () => {
   launchSparkles(topicArea);
 
   let count = 0;
-  const maxFlips = 10;
+  // Fewer flips on mobile = fewer DOM updates = less jank
+  const maxFlips = _isMobileDevice ? 7 : 10;
+  // Wider interval on mobile to give GPU breathing room
+  const flipInterval = _isMobileDevice ? 100 : 80;
   const interval = setInterval(() => {
     count++;
     if (count <= maxFlips) playTick();
-    if (count % 2 === 0) launchSparkles(topicArea);
+    // Fewer sparkle bursts on mobile
+    if (!_isMobileDevice && count % 2 === 0) launchSparkles(topicArea);
+    if (_isMobileDevice && count % 3 === 0) launchSparkles(topicArea);
 
     if (currentTab === "random") {
       const pool = getRandomPool();
@@ -592,9 +609,9 @@ spinBtn.addEventListener("click", () => {
       topicMain.classList.add("landed");
       setTimeout(() => topicMain.classList.remove("landed"), 550);
       playDing();
-      launchConfetti(30);
+      launchConfetti(_isMobileDevice ? 15 : 30);
     }
-  }, 80);
+  }, flipInterval);
 });
 
 // ─── TIMER (FULL-SCREEN CIRCULAR) ────────────────
@@ -1108,12 +1125,20 @@ function resizeConfetti() {
   confettiCanvas.height = window.innerHeight;
 }
 resizeConfetti();
-window.addEventListener("resize", resizeConfetti);
+// Debounce resize to avoid excessive canvas reallocation on orientation changes
+let _resizeTimeout = null;
+window.addEventListener("resize", () => {
+  if (_resizeTimeout) clearTimeout(_resizeTimeout);
+  _resizeTimeout = setTimeout(resizeConfetti, 150);
+});
 
 const CONFETTI_COLORS = ["#D63384", "#FF6EB4", "#FFB3D1", "#FFDA9E", "#a81f65", "#fff0f5", "#FF85C2"];
 
 function launchConfetti(count) {
-  for (let i = 0; i < count; i++) {
+  // Cap confetti particles on mobile for smoother animation
+  const maxParticles = _isMobileDevice ? 40 : 120;
+  const actualCount = Math.min(count, maxParticles - confettiParticles.length);
+  for (let i = 0; i < actualCount; i++) {
     confettiParticles.push({
       x: Math.random() * confettiCanvas.width,
       y: -10,
@@ -1131,6 +1156,8 @@ function launchConfetti(count) {
 
 function animateConfetti() {
   ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+  // Faster alpha decay on mobile = particles disappear sooner = fewer draws
+  const alphaDecay = _isMobileDevice ? 0.02 : 0.012;
   confettiParticles.forEach(p => {
     ctx.save();
     ctx.globalAlpha = p.alpha;
@@ -1142,7 +1169,7 @@ function animateConfetti() {
     p.x += p.dx;
     p.y += p.dy;
     p.rot += p.drot;
-    p.alpha -= 0.012;
+    p.alpha -= alphaDecay;
   });
   confettiParticles = confettiParticles.filter(p => p.alpha > 0);
   if (confettiParticles.length > 0) {

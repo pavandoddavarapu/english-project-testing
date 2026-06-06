@@ -4,6 +4,8 @@
  * Intercepts all internal link clicks to add a smooth animated top progress
  * bar + page fade-out before navigating, and a fade-in on load.
  * Works on every page that includes this script.
+ * 
+ * Mobile-optimized: uses rAF instead of setInterval for smoother animation.
  */
 
 (function () {
@@ -18,21 +20,27 @@
   function startProgress(bar) {
     bar.style.width = '0%';
     bar.classList.add('loading');
-    // Animate to 85% quickly, then stall waiting for navigation
+    // Use rAF instead of setInterval for GPU-friendly animation
     let pct = 0;
-    const interval = setInterval(() => {
+    let rafId = null;
+    let lastTime = performance.now();
+    function step(now) {
       if (pct < 85) {
-        pct += pct < 30 ? 8 : pct < 60 ? 4 : 1;
-        bar.style.width = pct + '%';
-      } else {
-        clearInterval(interval);
+        // Throttle to ~20fps updates (50ms) to match original timing
+        if (now - lastTime >= 50) {
+          pct += pct < 30 ? 8 : pct < 60 ? 4 : 1;
+          bar.style.width = pct + '%';
+          lastTime = now;
+        }
+        rafId = requestAnimationFrame(step);
       }
-    }, 50);
-    return interval;
+    }
+    rafId = requestAnimationFrame(step);
+    return rafId;
   }
 
-  function completeProgress(bar, interval) {
-    if (interval) clearInterval(interval);
+  function completeProgress(bar, rafId) {
+    if (rafId) cancelAnimationFrame(rafId);
     bar.style.width = '100%';
     setTimeout(() => {
       bar.classList.remove('loading');
@@ -61,6 +69,7 @@
     createProgressBar();
     const bar = document.getElementById('speakup-progress-bar');
 
+    // Use event delegation on body — single listener for all links
     document.body.addEventListener('click', function (e) {
       // Find the nearest anchor
       const link = e.target.closest('a[href]');
@@ -81,16 +90,18 @@
       e.preventDefault();
 
       // Start progress bar animation
-      const interval = startProgress(bar);
+      const rafId = startProgress(bar);
 
       // Start page exit animation
       document.body.classList.add('speakup-page-exit');
 
-      // Navigate after the exit animation completes (200ms)
+      // Navigate after the exit animation completes
+      // Shorter delay on mobile for snappier feel
+      const isMobile = window.innerWidth <= 768;
       setTimeout(() => {
-        completeProgress(bar, interval);
+        completeProgress(bar, rafId);
         window.location.href = href;
-      }, 200);
+      }, isMobile ? 120 : 200);
     });
   });
 })();

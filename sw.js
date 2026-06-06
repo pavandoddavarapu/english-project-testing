@@ -1,5 +1,5 @@
-// v10 — updated color scheme dark mode cache bust
-const CACHE_NAME = 'speakup-cache-v10';
+// v11 — mobile performance optimizations + GPU compositing
+const CACHE_NAME = 'speakup-cache-v11';
 
 const ASSETS_TO_CACHE = [
   './',

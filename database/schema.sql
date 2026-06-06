@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS users (
     total_yaps INTEGER DEFAULT 0,
     linkedin_url VARCHAR(255),
     instagram_url VARCHAR(255),
+    username VARCHAR(20) UNIQUE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -48,3 +49,9 @@ CREATE TABLE IF NOT EXISTS analysis_queue (
 -- 4. Create Indexes for Performance
 CREATE INDEX IF NOT EXISTS idx_sessions_user_date ON practice_sessions(user_id, date DESC);
 CREATE INDEX IF NOT EXISTS idx_queue_status_created ON analysis_queue(status, created_at);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username ON users(LOWER(username)) WHERE username IS NOT NULL;
+
+-- 5. Migration: Add username column to existing databases
+-- Run this if upgrading an existing database:
+-- ALTER TABLE users ADD COLUMN IF NOT EXISTS username VARCHAR(20) UNIQUE;
+-- CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username ON users(LOWER(username)) WHERE username IS NOT NULL;

@@ -19,7 +19,7 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    const { idToken, uid, displayName, email, gender, linkedin_url, instagram_url } = req.body || {};
+    const { idToken, uid, displayName, email, gender, linkedin_url, instagram_url, username } = req.body || {};
     if (!idToken || !uid) {
       return res.status(400).json({ error: 'Missing idToken or uid' });
     }
@@ -89,11 +89,23 @@ export default async function handler(req, res) {
       const cleanLinkedin = (linkedin_url || '').trim().substring(0, 255);
       const cleanInstagram = (instagram_url || '').trim().substring(0, 255);
 
+      // Validate & check username uniqueness
+      let cleanUsername = (username || '').trim().toLowerCase().substring(0, 20);
+      if (cleanUsername) {
+        if (!/^[a-zA-Z0-9_]{3,20}$/.test(cleanUsername)) {
+          return res.status(400).json({ error: 'Username must be 3-20 characters: letters, numbers, underscores only.' });
+        }
+        const existingUser = await query('SELECT uid FROM public.users WHERE username = $1', [cleanUsername]);
+        if (existingUser.rowCount > 0) {
+          return res.status(409).json({ error: 'Username is already taken. Please choose a different one.' });
+        }
+      }
+
       const insertRes = await query(
-        `INSERT INTO public.users (uid, name, email, gender, avatar_bg, aura_points, streak, total_yaps, linkedin_url, instagram_url)
-         VALUES ($1, $2, $3, $4, $5, 0, 0, 0, $6, $7)
+        `INSERT INTO public.users (uid, name, email, gender, avatar_bg, aura_points, streak, total_yaps, linkedin_url, instagram_url, username)
+         VALUES ($1, $2, $3, $4, $5, 0, 0, 0, $6, $7, $8)
          RETURNING *`,
-        [uid, displayName || 'Speaker', email || verifiedUser.email, gender || 'prefer_not', avatarBg, cleanLinkedin || null, cleanInstagram || null]
+        [uid, displayName || 'Speaker', email || verifiedUser.email, gender || 'prefer_not', avatarBg, cleanLinkedin || null, cleanInstagram || null, cleanUsername || null]
       );
       
       const newUser = insertRes.rows[0];

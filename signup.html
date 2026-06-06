@@ -317,6 +317,12 @@
           <input type="text" id="name" class="auth-input" placeholder="Full Name" required>
         </div>
 
+        <div class="input-group" style="position: relative; margin-bottom: 22px;">
+          <div class="input-icon">@</div>
+          <input type="text" id="username" class="auth-input" placeholder="Username (e.g. pavan_7)" required pattern="[a-zA-Z0-9_]{3,20}" title="3-20 characters: letters, numbers, underscores only" autocomplete="off">
+          <div id="username-status" style="position:absolute; bottom:-18px; left:12px; font-size:0.72rem; font-weight:800; display:none;"></div>
+        </div>
+
         <div class="input-group">
           <div class="input-icon">📧</div>
           <input type="email" id="email" class="auth-input" placeholder="Email Address" required>
@@ -435,6 +441,58 @@
     import { auth, provider } from './assets/js/firebase-config.js';
     import { signInWithPopup, createUserWithEmailAndPassword, updateProfile, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
 
+    // ── Real-time username availability check ──
+    let _usernameCheckTimer = null;
+    let _usernameAvailable = false;
+    const usernameInput = document.getElementById('username');
+    const usernameStatus = document.getElementById('username-status');
+    
+    usernameInput.addEventListener('input', () => {
+      clearTimeout(_usernameCheckTimer);
+      const val = usernameInput.value.trim().toLowerCase();
+      _usernameAvailable = false;
+      
+      if (!val) {
+        usernameStatus.style.display = 'none';
+        usernameInput.style.borderColor = '';
+        return;
+      }
+      if (!/^[a-zA-Z0-9_]{3,20}$/.test(val)) {
+        usernameStatus.style.display = 'block';
+        usernameStatus.style.color = '#d9534f';
+        usernameStatus.innerText = '3-20 chars: letters, numbers, underscores only';
+        usernameInput.style.borderColor = '#d9534f';
+        return;
+      }
+      
+      usernameStatus.style.display = 'block';
+      usernameStatus.style.color = '#888';
+      usernameStatus.innerText = 'Checking...';
+      usernameInput.style.borderColor = '';
+      
+      _usernameCheckTimer = setTimeout(async () => {
+        try {
+          const res = await fetch(`/api/check-username?username=${encodeURIComponent(val)}`);
+          const data = await res.json();
+          if (usernameInput.value.trim().toLowerCase() !== val) return; // stale
+          if (data.available) {
+            usernameStatus.style.color = '#2d6a4f';
+            usernameStatus.innerText = '✓ Username is available!';
+            usernameInput.style.borderColor = '#2d6a4f';
+            _usernameAvailable = true;
+          } else {
+            usernameStatus.style.color = '#d9534f';
+            usernameStatus.innerText = '✗ ' + (data.reason || 'Username is taken');
+            usernameInput.style.borderColor = '#d9534f';
+            _usernameAvailable = false;
+          }
+        } catch (e) {
+          usernameStatus.style.color = '#888';
+          usernameStatus.innerText = 'Could not verify — will check on submit';
+        }
+      }, 500);
+    });
+
     // If user is already logged in, redirect them directly to the dashboard
     onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -443,7 +501,7 @@
     });
 
     // Helper to create a user document in PostgreSQL if it doesn't exist
-    async function initializeUserProfile(user, name, gender, linkedin = '', instagram = '') {
+    async function initializeUserProfile(user, name, gender, linkedin = '', instagram = '', username = '') {
       console.log('[Signup] Initializing user profile via backend database...');
       const idToken = await user.getIdToken();
       const res = await fetch('/api/get-user', {
@@ -456,23 +514,29 @@
           email: user.email,
           gender: gender || 'prefer_not',
           linkedin_url: linkedin,
-          instagram_url: instagram
+          instagram_url: instagram,
+          username: username
         })
       });
       if (!res.ok) {
-        const txt = await res.text();
-        throw new Error(`Profile initialization failed: ${txt}`);
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Profile initialization failed');
       }
     }
 
     // Handle Google Sign Up
     document.getElementById('google-signup-btn').addEventListener('click', async () => {
       try {
+        const usernameVal = document.getElementById('username')?.value.trim().toLowerCase() || '';
+        if (!usernameVal || !/^[a-zA-Z0-9_]{3,20}$/.test(usernameVal)) {
+          alert('Please enter a valid username (3-20 characters, letters/numbers/underscores only).');
+          return;
+        }
         const result = await signInWithPopup(auth, provider);
         const gender = document.querySelector('input[name="gender"]:checked')?.value || 'prefer_not';
         const linkedin = document.getElementById('linkedin_url')?.value.trim() || '';
         const instagram = document.getElementById('instagram_url')?.value.trim() || '';
-        await initializeUserProfile(result.user, result.user.displayName, gender, linkedin, instagram);
+        await initializeUserProfile(result.user, result.user.displayName, gender, linkedin, instagram, usernameVal);
         window.location.href = 'genz-streak-test.html';
       } catch (error) {
         console.error("Google Sign-Up Error:", error);
@@ -484,12 +548,19 @@
     document.getElementById('signup-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const name = document.getElementById('name').value;
+      const usernameVal = document.getElementById('username').value.trim().toLowerCase();
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
       const confirmPassword = document.getElementById('confirm-password').value;
       const gender = document.querySelector('input[name="gender"]:checked')?.value || 'prefer_not';
       const linkedin = document.getElementById('linkedin_url')?.value.trim() || '';
       const instagram = document.getElementById('instagram_url')?.value.trim() || '';
+
+      // Validate username
+      if (!usernameVal || !/^[a-zA-Z0-9_]{3,20}$/.test(usernameVal)) {
+        alert('Username must be 3-20 characters, containing only letters, numbers, or underscores.');
+        return;
+      }
 
       // ── Restrict signups to recognized personal email providers ──
       const domain = email.split('@')[1]?.toLowerCase();
@@ -523,7 +594,7 @@
       try {
         const result = await createUserWithEmailAndPassword(auth, email, password);
         await updateProfile(result.user, { displayName: name });
-        await initializeUserProfile(result.user, name, gender, linkedin, instagram);
+        await initializeUserProfile(result.user, name, gender, linkedin, instagram, usernameVal);
         window.location.href = 'genz-streak-test.html';
       } catch (error) {
         console.error("Email Sign-Up Error:", error);

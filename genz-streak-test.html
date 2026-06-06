@@ -149,6 +149,26 @@
       100% { opacity: 1; transform: translateY(0); }
     }
 
+    @keyframes slideUp {
+      0% { opacity: 0; transform: translateX(-50%) translateY(30px); }
+      100% { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.05); opacity: 0.85; }
+    }
+
+    @keyframes popIn {
+      0% { transform: scale(0.5); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
     /* Panels matching Speak Up style */
     .panel {
       background: rgba(255,255,255,0.75);
@@ -246,10 +266,23 @@
     }
 
     .profile-names p {
-      margin: 4px 0 0 0;
+      margin: 2px 0 0 0;
       color: var(--text-muted);
       font-size: 0.9rem;
       font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .profile-username {
+      margin: 2px 0 0 0;
+      color: var(--primary);
+      font-size: 0.82rem;
+      font-weight: 800;
+      font-family: 'Nunito', sans-serif;
+      opacity: 0.85;
+      letter-spacing: 0.3px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -609,6 +642,7 @@
       border-radius: 2px;
       background-color: rgba(var(--primary-rgb, 214, 51, 132), 0.08);
       transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.2s;
+      animation: popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
       cursor: pointer;
       position: relative;
       border: 1px solid rgba(var(--primary-rgb, 214, 51, 132), 0.12);
@@ -989,6 +1023,12 @@
   </style>
 </head>
 <body>
+  <!-- Premium Loading Overlay -->
+  <div id="loading-overlay" style="position: fixed; inset: 0; background: var(--bg); z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.4s ease, visibility 0.4s; font-family: 'Nunito', sans-serif;">
+    <div class="spinner-ring" style="width: 50px; height: 50px; border: 4px solid rgba(214, 51, 132, 0.1); border-left-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px;"></div>
+    <div style="font-family: 'Fredoka One', cursive; color: var(--primary); font-size: 1.6rem; margin-bottom: 6px; animation: pulse 1.5s infinite;">Speak Up!</div>
+    <div style="font-size: 0.88rem; color: var(--text-muted); font-weight: 800; letter-spacing: 0.5px;">Tuning your practice dashboard...</div>
+  </div>
   <!-- Animated background blobs -->
   <div class="bg-blob"></div>
   <div class="bg-blob"></div>
@@ -1077,6 +1117,7 @@
           </div>
           <div class="profile-names">
             <h1 id="profile-name">Loading...</h1>
+            <p id="profile-username" class="profile-username" style="display:none;"></p>
             <p id="profile-email">Please wait</p>
             <!-- Social links -->
             <div id="profile-socials" style="display: flex; gap: 8px; margin-top: 6px;">
@@ -1246,9 +1287,10 @@
         <input type="text" id="edit-profile-name" style="width:100%; padding:10px 14px; border:1.5px solid var(--accent2); border-radius:10px; background:var(--white); font-family:'Nunito',sans-serif; font-weight:700; color:var(--text); outline:none; font-size:0.9rem;" placeholder="e.g. Pavan">
       </div>
 
-      <div style="margin-bottom:14px;">
+      <div style="margin-bottom:14px; position:relative;">
         <label style="display:block; font-size:0.75rem; font-weight:900; letter-spacing:1px; text-transform:uppercase; color:var(--primary); margin-bottom:6px;">Username (Unique, no spaces)</label>
-        <input type="text" id="edit-profile-username" style="width:100%; padding:10px 14px; border:1.5px solid var(--accent2); border-radius:10px; background:var(--white); font-family:'Nunito',sans-serif; font-weight:700; color:var(--text); outline:none; font-size:0.9rem;" placeholder="e.g. pavan_7">
+        <input type="text" id="edit-profile-username" style="width:100%; padding:10px 14px; border:1.5px solid var(--accent2); border-radius:10px; background:var(--white); font-family:'Nunito',sans-serif; font-weight:700; color:var(--text); outline:none; font-size:0.9rem;" placeholder="e.g. pavan_7" autocomplete="off">
+        <div id="edit-username-status" style="font-size:0.72rem; font-weight:800; margin-top:4px; display:none;"></div>
       </div>
 
       <div style="margin-bottom:14px;">
@@ -1311,6 +1353,12 @@
             const firstName = displayName.split(' ')[0];
             document.getElementById('profile-name').innerText = displayName;
             document.getElementById('profile-email').innerText = data.email || '';
+            // Show @username from cache
+            const usernameEl = document.getElementById('profile-username');
+            if (usernameEl && data.username) {
+              usernameEl.innerText = `@${data.username}`;
+              usernameEl.style.display = 'block';
+            }
             document.getElementById('profile-aura').innerText = (data.aura_points || 0).toLocaleString();
             document.getElementById('streak-count').innerText = data.streak || 0;
             
@@ -1475,6 +1523,9 @@
     let _tempBg = 'b6e3f4';
     let _tempSeed = 'Felix';
 
+    let _editUsernameCheckTimer = null;
+    let _editUsernameAvailable = true;
+
     function openAvatarPicker() {
       const currentName = document.getElementById('profile-name').innerText;
       _tempGender = _currentUserGender;
@@ -1487,6 +1538,17 @@
       document.getElementById('edit-profile-linkedin').value = _currentLinkedinUrl || '';
       document.getElementById('edit-profile-instagram').value = _currentInstagramUrl || '';
       document.getElementById('edit-profile-error').style.display = 'none';
+
+      const editStatus = document.getElementById('edit-username-status');
+      if (editStatus) {
+        editStatus.style.display = 'none';
+        editStatus.innerText = '';
+      }
+      const editInput = document.getElementById('edit-profile-username');
+      if (editInput) {
+        editInput.style.borderColor = '';
+      }
+      _editUsernameAvailable = true;
 
       // Attach gender select onchange dynamically
       const genderSelect = document.getElementById('edit-profile-gender');
@@ -1570,13 +1632,21 @@
 
       const usernameInput = document.getElementById('edit-profile-username');
       const usernameVal = usernameInput.value.trim().toLowerCase();
-      if (usernameVal) {
-        const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
-        if (!usernameRegex.test(usernameVal)) {
-          errorDiv.textContent = '⚠️ Username must be 3-20 characters, containing only letters, numbers, or underscores.';
-          errorDiv.style.display = 'block';
-          return;
-        }
+      if (!usernameVal) {
+        errorDiv.textContent = '⚠️ Please enter a username';
+        errorDiv.style.display = 'block';
+        return;
+      }
+      const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
+      if (!usernameRegex.test(usernameVal)) {
+        errorDiv.textContent = '⚠️ Username must be 3-20 characters, containing only letters, numbers, or underscores.';
+        errorDiv.style.display = 'block';
+        return;
+      }
+      if (!_editUsernameAvailable) {
+        errorDiv.textContent = '⚠️ Please choose an available username.';
+        errorDiv.style.display = 'block';
+        return;
       }
 
       errorDiv.style.display = 'none';
@@ -1832,6 +1902,8 @@
       
       const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
+      let colIndex = 0;
+
       monthsToRender.forEach(({ year, month }) => {
         const monthBlock = document.createElement('div');
         monthBlock.className = 'heatmap-month-block';
@@ -1843,10 +1915,12 @@
         weeks.forEach(week => {
           const colDiv = document.createElement('div');
           colDiv.className = 'heatmap-month-col';
+          colIndex++;
 
           week.forEach(dayDate => {
             const square = document.createElement('div');
             square.className = 'heatmap-square';
+            square.style.animationDelay = `${colIndex * 12}ms`;
 
             if (!dayDate) {
               square.classList.add('placeholder');
@@ -1927,13 +2001,15 @@
       
       if (badges.length > 0) {
         latestText.innerText = 'Latest achievement: ' + badges[badges.length - 1].title;
-        badges.forEach(b => {
+        badges.forEach((b, index) => {
           const badgeDiv = document.createElement('div');
           badgeDiv.className = 'badge';
           badgeDiv.style.borderColor = b.color + '80'; // Add transparency
           badgeDiv.style.color = b.color;
           badgeDiv.innerText = b.emoji;
           badgeDiv.title = b.title + ' - ' + b.text;
+          badgeDiv.style.animation = 'popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) both';
+          badgeDiv.style.animationDelay = `${index * 60}ms`;
           container.appendChild(badgeDiv);
         });
       } else {
@@ -1950,9 +2026,11 @@
         return;
       }
 
-      sessions.forEach(session => {
+      sessions.forEach((session, index) => {
         const item = document.createElement('div');
         item.className = 'recent-item';
+        item.style.animation = 'fadeSlideIn 0.4s ease both';
+        item.style.animationDelay = `${index * 50}ms`;
         
         // Topic Name
         const nameSpan = document.createElement('span');
@@ -2075,6 +2153,23 @@
           localStorage.setItem(`speakup-user-data-${user.uid}`, JSON.stringify(userData));
           applyUserData(user, userData);
           console.log('[Dashboard] Backend load OK. Sessions:', (userData.recent_sessions||[]).length);
+
+          // Prompt existing users without a username to claim one
+          if (!userData.username) {
+            setTimeout(() => {
+              const existingPrompt = document.getElementById('username-prompt-banner');
+              if (existingPrompt) return; // already shown
+              const banner = document.createElement('div');
+              banner.id = 'username-prompt-banner';
+              banner.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--primary);color:white;padding:12px 24px;border-radius:16px;font-family:Nunito,sans-serif;font-weight:800;font-size:0.85rem;box-shadow:0 4px 20px rgba(0,0,0,0.2);z-index:9999;display:flex;align-items:center;gap:10px;animation:slideUp 0.4s ease;max-width:90vw;';
+              banner.innerHTML = `
+                <span>🏷️ Claim your unique @username!</span>
+                <button onclick="openAvatarPicker();this.parentElement.remove();" style="background:white;color:var(--primary);border:none;padding:6px 14px;border-radius:999px;font-weight:800;font-family:Nunito,sans-serif;cursor:pointer;font-size:0.8rem;">Set Username</button>
+                <button onclick="this.parentElement.remove();" style="background:transparent;color:rgba(255,255,255,0.7);border:none;cursor:pointer;font-size:1.1rem;padding:2px 6px;">✕</button>
+              `;
+              document.body.appendChild(banner);
+            }, 2000);
+          }
         } else {
           console.log('[Dashboard] No user doc yet (new user).');
           renderZeros();
@@ -2102,7 +2197,8 @@
           // Update the public banner name specifically
           const publicNameEl = document.getElementById('public-view-name');
           if (publicNameEl) {
-            publicNameEl.innerText = userData.name || 'Speaker';
+            const uname = userData.username ? ` (@${userData.username})` : '';
+            publicNameEl.innerText = (userData.name || 'Speaker') + uname;
           }
           console.log('[Dashboard] Public profile load OK. Sessions:', (userData.recent_sessions||[]).length);
         } else {
@@ -2148,6 +2244,18 @@
       _currentLinkedinUrl = userData.linkedin_url || '';
       _currentInstagramUrl = userData.instagram_url || '';
       _currentUsername = userData.username || '';
+
+      // Render @username tag
+      const usernameEl = document.getElementById('profile-username');
+      if (usernameEl) {
+        if (_currentUsername) {
+          usernameEl.innerText = `@${_currentUsername}`;
+          usernameEl.style.display = 'block';
+        } else {
+          usernameEl.style.display = 'none';
+        }
+      }
+
       const liEl = document.getElementById('profile-linkedin');
       if (_currentLinkedinUrl) {
         liEl.href = _currentLinkedinUrl;
@@ -2191,6 +2299,7 @@
       renderSkillsProfile(userData.recent_sessions || []);
       renderCloutAndDialects(userData);
       renderRecentSessions(userData.recent_sessions || []);
+      hideLoadingOverlay();
     }
 
     // ── Render zeros (used when no data is available) ─────────────────────────
@@ -2211,6 +2320,20 @@
       renderSkillsProfile([]);
       renderCloutAndDialects({});
       renderRecentSessions([]);
+      hideLoadingOverlay();
+    }
+
+    function hideLoadingOverlay() {
+      const overlay = document.getElementById('loading-overlay');
+      if (overlay) {
+        overlay.style.opacity = '0';
+        overlay.style.visibility = 'hidden';
+        setTimeout(() => {
+          if (overlay.parentNode) {
+            overlay.parentNode.removeChild(overlay);
+          }
+        }, 400);
+      }
     }
 
     // ── Share Profile Function ──
@@ -2313,6 +2436,68 @@
         window.location.href = 'login.html';
       }
     });
+
+    // Real-time username check for edit profile modal
+    const editUsernameInput = document.getElementById('edit-profile-username');
+    const editUsernameStatus = document.getElementById('edit-username-status');
+    if (editUsernameInput && editUsernameStatus) {
+      editUsernameInput.addEventListener('input', () => {
+        clearTimeout(_editUsernameCheckTimer);
+        const val = editUsernameInput.value.trim().toLowerCase();
+        _editUsernameAvailable = false;
+        
+        if (!val) {
+          editUsernameStatus.style.display = 'block';
+          editUsernameStatus.style.color = '#d9534f';
+          editUsernameStatus.innerText = 'Username is required.';
+          editUsernameInput.style.borderColor = '#d9534f';
+          return;
+        }
+        
+        if (val === (_currentUsername || '').toLowerCase()) {
+          editUsernameStatus.style.display = 'none';
+          editUsernameInput.style.borderColor = '';
+          _editUsernameAvailable = true;
+          return;
+        }
+        
+        if (!/^[a-zA-Z0-9_]{3,20}$/.test(val)) {
+          editUsernameStatus.style.display = 'block';
+          editUsernameStatus.style.color = '#d9534f';
+          editUsernameStatus.innerText = '3-20 chars: letters, numbers, underscores only';
+          editUsernameInput.style.borderColor = '#d9534f';
+          return;
+        }
+        
+        editUsernameStatus.style.display = 'block';
+        editUsernameStatus.style.color = '#888';
+        editUsernameStatus.innerText = 'Checking...';
+        editUsernameInput.style.borderColor = '';
+        
+        _editUsernameCheckTimer = setTimeout(async () => {
+          try {
+            const res = await fetch(`/api/check-username?username=${encodeURIComponent(val)}`);
+            const data = await res.json();
+            if (editUsernameInput.value.trim().toLowerCase() !== val) return; // stale
+            
+            if (data.available) {
+              editUsernameStatus.style.color = '#2d6a4f';
+              editUsernameStatus.innerText = '✓ Username is available!';
+              editUsernameInput.style.borderColor = '#2d6a4f';
+              _editUsernameAvailable = true;
+            } else {
+              editUsernameStatus.style.color = '#d9534f';
+              editUsernameStatus.innerText = '✗ ' + (data.reason || 'Username is taken');
+              editUsernameInput.style.borderColor = '#d9534f';
+              _editUsernameAvailable = false;
+            }
+          } catch (e) {
+            editUsernameStatus.style.color = '#888';
+            editUsernameStatus.innerText = 'Could not verify availability';
+          }
+        }, 500);
+      });
+    }
   </script>
 </body>
 </html>

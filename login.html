@@ -341,10 +341,14 @@
     import { auth, provider } from './assets/js/firebase-config.js';
     import { signInWithPopup, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
 
-    // If user is already logged in, redirect them directly to the dashboard
+    // Get the redirect destination (if present)
+    const urlParams = new URLSearchParams(window.location.search);
+    const redirectUrl = urlParams.get('redirect') ? decodeURIComponent(urlParams.get('redirect')) : 'genz-streak-test.html';
+
+    // If user is already logged in, redirect them directly
     onAuthStateChanged(auth, (user) => {
       if (user) {
-        window.location.href = 'genz-streak-test.html';
+        window.location.href = redirectUrl;
       }
     });
 
@@ -352,8 +356,8 @@
     document.getElementById('google-login-btn').addEventListener('click', async () => {
       try {
         await signInWithPopup(auth, provider);
-        // Successful login, redirect to dashboard
-        window.location.href = 'genz-streak-test.html';
+        // Successful login, redirect
+        window.location.href = redirectUrl;
       } catch (error) {
         console.error("Google Sign-In Error:", error);
         alert(error.message);
@@ -368,8 +372,8 @@
       
       try {
         await signInWithEmailAndPassword(auth, email, password);
-        // Successful login, redirect to dashboard
-        window.location.href = 'genz-streak-test.html';
+        // Successful login, redirect
+        window.location.href = redirectUrl;
       } catch (error) {
         console.error("Email Login Error:", error);
         alert(error.message);

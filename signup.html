@@ -524,6 +524,10 @@
       }
     }
 
+    // Get the redirect destination (if present)
+    const urlParams = new URLSearchParams(window.location.search);
+    const redirectUrl = urlParams.get('redirect') ? decodeURIComponent(urlParams.get('redirect')) : 'genz-streak-test.html';
+
     // Handle Google Sign Up
     document.getElementById('google-signup-btn').addEventListener('click', async () => {
       try {
@@ -537,7 +541,7 @@
         const linkedin = document.getElementById('linkedin_url')?.value.trim() || '';
         const instagram = document.getElementById('instagram_url')?.value.trim() || '';
         await initializeUserProfile(result.user, result.user.displayName, gender, linkedin, instagram, usernameVal);
-        window.location.href = 'genz-streak-test.html';
+        window.location.href = redirectUrl;
       } catch (error) {
         console.error("Google Sign-Up Error:", error);
         alert(error.message);
@@ -595,7 +599,7 @@
         const result = await createUserWithEmailAndPassword(auth, email, password);
         await updateProfile(result.user, { displayName: name });
         await initializeUserProfile(result.user, name, gender, linkedin, instagram, usernameVal);
-        window.location.href = 'genz-streak-test.html';
+        window.location.href = redirectUrl;
       } catch (error) {
         console.error("Email Sign-Up Error:", error);
         alert(error.message);

@@ -1,7 +1,10 @@
-import { setCorsHeaders, safeError } from './middleware.js';
+import { setCorsHeaders, checkRateLimit, safeError } from './middleware.js';
 
 export default async function handler(req, res) {
   setCorsHeaders(req, res);
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
+  if (!checkRateLimit(req, res, { maxRequests: 5, windowMs: 60_000 })) return;
   res.setHeader('Cache-Control', 'public, s-maxage=86400, stale-while-revalidate=43200');
 
   const { date } = req.query;

@@ -9,7 +9,7 @@
  * so the module-level `imageCache` array persists across requests
  * within the same instance – giving us free in-memory caching.
  */
-import { setCorsHeaders } from './middleware.js';
+import { setCorsHeaders, checkRateLimit } from './middleware.js';
 
 // ─── CONFIG ────────────────────────────────────────────────────────────────
 const UNSPLASH_KEY = process.env.UNSPLASH_ACCESS_KEY;
@@ -375,20 +375,17 @@ export default async function handler(req, res) {
   setCorsHeaders(req, res);
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  // Force refill if requested or first cold start
-  if (req.query.refill === '1' || imageCache.length === 0) {
+  // Rate limit: 20 requests per minute
+  if (!checkRateLimit(req, res, { maxRequests: 20, windowMs: 60_000 })) return;
+
+  // Force refill on cold start when cache is empty
+  if (imageCache.length === 0) {
     await refillCache();
   }
 
   // Async background refill when cache is running low (non-blocking)
   if (imageCache.length < LOW_CACHE_THRESH && !isRefilling) {
     refillCache().catch(console.error); // fire-and-forget
-  }
-
-  // Return full batch for admin/debug
-  if (req.query.batch === '1') {
-    res.setHeader('Cache-Control', 'no-store');
-    return res.status(200).json({ count: imageCache.length, images: imageCache });
   }
 
   // Return a single image

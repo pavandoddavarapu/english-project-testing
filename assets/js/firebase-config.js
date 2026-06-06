@@ -29,4 +29,6 @@ const db = initializeFirestore(app, {
 
 const provider = new GoogleAuthProvider();
 
+window.auth = auth;
+
 export { auth, db, provider };

@@ -7,6 +7,7 @@
 
 import { query } from './db.js';
 import crypto from 'crypto';
+import { verifyFirebaseIdToken } from './auth-helper.js';
 import { setCorsHeaders, checkRateLimit, safeError, sanitizeString, getWorkerSecret } from './middleware.js';
 
 export const config = {
@@ -24,7 +25,17 @@ export default async function handler(req, res) {
   if (!checkRateLimit(req, res, { maxRequests: 5, windowMs: 60_000 })) return;
 
   try {
-    const { transcript, audioBase64, mimeType, topic, imageUrl } = req.body || {};
+    const { transcript, audioBase64, mimeType, topic, imageUrl, idToken } = req.body || {};
+
+    // Auth: verify Firebase token to prevent anonymous API abuse
+    if (!idToken) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+    try {
+      await verifyFirebaseIdToken(idToken);
+    } catch (authErr) {
+      return res.status(403).json({ error: 'Invalid or expired token' });
+    }
 
     if (!transcript && !audioBase64) {
       return res.status(400).json({ error: 'No audio or transcript provided' });

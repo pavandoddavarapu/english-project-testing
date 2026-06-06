@@ -7,7 +7,7 @@
 
 import { verifyFirebaseIdToken } from './auth-helper.js';
 import { query } from './db.js';
-import { setCorsHeaders, safeError } from './middleware.js';
+import { setCorsHeaders, checkRateLimit, safeError } from './middleware.js';
 
 export const config = { api: { bodyParser: { sizeLimit: '128kb' } } };
 export const maxDuration = 10;
@@ -16,6 +16,7 @@ export default async function handler(req, res) {
   setCorsHeaders(req, res);
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+  if (!checkRateLimit(req, res, { maxRequests: 5, windowMs: 60_000 })) return;
 
   try {
     const { idToken, uid, name, gender, avatar_bg, avatar_seed, linkedin_url, instagram_url, username } = req.body || {};
@@ -38,6 +39,13 @@ export default async function handler(req, res) {
     const cleanAvatarSeed = (avatar_seed || 'Felix').replace(/[^a-zA-Z0-9_-]/g, '').substring(0, 50);
     const cleanLinkedin = (linkedin_url || '').trim().substring(0, 255);
     const cleanInstagram = (instagram_url || '').trim().substring(0, 255);
+
+    if (cleanLinkedin && !cleanLinkedin.startsWith('https://')) {
+      return res.status(400).json({ error: 'LinkedIn URL must start with https://' });
+    }
+    if (cleanInstagram && !cleanInstagram.startsWith('https://')) {
+      return res.status(400).json({ error: 'Instagram URL must start with https://' });
+    }
 
     // Validate unique username
     const rawUsername = (username || '').trim().toLowerCase().substring(0, 50);

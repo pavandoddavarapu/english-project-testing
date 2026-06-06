@@ -1,4 +1,5 @@
-import { setCorsHeaders, checkRateLimit, safeError } from './middleware.js';
+import { setCorsHeaders, checkRateLimit, safeError, sanitizeString } from './middleware.js';
+import { verifyFirebaseIdToken } from './auth-helper.js';
 
 export default async function handler(req, res) {
   setCorsHeaders(req, res);
@@ -7,11 +8,27 @@ export default async function handler(req, res) {
   if (!checkRateLimit(req, res, { maxRequests: 20, windowMs: 60_000 })) return;
 
   try {
-    const { messages } = req.body;
+    const { messages, idToken } = req.body;
 
-    if (!messages || !Array.isArray(messages)) {
+    // Auth: verify Firebase token to prevent anonymous API abuse
+    if (!idToken) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+    try {
+      await verifyFirebaseIdToken(idToken);
+    } catch (authErr) {
+      return res.status(403).json({ error: 'Invalid or expired token' });
+    }
+
+    if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return res.status(400).json({ error: "Invalid messages array" });
     }
+
+    // Limit conversation length to prevent abuse
+    const safeMessages = messages.slice(-20).map(m => ({
+      role: m.role === 'user' ? 'user' : 'assistant',
+      content: sanitizeString(m.content, 2000)
+    })).filter(m => m.content);
 
     const GEMINI_KEY = process.env.GEMINI_API_KEY;
     if (!GEMINI_KEY) {
@@ -24,7 +41,7 @@ Always be highly motivating, cheer the user on, and make them feel great about t
 If the user asks about something totally unrelated to language learning, gently and warmly steer them back to English practice.`;
 
     // Format messages for Gemini API
-    const contents = messages.map(msg => ({
+    const contents = safeMessages.map(msg => ({
       role: msg.role === 'user' ? 'user' : 'model',
       parts: [{ text: msg.content }]
     }));
@@ -32,10 +49,7 @@ If the user asks about something totally unrelated to language learning, gently 
     // Format messages for Groq Fallback
     const groqMessages = [
       { role: "system", content: SYSTEM_PROMPT },
-      ...messages.map(msg => ({
-        role: msg.role === 'user' ? 'user' : 'assistant',
-        content: msg.content
-      }))
+      ...safeMessages
     ];
 
     // Try Gemini First

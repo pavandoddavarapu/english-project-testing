@@ -890,10 +890,17 @@ recordBtn.addEventListener("click", async () => {
           analysisTimestamps.push(Date.now());
           recordStatus.textContent = '📊 Scoring your speech with AI…';
 
-          let body;
+          // Get Firebase Auth token
+          const user = window.auth ? window.auth.currentUser : null;
+          if (!user) {
+            throw new Error('Please log in to analyze your speech.');
+          }
+          const idToken = await user.getIdToken();
+
+          let bodyObj = {};
           if (usedBrowserWhisper && transcript) {
             // 🌟 Path A: Send only the text — zero Whisper API cost!
-            body = JSON.stringify({ transcript, topic: currentTopic, imageUrl: currentImageUrl });
+            bodyObj = { transcript, topic: currentTopic, imageUrl: currentImageUrl, idToken };
           } else {
             // 🔄 Path B: Legacy — send audio so the server runs Whisper
             const reader = new FileReader();
@@ -901,13 +908,13 @@ recordBtn.addEventListener("click", async () => {
               reader.onloadend = () => res(reader.result.split(',')[1]);
               reader.readAsDataURL(audioBlob);
             });
-            body = JSON.stringify({ audioBase64: base64data, mimeType: audioBlob.type, topic: currentTopic, imageUrl: currentImageUrl });
+            bodyObj = { audioBase64: base64data, mimeType: audioBlob.type, topic: currentTopic, imageUrl: currentImageUrl, idToken };
           }
 
           const res = await fetch('/api/analyze', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body,
+            body: JSON.stringify(bodyObj),
           });
 
           if (!res.ok) {
@@ -1316,10 +1323,19 @@ async function sendChatMessage() {
   showTyping();
   
   try {
+    const user = window.auth ? window.auth.currentUser : null;
+    if (!user) {
+      hideTyping();
+      appendMessage("bot", "Hey there! Please log in first to chat with me. 🎤");
+      chatHistory.pop();
+      return;
+    }
+    const idToken = await user.getIdToken();
+
     const res = await fetch("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ messages: chatHistory })
+      body: JSON.stringify({ messages: chatHistory, idToken })
     });
     
     if (!res.ok) throw new Error("Chat request failed");

@@ -601,6 +601,118 @@
     .toast.show {
       transform: translateX(-50%) translateY(0);
     }
+
+    /* Modern Custom Modal Overlay styling */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(6px);
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: fadeInModal 0.25s ease-out;
+    }
+
+    .modal-card {
+      background: rgba(255, 255, 255, 0.95);
+      border: 3px solid var(--primary);
+      border-radius: 24px;
+      padding: 30px;
+      max-width: 460px;
+      width: 90%;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.3);
+      text-align: center;
+      transform: scale(0.9);
+      animation: scaleUpModal 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    html[data-theme="dark"] .modal-card {
+      background: rgba(30, 30, 30, 0.98);
+      border-color: var(--primary-light);
+      color: white;
+    }
+
+    .modal-emoji {
+      font-size: 3.5rem;
+      display: block;
+      margin-bottom: 12px;
+      animation: bounceEmoji 1s infinite alternate;
+    }
+
+    .modal-title {
+      font-family: 'Fredoka One', cursive;
+      color: var(--primary-dark);
+      font-size: 1.6rem;
+      margin-bottom: 15px;
+    }
+
+    html[data-theme="dark"] .modal-title {
+      color: var(--primary-light);
+    }
+
+    .modal-body {
+      font-size: 1.05rem;
+      line-height: 1.5;
+      color: var(--text);
+      margin-bottom: 25px;
+    }
+
+    .modal-topic-box {
+      background: var(--bg-card);
+      border: 2px dashed var(--accent2);
+      border-radius: 12px;
+      padding: 16px;
+      margin: 18px 0;
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--primary);
+      line-height: 1.4;
+    }
+
+    html[data-theme="dark"] .modal-topic-box {
+      background: rgba(255,255,255,0.05);
+      border-color: rgba(255,255,255,0.15);
+      color: var(--primary-light);
+    }
+
+    .btn-modal-close {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 12px 35px;
+      font-size: 1.05rem;
+      font-weight: 800;
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+      box-shadow: 0 4px 15px var(--shadow);
+      transition: all 0.2s;
+    }
+
+    .btn-modal-close:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px var(--shadow-lg);
+    }
+
+    @keyframes fadeInModal {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes scaleUpModal {
+      from { transform: scale(0.85); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes bounceEmoji {
+      from { transform: translateY(0); }
+      to { transform: translateY(-8px); }
+    }
   </style>
 </head>
 <body>
@@ -613,6 +725,20 @@
 
   <!-- TOAST -->
   <div id="toast" class="toast">Link copied! 🔗</div>
+
+  <!-- CUSTOM MODAL POPUP -->
+  <div id="custom-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-card">
+      <span class="modal-emoji">📢</span>
+      <h3 class="modal-title">Notification</h3>
+      <div class="modal-body">
+        <!-- Rendered dynamically -->
+      </div>
+      <div class="modal-footer">
+        <button id="btn-modal-close" class="btn-modal-close">Okay</button>
+      </div>
+    </div>
+  </div>
 
   <!-- LOBBY SCREEN (when no room parameter is set) -->
   <div id="lobby-screen" class="panel lobby-card" style="display: none;">
@@ -657,22 +783,41 @@
         <div class="wheel-center-dot">🎲</div>
       </div>
 
-      <!-- Control Bar -->
-      <div style="display: flex; gap: 15px; margin-top: -10px;">
+      <!-- Control Bar (visible in active / idle states) -->
+      <div id="active-control-bar" style="display: flex; gap: 15px; margin-top: -10px;">
         <button id="btn-spin-wheel" class="btn-room-action btn-spin">🎲 Spin Wheel</button>
         <button id="btn-toggle-timer" class="btn-room-action btn-timer">⏱️ Start Timer</button>
       </div>
 
-      <!-- Spinned Topic Area -->
-      <div class="topic-display-panel">
+      <!-- Topic Approval Panel (visible when status is 'proposed') -->
+      <div id="approval-panel" class="topic-display-panel" style="display: none; border-color: #ffa116; background: rgba(255, 161, 22, 0.04); width: 100%;">
+        <div class="topic-eyebrow" style="color: #ffa116;">Proposed Topic & Speaker</div>
+        <div id="proposed-speaker-announce" style="font-weight: 800; font-size: 1.25rem; margin-bottom: 12px; color: var(--text)">🎤 Speaker Selected: @username</div>
+        <div id="proposed-topic-text" class="topic-text" style="font-size: 1.3rem; line-height: 1.4; margin-bottom: 20px; font-family: 'Fredoka One', cursive; color: var(--primary-dark)">Proposed topic text...</div>
+        
+        <div style="margin-bottom: 25px; background: var(--bg-card); padding: 15px; border-radius: 12px;">
+          <h4 style="margin-top: 0; margin-bottom: 12px; font-size: 0.95rem; font-weight: 800;">Participant Approvals (<span id="approval-count">0/0</span>)</h4>
+          <div id="approval-list" style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+            <!-- Render checkmarks dynamically -->
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: center; gap: 15px;">
+          <button id="btn-approve-topic" class="btn-room-action btn-spin" style="background: #52B788; box-shadow: 0 4px 12px rgba(82,183,136,0.25);">👍 Say OK</button>
+          <button id="btn-respin-proposed" class="btn-room-action btn-timer" style="background: #d9534f; box-shadow: 0 4px 12px rgba(217,83,79,0.25);">🔄 Spin Again</button>
+        </div>
+      </div>
+
+      <!-- Active Topic Area (visible in active / idle states) -->
+      <div id="active-topic-panel" class="topic-display-panel" style="width: 100%;">
         <div id="speaker-announcement" class="topic-eyebrow" style="color: #ffa116;">Current Topic</div>
         <div id="current-topic-text" class="topic-text">
           No topic spinned yet. Spin the wheel! 🎲
         </div>
       </div>
 
-      <!-- Countdown Circle -->
-      <div class="timer-container">
+      <!-- Countdown Circle (visible in active states) -->
+      <div id="active-timer-container" class="timer-container">
         <div id="countdown-circle" class="timer-circle">
           <span id="timer-number">60</span>
           <span class="timer-label">secs</span>
@@ -825,7 +970,7 @@
           window.location.search = `?room=${generatedId}`;
         } catch (err) {
           console.error("[Room Creation Error]", err);
-          alert("Could not create room. Firestore error: " + err.message);
+          showCustomModal("Error", "Could not create room. Firestore error: " + err.message, "❌");
         }
       };
 
@@ -833,7 +978,7 @@
       document.getElementById('btn-join-room').onclick = () => {
         const inputVal = document.getElementById('room-code-input').value.trim().toUpperCase();
         if (inputVal.length < 3) {
-          alert("Please enter a valid room code.");
+          showCustomModal("Invalid Code", "Please enter a valid room code.", "⚠️");
           return;
         }
         window.location.search = `?room=${inputVal}`;
@@ -896,7 +1041,11 @@
         });
       } catch (err) {
         console.error("[Room Join Error]", err);
-        alert("Failed to join room: " + err.message + "\n\nMake sure your Firestore Database rules allow reading/writing to the 'group_rooms' collection.");
+        showCustomModal(
+          "Join Room Failed",
+          "Failed to join room: " + err.message + "<br><br>Make sure your Firestore Database rules allow reading/writing to the 'group_rooms' collection.",
+          "❌"
+        );
         window.location.search = ""; // return to lobby
         return;
       }
@@ -904,16 +1053,22 @@
       // Show room UI & controls
       document.getElementById('lobby-screen').style.display = 'none';
       document.getElementById('room-screen').style.display = 'grid';
-      document.getElementById('voice-control-bar').style.display = 'flex';
-
-      // Connect Jitsi voice call
-      connectVoice(roomId);
+      document.getElementById('voice-control-bar').style.display = 'none';
 
       // Listen for real-time Firestore changes in the room
       roomUnsubscribe = onSnapshot(roomRef, (docSnap) => {
         if (!docSnap.exists()) {
-          alert("The room was disbanded by the host.");
-          window.location.href = 'genz-streak-test.html';
+          showCustomModal(
+            "Room Disbanded",
+            "This room was disbanded or closed.",
+            "🚪",
+            "",
+            "Return to Dashboard"
+          );
+          // Wait for button click
+          document.getElementById('btn-modal-close').onclick = () => {
+            window.location.href = 'genz-streak-test.html';
+          };
           return;
         }
 
@@ -1006,37 +1161,153 @@
         listContainer.appendChild(card);
       });
 
-      // 2. Render Topic state & Handle animation on trigger
+      // 2. Render Topic state & Handle approval panels based on room status
       const topicTextEl = document.getElementById('current-topic-text');
       const speakerAnnounceEl = document.getElementById('speaker-announcement');
       const wheelCircle = document.getElementById('wheel-circle');
+      
+      const activeControlBar = document.getElementById('active-control-bar');
+      const activeTopicPanel = document.getElementById('active-topic-panel');
+      const activeTimerContainer = document.getElementById('active-timer-container');
+      const approvalPanel = document.getElementById('approval-panel');
+
+      // Helper logic to verify if all active members have approved
+      if (room.status === 'proposed') {
+        const activeUids = room.participants.map(p => p.uid);
+        const approvals = room.approvals || {};
+        let approvedCount = 0;
+        activeUids.forEach(uid => {
+          if (approvals[uid]) approvedCount++;
+        });
+
+        // If everyone in the room has approved (and room is not empty)
+        if (room.participants.length > 0 && approvedCount >= room.participants.length) {
+          const isFirstParticipant = room.participants[0].uid === currentUserProfile.uid;
+          if (isFirstParticipant) {
+            const roomRef = doc(db, 'group_rooms', currentRoomId);
+            updateDoc(roomRef, {
+              status: 'active',
+              current_topic: room.proposed_topic,
+              speaker_uid: room.proposed_speaker_uid,
+              speaker_username: room.proposed_speaker_username,
+              timer_status: 'stopped',
+              timer_start: 0,
+              approvals: {}
+            }).catch(err => console.error("Error transitioning to active state:", err));
+          }
+        }
+      }
 
       if (room.status === 'spinning') {
+        // Show spinning visual state
+        activeControlBar.style.display = 'flex';
+        activeTopicPanel.style.display = 'block';
+        activeTimerContainer.style.display = 'flex';
+        approvalPanel.style.display = 'none';
+
         topicTextEl.textContent = "Selecting topic...";
         speakerAnnounceEl.textContent = "Spinning...";
         
-        // Play local visual spin animation if not already spinning
+        // Disable timer controls while spinning
+        document.getElementById('btn-toggle-timer').disabled = true;
+        document.getElementById('btn-spin-wheel').disabled = true;
+
         if (!wheelCircle.classList.contains('is-animating')) {
           wheelCircle.classList.add('is-animating');
-          // Add random rotation degrees for visual effect
           const randomDeg = 1440 + Math.floor(Math.random() * 360);
           wheelCircle.style.transform = `rotate(${randomDeg}deg)`;
-
-          // Play Tick sound effects in client dynamically if browser permits
           playTickSound();
-
           setTimeout(() => {
             wheelCircle.classList.remove('is-animating');
-            // Resolve spinning locally on state transition
           }, 3500);
         }
-      } else {
-        // Idle status, display topic
+      } 
+      else if (room.status === 'proposed') {
+        // Hide active panels, show approval panel
+        activeControlBar.style.display = 'none';
+        activeTopicPanel.style.display = 'none';
+        activeTimerContainer.style.display = 'none';
+        approvalPanel.style.display = 'block';
+
+        // Render Proposed Speaker & Topic details
+        document.getElementById('proposed-speaker-announce').textContent = `🎤 Speaker Selected: @${room.proposed_speaker_username}`;
+        document.getElementById('proposed-topic-text').textContent = room.proposed_topic;
+
+        // Render approvals checkmarks list
+        const approvals = room.approvals || {};
+        const approvalListContainer = document.getElementById('approval-list');
+        approvalListContainer.innerHTML = '';
+
+        let approvedCount = 0;
+        room.participants.forEach(p => {
+          const isApproved = approvals[p.uid] === true;
+          if (isApproved) approvedCount++;
+
+          const badge = document.createElement('div');
+          badge.style.cssText = 'padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 800; display: flex; align-items: center; gap: 6px;';
+          if (isApproved) {
+            badge.style.background = 'rgba(82, 183, 136, 0.15)';
+            badge.style.color = '#2D6A4F';
+            badge.innerHTML = `<span>@${p.username}</span> <span style="font-size:0.85rem">👍 OK</span>`;
+          } else {
+            badge.style.background = 'rgba(0, 0, 0, 0.05)';
+            badge.style.color = 'var(--text-muted)';
+            badge.innerHTML = `<span>@${p.username}</span> <span style="font-size:0.85rem">⏳ pending</span>`;
+          }
+          approvalListContainer.appendChild(badge);
+        });
+
+        document.getElementById('approval-count').textContent = `${approvedCount} / ${room.participants.length}`;
+
+        // Approve Topic button mapping
+        const approveBtn = document.getElementById('btn-approve-topic');
+        const hasApproved = approvals[currentUserProfile.uid] === true;
+        if (hasApproved) {
+          approveBtn.textContent = "Approved 👍";
+          approveBtn.disabled = true;
+          approveBtn.style.opacity = '0.6';
+        } else {
+          approveBtn.textContent = "👍 Say OK";
+          approveBtn.disabled = false;
+          approveBtn.style.opacity = '1';
+          approveBtn.onclick = async () => {
+            const roomRef = doc(db, 'group_rooms', currentRoomId);
+            try {
+              const snap = await getDoc(roomRef);
+              if (!snap.exists()) return;
+              const rData = snap.data();
+              const freshApprovals = rData.approvals || {};
+              freshApprovals[currentUserProfile.uid] = true;
+              
+              await updateDoc(roomRef, {
+                approvals: freshApprovals
+              });
+            } catch (err) {
+              console.error("Error approving topic:", err);
+            }
+          };
+        }
+
+        // Spin Again button mapping
+        const respinBtn = document.getElementById('btn-respin-proposed');
+        respinBtn.onclick = triggerWheelSpin;
+      } 
+      else {
+        // Active / Idle status
+        activeControlBar.style.display = 'flex';
+        activeTopicPanel.style.display = 'block';
+        activeTimerContainer.style.display = 'flex';
+        approvalPanel.style.display = 'none';
+
+        // Enable buttons
+        document.getElementById('btn-spin-wheel').disabled = false;
+        document.getElementById('btn-toggle-timer').disabled = false;
+
         topicTextEl.textContent = room.current_topic;
         if (room.speaker_username) {
           speakerAnnounceEl.textContent = `🎤 Speaker Assigned: @${room.speaker_username}`;
           
-          // Show alert toast for the selected speaker
+          // Trigger notification if this is a newly assigned speaker
           if (room.speaker_uid === currentUserProfile.uid && lastKnownSpeaker !== room.speaker_uid) {
             triggerSpeakerNotification(room.current_topic);
           }
@@ -1106,21 +1377,22 @@
         micBtn.classList.remove('muted');
       }
 
-      // 5. Disable / enable buttons depending on who has the speaker right
-      const spinBtn = document.getElementById('btn-spin-wheel');
-      if (room.status === 'spinning') {
-        spinBtn.disabled = true;
-        toggleTimerBtn.disabled = true;
+      // 5. Connect Jitsi voice call ONLY when the topic is decided & approved (active state)
+      if (room.status === 'active') {
+        if (!jitsiApi) {
+          document.getElementById('voice-control-bar').style.display = 'flex';
+          connectVoice(room.room_id || currentRoomId);
+        }
       } else {
-        spinBtn.disabled = false;
-        // Only active speaker or host can control the timers
-        toggleTimerBtn.disabled = false;
+        if (jitsiApi) {
+          disconnectVoice();
+        }
       }
     }
 
     // ── 6. ROOM ACTIONS (SPIN, TIMER) ──
-    // Handle Spin trigger
-    document.getElementById('btn-spin-wheel').onclick = async () => {
+    // Shared Wheel Spin logic
+    async function triggerWheelSpin() {
       if (!currentRoomId || !currentUserProfile) return;
       const roomRef = doc(db, 'group_rooms', currentRoomId);
 
@@ -1142,14 +1414,15 @@
           timer_status: 'stopped'
         });
 
-        // Let visual animation play out for 3.5 seconds, then set the active topic
+        // Let visual animation play out for 3.5 seconds, then set the proposed topic and reset approvals
         setTimeout(async () => {
           try {
             await updateDoc(roomRef, {
-              status: 'idle',
-              current_topic: randomTopic,
-              speaker_uid: randomSpeaker.uid,
-              speaker_username: randomSpeaker.username,
+              status: 'proposed',
+              proposed_topic: randomTopic,
+              proposed_speaker_uid: randomSpeaker.uid,
+              proposed_speaker_username: randomSpeaker.username,
+              approvals: {}, // reset approvals
               spin_timestamp: Date.now()
             });
           } catch (err) {
@@ -1158,9 +1431,11 @@
         }, 3500);
       } catch (err) {
         console.error("[Spin Wheel Error]", err);
-        alert("Failed to spin the wheel: " + err.message);
+        showCustomModal("Spin Failed", "Failed to spin the wheel: " + err.message, "❌");
       }
-    };
+    }
+
+    document.getElementById('btn-spin-wheel').onclick = triggerWheelSpin;
 
     // Handle Timer toggle
     document.getElementById('btn-toggle-timer').onclick = async () => {
@@ -1186,7 +1461,7 @@
         }
       } catch (err) {
         console.error("[Timer Toggle Error]", err);
-        alert("Failed to control timer: " + err.message);
+        showCustomModal("Timer Error", "Failed to control timer: " + err.message, "❌");
       }
     };
 
@@ -1262,6 +1537,20 @@
       }
     }
 
+    function disconnectVoice() {
+      const statusText = document.getElementById('voice-status-text');
+      statusText.textContent = "Connecting Voice...";
+      document.getElementById('voice-control-bar').style.display = 'none';
+
+      if (jitsiApi) {
+        try {
+          jitsiApi.executeCommand('hangup');
+          jitsiApi.dispose();
+        } catch(e){}
+        jitsiApi = null;
+      }
+    }
+
     // ── 8. AUDIO & VISUAL EFFECTS ──
     function playTickSound() {
       // In-browser synthesizer to avoid downloading external audio assets
@@ -1306,6 +1595,31 @@
       } catch(e){}
     }
 
+    // Custom In-App Modal Dialog
+    function showCustomModal(title, message, emoji = '📢', topicText = '', buttonLabel = 'Okay') {
+      const modal = document.getElementById('custom-modal');
+      const titleEl = modal.querySelector('.modal-title');
+      const bodyEl = modal.querySelector('.modal-body');
+      const emojiEl = modal.querySelector('.modal-emoji');
+      const buttonEl = document.getElementById('btn-modal-close');
+      
+      emojiEl.textContent = emoji;
+      titleEl.textContent = title;
+      buttonEl.textContent = buttonLabel;
+      
+      let bodyHtml = `<p>${message}</p>`;
+      if (topicText) {
+        bodyHtml += `<div class="modal-topic-box">"${topicText}"</div>`;
+      }
+      bodyEl.innerHTML = bodyHtml;
+      
+      modal.style.display = 'flex';
+      
+      buttonEl.onclick = () => {
+        modal.style.display = 'none';
+      };
+    }
+
     function triggerSpeakerNotification(topic) {
       if ('Notification' in window) {
         if (Notification.permission === 'granted') {
@@ -1317,7 +1631,14 @@
           Notification.requestPermission();
         }
       }
-      alert(`🎉 You've been chosen as the speaker! \nTopic: "${topic}" \nPrepare to speak!`);
+      // Trigger elegant in-app modal instead of browser popup
+      showCustomModal(
+        "🎉 Speaker Selected!",
+        "You've been chosen as the speaker for this topic. Get ready to speak!",
+        "🎤",
+        topic,
+        "Start Speaking 🚀"
+      );
     }
 
     function triggerLocalConfetti() {

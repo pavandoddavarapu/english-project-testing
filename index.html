@@ -126,7 +126,8 @@
 
     /* ── HERO ── */
     .hero {
-      height: 100vh;
+      min-height: 100vh;
+      min-height: 100svh;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -326,6 +327,10 @@
     /* ── STATS BAR ── */
     .stats-bar {
       display: none;
+    }
+
+    .stats-bar-wrapper {
+      display: none; /* hidden until stats-bar is shown */
     }
 
     .stat-item {
@@ -721,8 +726,8 @@
 
     @media(max-width: 540px) {
       .hero {
-        padding: 80px 16px 24px;
-        min-height: 100vh;
+        padding: 80px 16px 32px;
+        min-height: auto;
         height: auto;
       }
       .hero-sub {
@@ -862,7 +867,7 @@
   </header>
 
   <!-- STATS -->
-  <div
+  <div class="stats-bar-wrapper"
     style="background:var(--white);padding:8px 0;border-top:1.5px solid var(--accent2);border-bottom:1.5px solid var(--accent2);">
     <div class="stats-bar">
       <div class="stat-item">

@@ -1563,7 +1563,7 @@
         }
         
         function initTheme() {
-          const saved = localStorage.getItem("speakup-theme") || "pink";
+          const saved = localStorage.getItem("speakup-theme") || "green";
           themeSwatches.forEach(s => s.classList.toggle("active", s.dataset.theme === saved));
           applyTheme(saved);
         }

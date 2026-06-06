@@ -759,7 +759,7 @@
         btn.style.borderColor = (COLORS[theme] || COLORS.pink) + "80";
       }
       function init() {
-        const saved = localStorage.getItem("speakup-theme") || "pink";
+        const saved = localStorage.getItem("speakup-theme") || "green";
         sw.forEach(s => s.classList.toggle("active", s.dataset.theme === saved));
         apply(saved);
       }

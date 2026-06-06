@@ -1268,9 +1268,9 @@
       <!-- Latest Drops -->
       <div class="panel" style="flex: 1;">
         <div class="tabs">
-          <div class="tab active">Recent Sessions 🎙️</div>
-          <div class="tab">Top Performances 🏆</div>
-          <div class="tab">Best Moments 🌟</div>
+          <div class="tab active" onclick="handleTabClick(0)">Recent Sessions 🎙️</div>
+          <div class="tab" onclick="handleTabClick(1)">Top Performances 🏆</div>
+          <div class="tab" onclick="handleTabClick(2)">Best Moments 🌟</div>
         </div>
         <div class="recent-list" id="recent-sessions-list">
           <div class="recent-item" style="color: var(--text-muted); text-align: center; justify-content: center; padding: 20px;">
@@ -2056,7 +2056,7 @@
       }
     }
 
-    function renderRecentSessions(sessions = []) {
+    function renderRecentSessions(sessions = [], tabIndex = 0) {
       const listEl = document.getElementById('recent-sessions-list');
       listEl.innerHTML = '';
 
@@ -2087,7 +2087,22 @@
            
            const scoreBadge = document.createElement('span');
            scoreBadge.style.cssText = `background: ${scoreColor}20; color: ${scoreColor}; font-size: 0.75rem; padding: 2px 8px; border-radius: 12px; margin-left: 10px; border: 1px solid ${scoreColor}40;`;
-           scoreBadge.innerText = `Score: ${session.score}`;
+           
+           if (tabIndex === 1) {
+             // Top Performances: highlight the score
+             scoreBadge.innerText = `Score: ${session.score} 🏆`;
+             scoreBadge.style.background = `rgba(255, 161, 22, 0.1)`; // Gold/Orange background
+             scoreBadge.style.color = `#ffa116`;
+             scoreBadge.style.borderColor = `rgba(255, 161, 22, 0.3)`;
+           } else if (tabIndex === 2 && session.confidence !== undefined) {
+             // Best Moments: show confidence or clarity
+             scoreBadge.innerText = `Confidence: ${session.confidence}% ✨`;
+             scoreBadge.style.background = `rgba(123, 47, 190, 0.1)`; // Purple background
+             scoreBadge.style.color = `#7B2FBE`;
+             scoreBadge.style.borderColor = `rgba(123, 47, 190, 0.3)`;
+           } else {
+             scoreBadge.innerText = `Score: ${session.score}`;
+           }
            nameSpan.appendChild(scoreBadge);
         }
 
@@ -2111,6 +2126,33 @@
       });
       _sessionsAnimated = true;
     }
+
+    function handleTabClick(tabIndex) {
+      const tabs = document.querySelectorAll('.tab');
+      tabs.forEach((t, i) => t.classList.toggle('active', i === tabIndex));
+      
+      const sessions = window.allSessions || [];
+      let displaySessions = [...sessions];
+      
+      if (tabIndex === 0) {
+        // Sort by date descending (Recent Sessions)
+        displaySessions.sort((a, b) => new Date(b.date) - new Date(a.date));
+      } else if (tabIndex === 1) {
+        // Sort by score descending (Top Performances)
+        displaySessions.sort((a, b) => (b.score || 0) - (a.score || 0));
+      } else if (tabIndex === 2) {
+        // Sort by confidence descending (Best Moments)
+        displaySessions.sort((a, b) => {
+          const valA = a.confidence !== undefined ? a.confidence : (a.score || 0);
+          const valB = b.confidence !== undefined ? b.confidence : (b.score || 0);
+          return valB - valA;
+        });
+      }
+      
+      _sessionsAnimated = false;
+      renderRecentSessions(displaySessions, tabIndex);
+    }
+    window.handleTabClick = handleTabClick;
 
     function renderCloutAndDialects(userData = {}) {
       const sessions = userData.recent_sessions || [];
@@ -2343,11 +2385,21 @@
       const yearSelect = document.getElementById('heatmap-year-select');
       const selectedYear = yearSelect ? yearSelect.value : 'Current';
 
+      window.allSessions = userData.recent_sessions || [];
       renderHeatmap(window.allPracticeDates, window.allTotalYaps, selectedYear);
       renderBadges(userData.practice_dates    || [], userData.aura_points  || 0);
       renderSkillsProfile(userData.recent_sessions || []);
       renderCloutAndDialects(userData);
-      renderRecentSessions(userData.recent_sessions || []);
+      
+      const activeTabEl = document.querySelector('.tab.active');
+      let activeTabIndex = 0;
+      if (activeTabEl) {
+        const tabsArray = Array.from(document.querySelectorAll('.tab'));
+        activeTabIndex = tabsArray.indexOf(activeTabEl);
+        if (activeTabIndex < 0) activeTabIndex = 0;
+      }
+      handleTabClick(activeTabIndex);
+      
       hideLoadingOverlay();
     }
 
@@ -2364,11 +2416,12 @@
       window.allTotalYaps = 0;
       populateYearDropdown([]);
       
+      window.allSessions = [];
       renderHeatmap([], 0, 'Current');
       renderBadges([], 0);
       renderSkillsProfile([]);
       renderCloutAndDialects({});
-      renderRecentSessions([]);
+      handleTabClick(0);
       hideLoadingOverlay();
     }
 

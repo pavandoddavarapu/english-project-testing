@@ -611,7 +611,7 @@
     .heatmap-wrapper {
       overflow-x: auto;
       overflow-y: visible;
-      padding: 12px;
+      padding: 44px 12px 16px 12px;
       background: rgba(255,255,255,0.4);
       border: 1.5px solid var(--accent2);
       border-radius: 12px;
@@ -640,36 +640,13 @@
       width: 9px;
       height: 9px;
       border-radius: 2px;
-      background-color: rgba(var(--primary-rgb, 214, 51, 132), 0.08);
+      background-color: color-mix(in srgb, var(--primary) 8%, var(--bg-card));
+      border: 1px solid color-mix(in srgb, var(--primary) 15%, var(--bg-card));
       transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.2s;
       animation: popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
       cursor: pointer;
       position: relative;
-      border: 1px solid rgba(var(--primary-rgb, 214, 51, 132), 0.12);
       flex-shrink: 0;
-    }
-
-    /* LeetCode Dark empty and active square overrides */
-    html[data-theme="dark"] .heatmap-square {
-      background-color: rgba(255, 255, 255, 0.06);
-      border-color: rgba(255, 255, 255, 0.03);
-    }
-    html[data-theme="dark"] .heatmap-square[data-level="1"] {
-      background-color: #8c5800;
-      border-color: #a66a00;
-    }
-    html[data-theme="dark"] .heatmap-square[data-level="2"] {
-      background-color: #c27b00;
-      border-color: #d98a00;
-    }
-    html[data-theme="dark"] .heatmap-square[data-level="3"] {
-      background-color: var(--primary);
-      border-color: #ffb442;
-    }
-    html[data-theme="dark"] .heatmap-square[data-level="4"] {
-      background-color: #ffc01e;
-      border-color: #ffe082;
-      box-shadow: 0 0 8px rgba(255, 192, 30, 0.7);
     }
 
     .heatmap-square:hover {
@@ -679,10 +656,23 @@
       border-color: var(--primary);
     }
 
-    .heatmap-square[data-level="1"] { background-color: rgba(var(--primary-rgb, 214, 51, 132), 0.25); border-color: rgba(var(--primary-rgb, 214, 51, 132), 0.35); }
-    .heatmap-square[data-level="2"] { background-color: rgba(var(--primary-rgb, 214, 51, 132), 0.55); border-color: rgba(var(--primary-rgb, 214, 51, 132), 0.65); }
-    .heatmap-square[data-level="3"] { background-color: var(--primary); border-color: var(--primary-dark); }
-    .heatmap-square[data-level="4"] { background-color: var(--primary-dark); border-color: var(--primary); box-shadow: 0 0 5px var(--shadow-lg); }
+    .heatmap-square[data-level="1"] {
+      background-color: color-mix(in srgb, var(--primary) 50%, var(--bg-card));
+      border-color: color-mix(in srgb, var(--primary) 65%, var(--bg-card));
+    }
+    .heatmap-square[data-level="2"] {
+      background-color: color-mix(in srgb, var(--primary) 75%, var(--bg-card));
+      border-color: color-mix(in srgb, var(--primary) 85%, var(--bg-card));
+    }
+    .heatmap-square[data-level="3"] {
+      background-color: var(--primary);
+      border-color: var(--primary-dark);
+    }
+    .heatmap-square[data-level="4"] {
+      background-color: var(--primary-dark);
+      border-color: var(--primary);
+      box-shadow: 0 0 5px var(--primary);
+    }
 
     .months {
       display: none;
@@ -800,7 +790,8 @@
       position: absolute;
       bottom: 150%;
       left: 50%;
-      transform: translateX(-50%);
+      transform: translateX(-50%) scale(0.5);
+      transform-origin: bottom center;
       background: var(--primary-dark);
       color: var(--white);
       padding: 6px 10px;
@@ -809,7 +800,7 @@
       pointer-events: none;
       opacity: 0;
       white-space: nowrap;
-      transition: opacity 0.2s;
+      transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       z-index: 20;
       box-shadow: 0 4px 10px rgba(0,0,0,0.2);
       font-weight: 700;
@@ -829,6 +820,7 @@
     
     .heatmap-square:hover .tooltip {
       opacity: 1;
+      transform: translateX(-50%) scale(0.714);
     }
 
     /* Badge New */
@@ -1938,10 +1930,10 @@
               const count = dateCounts[dateStr] || 0;
 
               let level = 0;
-              if (count >= 15) level = 4;
-              else if (count >= 7) level = 3;
-              else if (count >= 3) level = 2;
-              else if (count >= 1) level = 1;
+              if (count >= 4) level = 4;
+              else if (count === 3) level = 3;
+              else if (count === 2) level = 2;
+              else if (count === 1) level = 1;
 
               square.setAttribute('data-level', level);
 
@@ -1949,10 +1941,10 @@
               tooltip.className = 'tooltip';
 
               let yapText = "No practice today";
-              if (level === 1) yapText = "1 session ✅";
-              if (level === 2) yapText = "3 sessions 🔥";
-              if (level === 3) yapText = "7 sessions 🚀";
-              if (level === 4) yapText = count + " sessions — on a roll! 👑";
+              if (count === 1) yapText = "1 session ✅";
+              else if (count === 2) yapText = "2 sessions 🔥";
+              else if (count === 3) yapText = "3 sessions 🚀";
+              else if (count >= 4) yapText = `${count} sessions — on a roll! 👑`;
 
               tooltip.innerText = yapText + ` (${dateStr})`;
               square.appendChild(tooltip);
@@ -1977,6 +1969,17 @@
 
       grid.appendChild(container);
       _heatmapAnimated = true;
+
+      // Auto-scroll the heatmap wrapper to show the current month on the right
+      const wrapper = document.querySelector('.heatmap-wrapper');
+      if (wrapper) {
+        requestAnimationFrame(() => {
+          wrapper.scrollLeft = wrapper.scrollWidth;
+        });
+        setTimeout(() => {
+          wrapper.scrollLeft = wrapper.scrollWidth;
+        }, 100);
+      }
     }
 
 

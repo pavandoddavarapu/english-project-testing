@@ -817,8 +817,13 @@
       // Create Room Event
       document.getElementById('btn-create-room').onclick = async () => {
         const generatedId = Math.random().toString(36).substring(2, 8).toUpperCase();
-        await initializeRoomDocument(generatedId);
-        window.location.search = `?room=${generatedId}`;
+        try {
+          await initializeRoomDocument(generatedId);
+          window.location.search = `?room=${generatedId}`;
+        } catch (err) {
+          console.error("[Room Creation Error]", err);
+          alert("Could not create room. Firestore error: " + err.message);
+        }
       };
 
       // Join Room Event
@@ -882,9 +887,16 @@
       };
 
       // Add self to room participants
-      await updateDoc(roomRef, {
-        participants: arrayUnion(currentUserProfile)
-      });
+      try {
+        await updateDoc(roomRef, {
+          participants: arrayUnion(currentUserProfile)
+        });
+      } catch (err) {
+        console.error("[Room Join Error]", err);
+        alert("Failed to join room: " + err.message + "\n\nMake sure your Firestore Database rules allow reading/writing to the 'group_rooms' collection.");
+        window.location.search = ""; // return to lobby
+        return;
+      }
 
       // Show room UI & controls
       document.getElementById('lobby-screen').style.display = 'none';
@@ -1109,55 +1121,69 @@
       if (!currentRoomId || !currentUserProfile) return;
       const roomRef = doc(db, 'group_rooms', currentRoomId);
 
-      // 1. Fetch current participants to select a random speaker
-      const roomSnap = await getDoc(roomRef);
-      if (!roomSnap.exists()) return;
-      const roomData = roomSnap.data();
-      const members = roomData.participants || [];
-      if (members.length === 0) return;
+      try {
+        // 1. Fetch current participants to select a random speaker
+        const roomSnap = await getDoc(roomRef);
+        if (!roomSnap.exists()) return;
+        const roomData = roomSnap.data();
+        const members = roomData.participants || [];
+        if (members.length === 0) return;
 
-      // Select random speaker & random topic
-      const randomSpeaker = members[Math.floor(Math.random() * members.length)];
-      const randomTopic = GROUP_TOPICS[Math.floor(Math.random() * GROUP_TOPICS.length)];
+        // Select random speaker & random topic
+        const randomSpeaker = members[Math.floor(Math.random() * members.length)];
+        const randomTopic = GROUP_TOPICS[Math.floor(Math.random() * GROUP_TOPICS.length)];
 
-      // Put the database status to spinning to synchronize wheel rotations
-      await updateDoc(roomRef, {
-        status: 'spinning',
-        timer_status: 'stopped'
-      });
-
-      // Let visual animation play out for 3.5 seconds, then set the active topic
-      setTimeout(async () => {
+        // Put the database status to spinning to synchronize wheel rotations
         await updateDoc(roomRef, {
-          status: 'idle',
-          current_topic: randomTopic,
-          speaker_uid: randomSpeaker.uid,
-          speaker_username: randomSpeaker.username,
-          spin_timestamp: Date.now()
+          status: 'spinning',
+          timer_status: 'stopped'
         });
-      }, 3500);
+
+        // Let visual animation play out for 3.5 seconds, then set the active topic
+        setTimeout(async () => {
+          try {
+            await updateDoc(roomRef, {
+              status: 'idle',
+              current_topic: randomTopic,
+              speaker_uid: randomSpeaker.uid,
+              speaker_username: randomSpeaker.username,
+              spin_timestamp: Date.now()
+            });
+          } catch (err) {
+            console.error("[Spin Wheel updateDoc Error]", err);
+          }
+        }, 3500);
+      } catch (err) {
+        console.error("[Spin Wheel Error]", err);
+        alert("Failed to spin the wheel: " + err.message);
+      }
     };
 
     // Handle Timer toggle
     document.getElementById('btn-toggle-timer').onclick = async () => {
       if (!currentRoomId) return;
       const roomRef = doc(db, 'group_rooms', currentRoomId);
-      const roomSnap = await getDoc(roomRef);
-      if (!roomSnap.exists()) return;
-      const roomData = roomSnap.data();
+      try {
+        const roomSnap = await getDoc(roomRef);
+        if (!roomSnap.exists()) return;
+        const roomData = roomSnap.data();
 
-      if (roomData.timer_status === 'running') {
-        // Reset timer
-        await updateDoc(roomRef, {
-          timer_status: 'stopped',
-          timer_start: 0
-        });
-      } else {
-        // Start timer
-        await updateDoc(roomRef, {
-          timer_status: 'running',
-          timer_start: Date.now()
-        });
+        if (roomData.timer_status === 'running') {
+          // Reset timer
+          await updateDoc(roomRef, {
+            timer_status: 'stopped',
+            timer_start: 0
+          });
+        } else {
+          // Start timer
+          await updateDoc(roomRef, {
+            timer_status: 'running',
+            timer_start: Date.now()
+          });
+        }
+      } catch (err) {
+        console.error("[Timer Toggle Error]", err);
+        alert("Failed to control timer: " + err.message);
       }
     };
 

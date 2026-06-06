@@ -164,6 +164,11 @@ html[data-theme="dark"] .btn-primary { color: #1a1a1a; }
 
 html { scroll-behavior: smooth; }
 
+/* ============================================================
+   PAGE TRANSITION SYSTEM
+   ============================================================ */
+
+/* Body fade-in on every page load */
 body {
   font-family: 'Nunito', sans-serif;
   background-color: var(--bg);
@@ -171,6 +176,50 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
   position: relative;
+  animation: speakup-page-enter 0.35s ease both;
+}
+
+@keyframes speakup-page-enter {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Top progress bar that shows during navigation */
+#speakup-progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  width: 0%;
+  background: linear-gradient(90deg, var(--primary), var(--accent), var(--primary));
+  background-size: 200% 100%;
+  z-index: 999999;
+  border-radius: 0 3px 3px 0;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+  animation: speakup-bar-shimmer 1.5s linear infinite;
+  pointer-events: none;
+  opacity: 0;
+  box-shadow: 0 0 8px var(--primary);
+}
+
+#speakup-progress-bar.loading {
+  opacity: 1;
+}
+
+@keyframes speakup-bar-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Page exit fade */
+body.speakup-page-exit {
+  animation: speakup-page-exit 0.2s ease forwards;
+  pointer-events: none;
+}
+
+@keyframes speakup-page-exit {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-6px); }
 }
 
 /* Subtle background pattern */

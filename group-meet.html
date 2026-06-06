@@ -1029,17 +1029,7 @@
       to { transform: translateY(-10px) rotate(5deg); }
     }
 
-    /* Hidden Jitsi Box */
-    #jitsi-meet-frame {
-      position: fixed;
-      width: 300px;
-      height: 300px;
-      bottom: 0;
-      left: 0;
-      z-index: -100;
-      opacity: 0.001;
-      pointer-events: none;
-    }
+
 
     /* Toast system */
     .toast {
@@ -1245,6 +1235,14 @@
       <div id="participant-list" class="participant-list">
         <!-- Rendered dynamically -->
       </div>
+
+      <!-- VOICE CHANNEL CONNECTION WIDGET -->
+      <div id="voice-widget-container" style="margin-top: 24px; border-top: 1px dashed var(--accent2); padding-top: 20px;">
+        <h4 style="font-weight: 800; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1.5px; display: flex; align-items: center; gap: 6px;">
+          <span>🎙️</span> Voice Room Widget
+        </h4>
+        <div id="jitsi-meet-frame" style="width: 100%; height: 160px; border-radius: 16px; border: 1.5px solid var(--accent2); background: rgba(var(--primary-rgb), 0.03); overflow: hidden; position: relative;"></div>
+      </div>
     </section>
 
     <!-- RIGHT SECTION: Wheel & Activity Arena -->
@@ -1328,8 +1326,7 @@
     <button id="btn-hangup" class="btn-hangup">Leave Room</button>
   </div>
 
-  <!-- Jitsi Frame Target -->
-  <div id="jitsi-meet-frame"></div>
+
 
   <!-- FIREBASE & CORE CONTROLLER -->
   <script type="module">
@@ -2028,14 +2025,14 @@
             startWithVideoMuted: true,
             startAudioOnly: true,
             prejoinPageEnabled: false,
-            toolbarButtons: [], // remove toolbar buttons so frame is light
+            toolbarButtons: ['microphone'], // show microphone button
             enableWelcomePage: false,
             disableDeepLinking: true
           },
           interfaceConfigOverwrite: {
             SHOW_JITSI_WATERMARK: false,
             SHOW_WATERMARK_FOR_GUESTS: false,
-            TOOLBAR_BUTTONS: []
+            TOOLBAR_BUTTONS: ['microphone']
           }
         };
 

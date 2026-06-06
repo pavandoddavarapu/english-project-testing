@@ -1545,7 +1545,12 @@
       // Show room UI & controls
       document.getElementById('lobby-screen').style.display = 'none';
       document.getElementById('room-screen').style.display = 'grid';
-      document.getElementById('voice-control-bar').style.display = 'none';
+      document.getElementById('voice-control-bar').style.display = 'flex';
+
+      // Connect voice channel immediately when joining the room
+      if (!jitsiApi) {
+        connectVoice(roomId);
+      }
 
       // Listen for real-time Firestore changes in the room
       roomUnsubscribe = onSnapshot(roomRef, (docSnap) => {
@@ -1922,17 +1927,8 @@
         micBtn.classList.remove('muted');
       }
 
-      // 5. Connect Jitsi voice call ONLY when the topic is decided & approved (active state)
-      if (room.status === 'active') {
-        if (!jitsiApi) {
-          document.getElementById('voice-control-bar').style.display = 'flex';
-          connectVoice(room.room_id || currentRoomId);
-        }
-      } else {
-        if (jitsiApi) {
-          disconnectVoice();
-        }
-      }
+      // 5. Keep voice control bar visible
+      document.getElementById('voice-control-bar').style.display = 'flex';
     }
 
     // ── 6. ROOM ACTIONS (SPIN, TIMER) ──
@@ -2021,8 +2017,8 @@
         const domain = "meet.jit.si";
         const options = {
           roomName: `SpeakUpGroupMeetingRoom_${roomId}`,
-          width: 1,
-          height: 1,
+          width: '100%',
+          height: '100%',
           parentNode: document.getElementById('jitsi-meet-frame'),
           userInfo: {
             displayName: currentUserProfile.username

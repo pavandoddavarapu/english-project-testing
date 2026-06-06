@@ -2029,6 +2029,12 @@
             prejoinConfig: {
               enabled: false
             },
+            disableAP: false,             // Enable Audio Processing (required for other filters)
+            disableAEC: false,            // Enable Echo Cancellation
+            disableNS: false,             // Enable standard Noise Suppression
+            disableAGC: false,            // Enable Automatic Gain Control
+            disableHPF: false,            // Enable High-Pass Filter (removes low hums)
+            enableNoiseSuppression: true,  // Enable neural network Noise Suppression (RNNoise)
             toolbarButtons: ['microphone'], // show microphone button
             enableWelcomePage: false,
             disableDeepLinking: true

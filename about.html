@@ -560,6 +560,244 @@
         padding: 7px 16px;
       }
     }
+
+    /* ── MISSION GRID ── */
+    .mission-sec {
+      padding: 100px 24px;
+      background: linear-gradient(180deg, var(--bg) 0%, var(--accent3) 100%);
+      text-align: center;
+    }
+
+    .mission-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 30px;
+      max-width: 1100px;
+      margin: 40px auto 0;
+    }
+
+    .mission-card {
+      background: var(--white);
+      border: 3px solid var(--accent2);
+      border-radius: 24px;
+      padding: 32px;
+      text-align: left;
+      box-shadow: 0 16px 32px var(--shadow);
+      transition: all 0.3s ease;
+    }
+
+    html[data-theme="dark"] .mission-card {
+      background: var(--bg-card);
+    }
+
+    .mission-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 24px 48px var(--shadow-lg);
+      border-color: var(--primary);
+    }
+
+    .mission-icon {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+      display: inline-block;
+    }
+
+    .mission-card h3 {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.4rem;
+      color: var(--primary);
+      margin-bottom: 12px;
+    }
+
+    .mission-card p {
+      font-size: 1rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+      font-weight: 600;
+    }
+
+    /* ── PHILOSOPHY SECTION ── */
+    .philosophy-sec {
+      padding: 100px 24px;
+      background: var(--white);
+      text-align: center;
+    }
+
+    html[data-theme="dark"] .philosophy-sec {
+      background: var(--bg-card);
+    }
+
+    .phil-container {
+      max-width: 1000px;
+      margin: 0 auto;
+      display: flex;
+      gap: 50px;
+      align-items: center;
+      text-align: left;
+    }
+
+    .phil-content {
+      flex: 1.2;
+    }
+
+    .phil-visual {
+      flex: 0.8;
+      background: var(--bg);
+      border: 3px solid var(--accent2);
+      border-radius: 32px;
+      padding: 40px 30px;
+      box-shadow: 0 16px 40px var(--shadow);
+      text-align: center;
+    }
+
+    .phil-visual h4 {
+      font-family: 'Fredoka One', cursive;
+      color: var(--primary);
+      margin-bottom: 20px;
+      font-size: 1.6rem;
+    }
+
+    .phil-quote {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.6;
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .phil-points {
+      margin-top: 30px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .phil-point {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .phil-point-icon {
+      font-size: 1.5rem;
+      background: var(--accent3);
+      padding: 8px;
+      border-radius: 12px;
+      color: var(--primary);
+      line-height: 1;
+    }
+
+    .phil-point-text h4 {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.15rem;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .phil-point-text p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      font-weight: 600;
+      line-height: 1.5;
+    }
+
+    /* ── QUIZ SECTION ── */
+    .quiz-sec {
+      padding: 100px 24px;
+      background: var(--bg);
+      text-align: center;
+    }
+
+    .quiz-container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .quiz-options {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      margin-top: 40px;
+    }
+
+    .quiz-btn {
+      background: var(--white);
+      border: 3px solid var(--accent2);
+      border-radius: 20px;
+      padding: 24px;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 800;
+      font-size: 1.05rem;
+      color: var(--text);
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.2s ease;
+      box-shadow: 0 10px 20px var(--shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    html[data-theme="dark"] .quiz-btn {
+      background: var(--bg-card);
+    }
+
+    .quiz-btn:hover {
+      transform: translateY(-4px);
+      border-color: var(--primary);
+      box-shadow: 0 15px 30px var(--shadow-lg);
+    }
+
+    .quiz-btn.selected {
+      background: var(--accent3);
+      border-color: var(--primary);
+      color: var(--primary-dark);
+    }
+
+    .quiz-btn-icon {
+      font-size: 2rem;
+    }
+
+    .quiz-feedback {
+      margin-top: 50px;
+      background: var(--white);
+      border: 3px solid var(--primary);
+      border-radius: 28px;
+      padding: 40px;
+      box-shadow: 0 20px 48px var(--shadow-lg);
+      display: none;
+      animation: fadeInUp 0.4s ease-out;
+    }
+
+    html[data-theme="dark"] .quiz-feedback {
+      background: var(--bg-card);
+    }
+
+    .quiz-feedback h3 {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.8rem;
+      color: var(--primary);
+      margin-bottom: 12px;
+    }
+
+    .quiz-feedback p {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+      font-weight: 600;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 900px) {
+      .phil-container {
+        flex-direction: column;
+      }
+    }
   </style>
 </head>
 
@@ -605,80 +843,91 @@
     <p class="about-sub">Speak Up! is an AI-powered English speaking practice platform designed for learners who understand English but freeze when it's time to talk. We give you the tools, the topics, and the motivation to practice every single day.</p>
   </header>
 
-  <!-- HOW IT HELPS -->
-  <section class="value-sec">
+  <!-- THE PHILOSOPHY -->
+  <section class="philosophy-sec">
     <div class="sec-header">
-      <div class="sec-eyebrow">✦ What Makes Us Different</div>
-      <h2 class="sec-title">Practice That Actually Works</h2>
+      <div class="sec-eyebrow">✦ Our Philosophy</div>
+      <h2 class="sec-title">Why Traditional Learning Fails Speaking</h2>
     </div>
 
-    <div class="split-layout">
-      <div class="split-content">
-        <h3>5 Ways to Practice Speaking</h3>
-        <p><strong>🎲 Random Topics</strong> — Get AI-generated speaking prompts and practice thinking on your feet with a 1-minute timer.</p>
-        <p><strong>💼 Interview Prep</strong> — Prepare for real interviews with structured frameworks like STAR, PREP, and PPF built right in.</p>
-        <p><strong>📖 Vocabulary Builder</strong> — Learn new words and idioms, then immediately use them in a 30-second speaking exercise.</p>
-        <p><strong>🖼️ Picture Talk</strong> — Describe real-world images to sharpen your observational vocabulary and descriptive fluency.</p>
-        <p><strong>👥 Group Discussions</strong> — Join live speaking rooms to practice conversational English with peers in real-time.</p>
-      </div>
-      <div class="split-visual">
-        <div class="visual-box">
-          <span class="visual-icon">🎯</span>
-          <h4 style="font-family: 'Fredoka One'; font-size: 1.5rem; color: var(--primary);">5 Practice Modes</h4>
-          <p style="color: var(--text-muted); font-weight: 700; margin-top: 10px;">Something new every session</p>
+    <div class="phil-container">
+      <div class="phil-content">
+        <div class="phil-points">
+          <div class="phil-point">
+            <span class="phil-point-icon">🧠</span>
+            <div class="phil-point-text">
+              <h4>Anxiety is the Real Enemy</h4>
+              <p>Traditional language apps treat speaking like a spelling test. But speaking in public is a high-pressure performance. We focus on building your confidence and psychological safety first.</p>
+            </div>
+          </div>
+
+          <div class="phil-point">
+            <span class="phil-point-icon">⚡</span>
+            <div class="phil-point-text">
+              <h4>Active Recall Over Passive Games</h4>
+              <p>Duolingo or flashcards feel productive, but they don't prepare your brain to coordinate voice, breathing, and grammar in real-time. Only speaking out loud builds speaking neural pathways.</p>
+            </div>
+          </div>
+
+          <div class="phil-point">
+            <span class="phil-point-icon">🛡️</span>
+            <div class="phil-point-text">
+              <h4>A Mirror, Not a Judge</h4>
+              <p>Speak Up! gives you an encouraging space. Our real-time AI analyzes Fluency, Clarity, and Confidence, giving you constructive suggestions without any public embarrassment.</p>
+            </div>
+          </div>
         </div>
+      </div>
+
+      <div class="phil-visual">
+        <div class="phil-quote">
+          "We don't freeze because we lack vocabulary or grammar. We freeze because we lack speaking practice under pressure."
+        </div>
+        <div style="font-family: 'Fredoka One'; font-size: 1.1rem; color: var(--primary);">— The Speak Up Team</div>
       </div>
     </div>
+  </section>
 
-    <div class="split-layout reverse">
-      <div class="split-content">
-        <h3>Instant AI Speech Scoring</h3>
-        <p>The moment you finish speaking, our AI analyzes your audio and gives you instant scores on three dimensions that matter most:</p>
-        <p><strong>🗣️ Fluency</strong> — How smoothly and naturally your speech flows.<br>
-        <strong>🔍 Clarity</strong> — How clearly your ideas come across.<br>
-        <strong>💪 Confidence</strong> — How assured and assertive your delivery sounds.</p>
-        <p>You also get a detailed transcript and actionable tips on grammar, vocabulary, and delivery improvement.</p>
+  <!-- INTERACTIVE ASSESSMENT -->
+  <section class="quiz-sec">
+    <div class="quiz-container">
+      <div class="sec-header">
+        <div class="sec-eyebrow">✦ Self Assessment</div>
+        <h2 class="sec-title">Do You Struggle With Speech Anxiety?</h2>
+        <p class="sec-sub">Select any of the scenarios that sound like you:</p>
       </div>
-      <div class="split-visual">
-        <div class="visual-box">
-          <span class="visual-icon">📊</span>
-          <h4 style="font-family: 'Fredoka One'; font-size: 1.5rem; color: var(--primary);">Real-time AI Analysis</h4>
-          <p style="color: var(--text-muted); font-weight: 700; margin-top: 10px;">Fluency · Clarity · Confidence</p>
-        </div>
-      </div>
-    </div>
 
-    <div class="split-layout">
-      <div class="split-content">
-        <h3>Your Personal Dashboard</h3>
-        <p>Track everything in one beautiful, gamified dashboard. See your progress at a glance with:</p>
-        <p><strong>📅 Contribution Heatmap</strong> — A GitHub-style activity grid showing your daily practice sessions across the entire year. Watch it light up as you build consistency.</p>
-        <p><strong>🏅 Badges & Achievements</strong> — Unlock badges as you hit milestones — first session, streak goals, performance records, and more.</p>
-        <p><strong>📈 Mastery Score</strong> — A rolling score combining your Fluency, Clarity, and Confidence averages into one number that reflects your growth.</p>
-      </div>
-      <div class="split-visual">
-        <div class="visual-box">
-          <span class="visual-icon">📈</span>
-          <h4 style="font-family: 'Fredoka One'; font-size: 1.5rem; color: var(--primary);">Beautiful Dashboard</h4>
-          <p style="color: var(--text-muted); font-weight: 700; margin-top: 10px;">Heatmap · Badges · Stats</p>
-        </div>
-      </div>
-    </div>
+      <div class="quiz-options">
+        <button class="quiz-btn" data-scenario="coffee">
+          <span class="quiz-btn-icon">☕</span>
+          <span>Ordering Coffee</span>
+          <p style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin: 0;">"I rehearse my order 5 times in my head before reaching the counter."</p>
+        </button>
 
-    <div class="split-layout reverse">
-      <div class="split-content">
-        <h3>Make It Yours</h3>
-        <p>Speak Up! is designed to feel like your own space. Customize everything:</p>
-        <p><strong>🎨 7 Stunning Themes</strong> — Forest Green, Midnight Dark, Blossom Pink, Ocean Blue, Royal Purple, Sunset Orange, and Teal Breeze. Switch anytime.</p>
-        <p><strong>👤 Custom Profiles</strong> — Pick your avatar, set a unique username, and link your LinkedIn and Instagram accounts.</p>
-        <p><strong>🔗 Shareable Public Profiles</strong> — Share your practice profile link with friends, mentors, or on social media. Let the world see your commitment.</p>
+        <button class="quiz-btn" data-scenario="meeting">
+          <span class="quiz-btn-icon">💬</span>
+          <span>Staying Silent</span>
+          <p style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin: 0;">"In group discussions, I nod along instead of sharing my ideas."</p>
+        </button>
+
+        <button class="quiz-btn" data-scenario="blank">
+          <span class="quiz-btn-icon">🧠</span>
+          <span>Mind Going Blank</span>
+          <p style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin: 0;">"If someone asks me a random question, I completely freeze up."</p>
+        </button>
+
+        <button class="quiz-btn" data-scenario="reading">
+          <span class="quiz-btn-icon">📝</span>
+          <span>Reading vs Speaking</span>
+          <p style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin: 0;">"I can read and write English perfectly, but I freeze when talking."</p>
+        </button>
       </div>
-      <div class="split-visual">
-        <div class="visual-box">
-          <span class="visual-icon">🎨</span>
-          <h4 style="font-family: 'Fredoka One'; font-size: 1.5rem; color: var(--primary);">Personalize Everything</h4>
-          <p style="color: var(--text-muted); font-weight: 700; margin-top: 10px;">Themes · Avatars · Public Profiles</p>
-        </div>
+
+      <div class="quiz-feedback" id="quiz-feedback">
+        <h3>You Are Not Alone—And It's Not Your Fault! ❤️</h3>
+        <p>
+          This reaction is completely natural speech anxiety. Speak Up! was built to be a pressure-free playground. Here, there are no live audiences, no judgment, and no fees. Just you, engaging prompts, and real-time AI guides that help you build confidence step-by-step.
+        </p>
       </div>
     </div>
   </section>
@@ -717,6 +966,40 @@
       <p style="margin-top: 30px; margin-bottom: 0;">
         <strong>How it works:</strong> Pick any of the 5 practice modes, hit record, speak your mind, and submit for AI analysis. Your streak goes up, Aura Points accumulate, and badges unlock automatically. It's the ultimate motivation loop!
       </p>
+    </div>
+  </section>
+
+  <!-- OUR MISSION -->
+  <section class="mission-sec">
+    <div class="sec-header">
+      <div class="sec-eyebrow">✦ Why We Built Speak Up!</div>
+      <h2 class="sec-title">Our Mission & Core Beliefs</h2>
+    </div>
+
+    <div class="mission-grid">
+      <div class="mission-card">
+        <span class="mission-icon">🌍</span>
+        <h3>Empowering Every Voice</h3>
+        <p>We are a global group of developers who believe that everyone in the world deserves the power of confident communication, regardless of where they start.</p>
+      </div>
+
+      <div class="mission-card">
+        <span class="mission-icon">💡</span>
+        <h3>Born from Shared Struggle</h3>
+        <p>Like you, we know the feeling of freezing when trying to speak. We built this platform with deep empathy to help you overcome the fear of making mistakes.</p>
+      </div>
+
+      <div class="mission-card">
+        <span class="mission-icon">❤️</span>
+        <h3>100% Free, Forever</h3>
+        <p>Speak Up! is a labor of love. We promise this platform will always remain completely free for anyone, anywhere, to learn, practice, and empower themselves.</p>
+      </div>
+
+      <div class="mission-card">
+        <span class="mission-icon">🌱</span>
+        <h3>A Safe Space to Grow</h3>
+        <p>No judgment, no stress, and no paywalls. We focus on building a supportive environment that inspires daily progress and fearlessness.</p>
+      </div>
     </div>
   </section>
 
@@ -779,6 +1062,30 @@
         setTimeout(() => { dd.classList.add("hidden"); btn.classList.remove("open"); }, 200);
       }));
       init();
+    })();
+  </script>
+
+  <!-- QUIZ SCRIPT -->
+  <script>
+    (function () {
+      const quizBtns = document.querySelectorAll(".quiz-btn");
+      const feedbackEl = document.getElementById("quiz-feedback");
+
+      quizBtns.forEach(btn => {
+        btn.addEventListener("click", () => {
+          btn.classList.toggle("selected");
+          
+          // Check if any button is selected
+          const anySelected = Array.from(quizBtns).some(b => b.classList.contains("selected"));
+          if (anySelected) {
+            feedbackEl.style.display = "block";
+            // Smooth scroll to feedback if it wasn't visible before
+            feedbackEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+          } else {
+            feedbackEl.style.display = "none";
+          }
+        });
+      });
     })();
   </script>
 

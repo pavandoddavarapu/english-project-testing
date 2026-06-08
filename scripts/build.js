@@ -23,16 +23,13 @@ function build() {
   }
 
   // 1. Generate unique build hash based on current UTC timestamp
-  // Using an ISO-formatted string stripped of non-numeric characters ensures
-  // a strictly increasing version identifier (YYYYMMDDHHMMSS).
   const buildHash = new Date().toISOString().replace(/[^0-9]/g, '').slice(0, 14); // e.g., 20260605174512
   const newCacheName = `speakup-cache-v${buildHash}`;
 
   // 2. Read and update sw.js
   let swContent = fs.readFileSync(swPath, 'utf8');
   
-  // Regular expression to locate the CACHE_NAME variable assignment in sw.js.
-  // It handles single, double, or template literal quotes dynamically.
+  // Replace: const CACHE_NAME = '...';
   const cacheRegex = /const\s+CACHE_NAME\s*=\s*['"`](speakup-cache-v[^'"`]*)['"`];/;
   
   if (cacheRegex.test(swContent)) {

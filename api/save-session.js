@@ -58,8 +58,6 @@ export default async function handler(req, res) {
     const cleanMode = sanitizeString(sessionData.mode, 50) || 'random';
 
     // 3. Fetch the last session date to calculate the new streak
-    // We fetch the most recent session's date formatted as a date string (YYYY-MM-DD)
-    // to compare against today's date string.
     const lastSessionRes = await query(
       'SELECT date::date::text as last_date FROM practice_sessions WHERE user_id = $1 ORDER BY date DESC LIMIT 1',
       [uid]
@@ -67,21 +65,15 @@ export default async function handler(req, res) {
 
     let newStreak = Number(currentData.streak) || 0;
     if (lastSessionRes.rowCount === 0) {
-      // First session ever: initialize streak to 1
       newStreak = 1;
     } else {
       const lastDateStr = lastSessionRes.rows[0].last_date;
-      // If the last session was NOT today, check if it was yesterday
       if (lastDateStr !== todayDateStr) {
         const lastDate = new Date(lastDateStr + 'T00:00:00Z');
         const todayMid = new Date(todayDateStr + 'T00:00:00Z');
         const diffDays = Math.round((todayMid - lastDate) / 86400000);
-        // If the difference is exactly 1 day (yesterday), increment the streak.
-        // If the user missed a day (diffDays > 1), reset the streak back to 1.
         newStreak = diffDays === 1 ? newStreak + 1 : 1;
       }
-      // If lastDateStr === todayDateStr, the user already practiced today,
-      // so the streak remains unchanged.
     }
 
     // 4. Insert practice session row into PostgreSQL

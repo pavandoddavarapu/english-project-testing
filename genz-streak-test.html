@@ -1117,135 +1117,6 @@
         transition-duration: 0.15s !important;
       }
     }
-
-    /* ── Quick Actions Panel ── */
-    .quick-actions-panel {
-      background: rgba(255,255,255,0.8) !important;
-      border: 1.5px solid var(--accent2) !important;
-      border-radius: var(--radius);
-      box-shadow: 0 4px 18px var(--shadow);
-    }
-    
-    html[data-theme="dark"] .quick-actions-panel {
-      background: rgba(40,40,40,0.95) !important;
-    }
-
-    .action-cards-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 16px;
-      width: 100%;
-    }
-
-    .action-card {
-      background: var(--white);
-      border: 1.5px solid var(--accent2);
-      border-radius: 16px;
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      gap: 16px;
-      cursor: pointer;
-      transition: all 0.22s ease;
-      box-shadow: 0 2px 8px var(--shadow);
-    }
-
-    html[data-theme="dark"] .action-card {
-      background: rgba(255,255,255,0.03);
-    }
-
-    .action-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 8px 20px var(--shadow-lg);
-      border-color: var(--primary);
-    }
-
-    .action-card-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .action-card-icon {
-      width: 44px;
-      height: 44px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.35rem;
-      flex-shrink: 0;
-    }
-
-    .action-card-title-group {
-      min-width: 0;
-    }
-
-    .action-card-title-group h4 {
-      font-family: 'Fredoka One', cursive;
-      font-size: 0.95rem;
-      color: var(--text);
-      margin: 0;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .action-card-title-group p {
-      font-size: 0.78rem;
-      font-weight: 700;
-      color: var(--text-muted);
-      margin: 2px 0 0 0;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .action-card-btn {
-      width: 100%;
-      padding: 8px 14px;
-      border-radius: var(--radius-pill);
-      font-family: 'Nunito', sans-serif;
-      font-weight: 800;
-      font-size: 0.82rem;
-      cursor: pointer;
-      border: none;
-      transition: all 0.2s;
-      text-align: center;
-    }
-
-    .action-card-btn.primary-btn {
-      background: var(--primary);
-      color: var(--white);
-      box-shadow: 0 4px 10px rgba(var(--primary-rgb), 0.25);
-    }
-    .action-card-btn.primary-btn:hover {
-      background: var(--primary-dark);
-    }
-
-    .action-card-btn.secondary-btn {
-      background: var(--accent3);
-      color: var(--primary-dark);
-      border: 1.5px solid var(--accent2);
-    }
-    .action-card-btn.secondary-btn:hover {
-      background: var(--accent2);
-    }
-
-    .action-card-btn.tertiary-btn {
-      background: rgba(255,255,255,0.7);
-      color: var(--primary);
-      border: 1.5px solid var(--accent2);
-    }
-    .action-card-btn.tertiary-btn:hover {
-      background: var(--accent2);
-    }
-
-    html[data-theme="dark"] .action-card-btn.tertiary-btn {
-      background: rgba(255,255,255,0.05);
-      color: var(--text);
-    }
   </style>
 </head>
 <body>
@@ -1285,10 +1156,11 @@
       </div>
       <a href="practice.html" style="text-decoration: none; font-weight: 800; font-family: 'Nunito', sans-serif; background: var(--primary); color: white; padding: 8px 18px; border-radius: 20px; font-size: 0.9rem; transition: all 0.2s; box-shadow: 0 4px 12px var(--shadow);">Practice Now 🎤</a>
       
-      <!-- Hamburger Menu for Settings/Logout -->
+      <!-- Hamburger Menu for Settings/Logout/Sharing -->
       <div style="position: relative;" id="hamburger-menu">
         <button class="hamburger-btn" id="hamburger-btn" title="Menu">☰</button>
         <div class="hamburger-dropdown hidden" id="hamburger-dropdown">
+          <a href="#" id="share-profile-btn" onclick="shareUserProfile(); return false;">🔗 Share Profile</a>
           <a href="logout.html">🚪 Logout</a>
         </div>
       </div>
@@ -1412,50 +1284,6 @@
 
     <!-- Right Column -->
     <div class="right-col">
-      <!-- Quick Actions Panel -->
-      <div class="panel quick-actions-panel" style="display: flex; flex-direction: column; gap: 16px;">
-        <div class="section-title" style="margin-bottom: 0; border: none; padding-left: 0;">
-          <span style="font-family: 'Fredoka One', cursive; font-size: 1.15rem; color: var(--primary);">⚡ Quick Actions</span>
-        </div>
-        <div class="action-cards-grid">
-          <!-- Action Card 1 -->
-          <div class="action-card" onclick="window.location.href='practice.html'">
-            <div class="action-card-header">
-              <span class="action-card-icon" style="background: rgba(214, 51, 132, 0.1); color: var(--primary);">🎙️</span>
-              <div class="action-card-title-group">
-                <h4>Practice Arena</h4>
-                <p>Solo AI speaking practice</p>
-              </div>
-            </div>
-            <button class="action-card-btn primary-btn">Start Practice ➔</button>
-          </div>
-
-          <!-- Action Card 2 -->
-          <div class="action-card" onclick="window.location.href='group-meet.html'">
-            <div class="action-card-header">
-              <span class="action-card-icon" style="background: rgba(123, 47, 190, 0.1); color: #7B2FBE;">👥</span>
-              <div class="action-card-title-group">
-                <h4>Group Rooms</h4>
-                <p>Live peer discussions</p>
-              </div>
-            </div>
-            <button class="action-card-btn secondary-btn">Join Rooms ➔</button>
-          </div>
-
-          <!-- Action Card 3 -->
-          <div class="action-card" onclick="shareUserProfile()">
-            <div class="action-card-header">
-              <span class="action-card-icon" style="background: rgba(13, 148, 136, 0.1); color: #0D9488;">🔗</span>
-              <div class="action-card-title-group">
-                <h4>Public Profile</h4>
-                <p>Share stats & achievements</p>
-              </div>
-            </div>
-            <button class="action-card-btn tertiary-btn">Share Link ➔</button>
-          </div>
-        </div>
-      </div>
-
       <div class="top-widgets">
         <!-- Progress Widget -->
         <div class="panel progress-widget">
@@ -2706,15 +2534,13 @@
       try {
         await navigator.clipboard.writeText(shareUrl);
         const btn = document.getElementById('share-profile-btn');
-        const origContent = btn.innerHTML;
-        btn.innerHTML = '<span>✓</span> Link Copied!';
-        btn.style.background = 'var(--primary)';
-        btn.style.color = 'white';
-        setTimeout(() => {
-          btn.innerHTML = origContent;
-          btn.style.background = 'rgba(255,255,255,0.7)';
-          btn.style.color = 'var(--primary)';
-        }, 2000);
+        if (btn) {
+          const origContent = btn.innerHTML;
+          btn.innerHTML = '✓ Link Copied!';
+          setTimeout(() => {
+            btn.innerHTML = origContent;
+          }, 2000);
+        }
       } catch (err) {
         console.error('Failed to copy link via clipboard API:', err);
         prompt("Copy your profile link below:", shareUrl);

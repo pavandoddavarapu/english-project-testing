@@ -398,6 +398,7 @@ const timerSpeechBtn = document.getElementById("timer-speech-btn");
 tabBtns.forEach(btn => {
   btn.addEventListener("click", () => {
     const tab = btn.dataset.tab;
+    if (tab === 'group') return;
     switchTab(tab);
   });
 });

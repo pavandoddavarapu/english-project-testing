@@ -1117,6 +1117,121 @@
         transition-duration: 0.15s !important;
       }
     }
+
+    /* ── ACTION HUB ── */
+    .action-hub {
+      background: rgba(255, 255, 255, 0.85);
+      border: 2px solid var(--accent2);
+      border-radius: var(--radius);
+      box-shadow: 0 8px 24px var(--shadow);
+      margin-bottom: 24px;
+    }
+
+    html[data-theme="dark"] .action-hub {
+      background: rgba(40,40,40,0.95);
+    }
+
+    .action-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+
+    .action-card {
+      background: var(--bg);
+      border: 1.5px solid var(--accent2);
+      border-radius: 16px;
+      padding: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      position: relative;
+      overflow: hidden;
+    }
+
+    html[data-theme="dark"] .action-card {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .action-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 20px var(--shadow-lg);
+      border-color: var(--primary);
+    }
+
+    .action-icon {
+      font-size: 2.2rem;
+      background: var(--white);
+      width: 56px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 14px;
+      border: 1.5px solid var(--accent2);
+      box-shadow: 0 4px 10px var(--shadow);
+      flex-shrink: 0;
+      transition: transform 0.25s ease;
+    }
+
+    html[data-theme="dark"] .action-icon {
+      background: var(--bg-card);
+    }
+
+    .action-card:hover .action-icon {
+      transform: scale(1.1) rotate(-5deg);
+      background: var(--accent3);
+    }
+
+    .action-details {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .action-details h3 {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.1rem;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .action-details p {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .action-arrow {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: var(--primary);
+      transition: transform 0.25s ease;
+      opacity: 0.6;
+    }
+
+    .action-card:hover .action-arrow {
+      transform: translateX(4px);
+      opacity: 1;
+    }
+
+    .live-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: #EF4444;
+      color: white;
+      font-size: 0.65rem;
+      font-weight: 900;
+      padding: 2px 8px;
+      border-radius: 99px;
+      margin-top: 6px;
+      letter-spacing: 0.5px;
+      animation: pulse 1.5s infinite;
+    }
   </style>
 </head>
 <body>
@@ -1237,13 +1352,7 @@
           <span><strong>0</strong> Followers</span>
         </div>
         
-        <div style="display: flex; flex-direction: column; gap: 8px; width: 100%; margin-bottom: 15px; margin-top: 20px;">
-          <button class="follow-btn" id="practice-btn" onclick="window.location.href='practice.html'" style="margin-top: 0; margin-bottom: 0;"><span>🎤</span> Practice Speaking</button>
-          <button class="follow-btn" id="group-meet-btn" onclick="window.location.href='group-meet.html'" style="background: var(--accent3); color: var(--primary-dark); border: 1.5px solid var(--accent2); margin-top: 0; margin-bottom: 0;"><span>👥</span> Group Discussion</button>
-          <button class="follow-btn" id="share-profile-btn" onclick="shareUserProfile()" style="background: rgba(255,255,255,0.7); color: var(--primary); border: 1.5px solid var(--accent2); margin-top: 0; margin-bottom: 0;"><span>🔗</span> Share Profile</button>
-        </div>
-        
-        <div class="location">📍 Based in: India</div>
+        <div class="location" style="margin-top: 16px;">📍 Based in: India</div>
       </div>
 
       <!-- Community Stats -->
@@ -1287,6 +1396,42 @@
 
     <!-- Right Column -->
     <div class="right-col">
+      <!-- Action Hub Section -->
+      <div class="panel action-hub" id="action-hub-section">
+        <div class="section-title" style="margin-bottom: 20px;">
+          <span>🎯 Fluent Practice Hub</span>
+        </div>
+        <div class="action-grid">
+          <div class="action-card solo-practice" onclick="window.location.href='practice.html'">
+            <div class="action-icon">🎙️</div>
+            <div class="action-details">
+              <h3>Solo Practice</h3>
+              <p>Train with AI across 5 interactive modes (Topics, Prep, Vocab) & get instant scoring.</p>
+            </div>
+            <span class="action-arrow">→</span>
+          </div>
+
+          <div class="action-card group-discussion" onclick="window.location.href='group-meet.html'">
+            <div class="action-icon">👥</div>
+            <div class="action-details">
+              <h3>Live Rooms</h3>
+              <p>Practice speaking in real-time rooms with peers globally. No judgment, pure learning.</p>
+              <span class="live-tag">🔴 Live Now</span>
+            </div>
+            <span class="action-arrow">→</span>
+          </div>
+
+          <div class="action-card share-profile" onclick="shareUserProfile()">
+            <div class="action-icon">🔗</div>
+            <div class="action-details">
+              <h3>Share Profile</h3>
+              <p>Copy your public link to showcase your consistency, streak, and badges to friends.</p>
+            </div>
+            <span class="action-arrow">→</span>
+          </div>
+        </div>
+      </div>
+
       <div class="top-widgets">
         <!-- Progress Widget -->
         <div class="panel progress-widget">
@@ -2567,6 +2712,9 @@
           profileImgWrapper.style.cursor = 'default';
         }
         
+        const actionHub = document.getElementById('action-hub-section');
+        if (actionHub) actionHub.style.display = 'none';
+
         const practiceBtn = document.getElementById('practice-btn');
         if (practiceBtn) practiceBtn.style.display = 'none';
         

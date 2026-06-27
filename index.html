@@ -4,16 +4,158 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Speak Up! Master English Speaking with AI</title>
-  <meta name="description"
-    content="Level up your English fluency with daily challenges, real-time speech analysis, picture talks, and gamified progress tracking.">
+
+  <!-- ═══════════════════════════════════════════════
+       PRIMARY SEO
+  ═══════════════════════════════════════════════ -->
+  <title>Speak Up! – Free AI English Speaking Practice App | Improve Fluency Online</title>
+  <meta name="description" content="Practice English speaking for free with AI-powered feedback. Get instant scores on fluency, clarity & confidence. Daily topics, picture talk, interview prep & streaks. No downloads needed.">
+  <meta name="keywords" content="english speaking practice, AI english practice, improve english fluency, english speaking app free, practice english online, english fluency app, spoken english practice, english interview practice, picture talk english, english speaking coach AI, free english practice, english speech analysis">
+  <meta name="author" content="Speak Up!">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <link rel="canonical" href="https://english-project-testing-o32g.vercel.app/">
+
+  <!-- ═══════════════════════════════════════════════
+       OPEN GRAPH (Facebook, WhatsApp, LinkedIn)
+  ═══════════════════════════════════════════════ -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Speak Up!">
+  <meta property="og:title" content="Speak Up! – Free AI English Speaking Practice App">
+  <meta property="og:description" content="Practice English speaking for free with AI-powered feedback. Get instant scores on fluency, clarity & confidence. Daily topics, picture talk & streaks.">
+  <meta property="og:url" content="https://english-project-testing-o32g.vercel.app/">
+  <meta property="og:image" content="https://english-project-testing-o32g.vercel.app/assets/images/icon-512.png">
+  <meta property="og:image:width" content="512">
+  <meta property="og:image:height" content="512">
+  <meta property="og:image:alt" content="Speak Up! – AI English Speaking Practice">
+  <meta property="og:locale" content="en_IN">
+
+  <!-- ═══════════════════════════════════════════════
+       TWITTER / X CARD
+  ═══════════════════════════════════════════════ -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Speak Up! – Free AI English Speaking Practice App">
+  <meta name="twitter:description" content="Practice English speaking for free with AI feedback. Fluency scores, daily topics, picture talk & streaks. Start now — no downloads!">
+  <meta name="twitter:image" content="https://english-project-testing-o32g.vercel.app/assets/images/icon-512.png">
+  <meta name="twitter:image:alt" content="Speak Up! AI English Practice">
+
+  <!-- ═══════════════════════════════════════════════
+       PWA & ICONS
+  ═══════════════════════════════════════════════ -->
   <link rel="manifest" href="assets/manifest.json">
+  <meta name="theme-color" content="#D63384">
   <link rel="icon" type="image/png" sizes="192x192" href="assets/images/icon-192.png">
+  <link rel="apple-touch-icon" href="assets/images/icon-192.png">
+
+  <!-- ═══════════════════════════════════════════════
+       JSON-LD STRUCTURED DATA (Rich Results)
+  ═══════════════════════════════════════════════ -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebApplication",
+        "@id": "https://english-project-testing-o32g.vercel.app/#app",
+        "name": "Speak Up!",
+        "alternateName": ["Speak Up App", "AI English Practice", "English Speaking Practice App"],
+        "description": "Free AI-powered English speaking practice platform with instant feedback on fluency, clarity and confidence. Features include daily speaking topics, picture talk, interview preparation, group discussions, and gamified streaks.",
+        "url": "https://english-project-testing-o32g.vercel.app/",
+        "applicationCategory": "EducationApplication",
+        "applicationSubCategory": "Language Learning",
+        "operatingSystem": "Web Browser",
+        "browserRequirements": "Requires JavaScript and a modern browser with microphone support",
+        "inLanguage": "en",
+        "isAccessibleForFree": true,
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "INR",
+          "availability": "https://schema.org/InStock"
+        },
+        "featureList": [
+          "AI Speech Analysis",
+          "Fluency Score",
+          "Clarity Score",
+          "Confidence Score",
+          "Daily Speaking Topics",
+          "Picture Talk Practice",
+          "Interview Preparation",
+          "Group Discussion Rooms",
+          "Practice Streaks",
+          "Aura Points Gamification",
+          "On-device Whisper AI Transcription",
+          "No Download Required"
+        ],
+        "screenshot": "https://english-project-testing-o32g.vercel.app/assets/images/icon-512.png",
+        "creator": {
+          "@type": "Person",
+          "name": "Pavan Doddavarapu",
+          "email": "pavandoddavarapu7@gmail.com"
+        }
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://english-project-testing-o32g.vercel.app/#website",
+        "url": "https://english-project-testing-o32g.vercel.app/",
+        "name": "Speak Up!",
+        "description": "Free AI-powered English speaking practice app",
+        "publisher": {
+          "@id": "https://english-project-testing-o32g.vercel.app/#app"
+        },
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": {
+            "@type": "EntryPoint",
+            "urlTemplate": "https://english-project-testing-o32g.vercel.app/practice.html"
+          },
+          "query-input": "required name=search_term_string"
+        }
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Is Speak Up! free to use?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes, Speak Up! is completely free to use. Sign in with your Google account and start practising English immediately with no downloads required."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How does AI English speaking practice work?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "You record yourself speaking about a daily topic or describe a picture. The on-device Whisper AI transcribes your speech, then Groq AI scores your fluency, clarity, and confidence and gives you personalised feedback in seconds."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I practise English speaking without downloading anything?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes! Speak Up! runs entirely in your browser. No app installation is needed. You can also add it to your home screen as a PWA for a native app experience."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is Speak Up! good for interview preparation?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Absolutely. Speak Up! includes a dedicated interview questions section where you can practise answering common interview questions in English and get AI-powered feedback on your spoken response."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+
+  <!-- FONTS -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&family=Pacifico&display=swap"
-    rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&family=Pacifico&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/style.css">
   <script src="assets/js/page-transitions.js" defer></script>
   <script>(function () { const t = localStorage.getItem("speakup-theme") || "green"; document.documentElement.setAttribute("data-theme", t); })();</script>

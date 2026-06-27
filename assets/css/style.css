@@ -180,7 +180,7 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
   position: relative;
-  animation: speakup-page-enter 0.35s ease both;
+  animation: speakup-page-enter 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
   /* Prevent layout thrashing during animations */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -188,8 +188,16 @@ body {
 }
 
 @keyframes speakup-page-enter {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(22px) scale(0.982);
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0px);
+  }
 }
 
 /* Top progress bar that shows during navigation */
@@ -199,15 +207,23 @@ body {
   left: 0;
   height: 3px;
   width: 0%;
-  background: linear-gradient(90deg, var(--primary), var(--accent), var(--primary));
-  background-size: 200% 100%;
+  background: linear-gradient(90deg,
+    transparent,
+    var(--primary),
+    var(--accent),
+    var(--accent2),
+    var(--accent),
+    var(--primary),
+    transparent
+  );
+  background-size: 300% 100%;
   z-index: 999999;
-  border-radius: 0 3px 3px 0;
-  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
-  animation: speakup-bar-shimmer 1.5s linear infinite;
+  border-radius: 0 4px 4px 0;
+  transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease;
+  animation: speakup-bar-shimmer 0.9s linear infinite;
   pointer-events: none;
   opacity: 0;
-  box-shadow: 0 0 8px var(--primary);
+  box-shadow: 0 0 12px 2px var(--primary), 0 0 24px 4px rgba(var(--primary-rgb), 0.35);
 }
 
 #speakup-progress-bar.loading {
@@ -219,15 +235,23 @@ body {
   100% { background-position: -200% 0; }
 }
 
-/* Page exit fade */
+/* ── Page exit: slide down + scale shrink + blur ── */
 body.speakup-page-exit {
-  animation: speakup-page-exit 0.2s ease forwards;
+  animation: speakup-page-exit 0.22s cubic-bezier(0.4, 0, 1, 1) forwards;
   pointer-events: none;
 }
 
 @keyframes speakup-page-exit {
-  from { opacity: 1; transform: translateY(0); }
-  to   { opacity: 0; transform: translateY(-6px); }
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0px);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-18px) scale(1.018);
+    filter: blur(5px);
+  }
 }
 
 /* Subtle background pattern */

@@ -1,4 +1,4 @@
-import { setCorsHeaders, checkRateLimit, safeError } from './middleware.js';
+import { setCorsHeaders, checkRateLimit, safeError } from '../shared/middleware.js';
 
 export default async function handler(req, res) {
   setCorsHeaders(req, res);
@@ -102,7 +102,7 @@ Other sections:
         'Authorization': `Bearer ${GROQ_KEY}`
       },
       body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
+        model: process.env.GROQ_DAILY_MODEL || 'llama-3.3-70b-versatile',
         messages: [
           {
             role: 'system',

@@ -6,9 +6,9 @@
  * the user's streak, aura points, and yaps counter in PostgreSQL.
  */
 
-import { verifyFirebaseIdToken } from './auth-helper.js';
-import { query } from './db.js';
-import { setCorsHeaders, checkRateLimit, safeError, sanitizeString, clampInt } from './middleware.js';
+import { verifyFirebaseIdToken } from '../shared/auth-helper.js';
+import { query } from '../shared/db.js';
+import { setCorsHeaders, checkRateLimit, safeError, sanitizeString, clampInt } from '../shared/middleware.js';
 
 export const config = { api: { bodyParser: { sizeLimit: '1mb' } } };
 export const maxDuration = 15;

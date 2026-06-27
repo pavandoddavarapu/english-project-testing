@@ -5,8 +5,8 @@
  * Used for real-time validation on signup and profile edit forms.
  */
 
-import { query } from './db.js';
-import { setCorsHeaders, checkRateLimit, safeError, sanitizeString } from './middleware.js';
+import { query } from '../shared/db.js';
+import { setCorsHeaders, checkRateLimit, safeError, sanitizeString } from '../shared/middleware.js';
 
 export const config = { api: { bodyParser: { sizeLimit: '16kb' } } };
 export const maxDuration = 5;

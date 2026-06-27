@@ -5,9 +5,9 @@
  * Verifies Firebase token, validates inputs, and updates the user record in PostgreSQL.
  */
 
-import { verifyFirebaseIdToken } from './auth-helper.js';
-import { query } from './db.js';
-import { setCorsHeaders, checkRateLimit, safeError } from './middleware.js';
+import { verifyFirebaseIdToken } from '../shared/auth-helper.js';
+import { query } from '../shared/db.js';
+import { setCorsHeaders, checkRateLimit, safeError } from '../shared/middleware.js';
 
 export const config = { api: { bodyParser: { sizeLimit: '128kb' } } };
 export const maxDuration = 10;

@@ -6,9 +6,9 @@
  * sessions & practice dates list to match the client's expected format.
  */
 
-import { verifyFirebaseIdToken } from './auth-helper.js';
-import { query } from './db.js';
-import { setCorsHeaders, safeError } from './middleware.js';
+import { verifyFirebaseIdToken } from '../shared/auth-helper.js';
+import { query } from '../shared/db.js';
+import { setCorsHeaders, safeError } from '../shared/middleware.js';
 
 export const config = { api: { bodyParser: { sizeLimit: '512kb' } } };
 export const maxDuration = 10;

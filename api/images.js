@@ -9,7 +9,7 @@
  * so the module-level `imageCache` array persists across requests
  * within the same instance – giving us free in-memory caching.
  */
-import { setCorsHeaders, checkRateLimit } from './middleware.js';
+import { setCorsHeaders, checkRateLimit } from '../shared/middleware.js';
 
 // ─── CONFIG ────────────────────────────────────────────────────────────────
 const UNSPLASH_KEY = process.env.UNSPLASH_ACCESS_KEY;

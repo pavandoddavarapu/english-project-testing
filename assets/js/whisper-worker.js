@@ -4,10 +4,13 @@
  * Runs OpenAI Whisper 100% inside the user's browser using WebAssembly.
  * No server calls, no rate limits, completely free.
  *
+ * Model files are self-hosted on Firebase Storage (no HuggingFace CDN),
+ * avoiding "Dangerous site" browser warnings in production.
+ *
  * EVERY TIME a user visits the site, this worker:
  *   1. Checks the browser's Cache Storage for the model files
  *   2a. If FOUND (cached) → loads from cache in ~2-3 seconds, no download
- *   2b. If NOT FOUND → downloads ~39 MB from HuggingFace CDN, stores in cache
+ *   2b. If NOT FOUND → downloads ~39 MB from Firebase Storage, stores in cache
  *   3. Signals 'ready' so the main page can use it for free transcription
  *
  * Fallback: If this worker fails for any reason, app.js automatically
@@ -17,19 +20,39 @@
 // ── Transformers.js v2 — most stable for browser Whisper ─────────────────────
 import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2';
 
-// Never try to load from local filesystem — always use the HuggingFace CDN.
+// ── Self-hosted model configuration ──────────────────────────────────────────
+// Model files are hosted directly on the same domain (Vercel) in /assets/whisper-models/
+// This avoids browser "Dangerous site" warnings that HuggingFace can trigger.
 env.allowLocalModels = false;
-// Store downloaded model files in the browser's Cache Storage permanently.
-// Transformers.js uses the 'transformers-cache' Cache Storage bucket.
-// On every visit: checks cache first → only downloads if not found.
 env.useBrowserCache = true;
 
+// Point Transformers.js to our self-hosted files in the assets folder
+// The worker runs from /assets/js/whisper-worker.js, so we use an absolute path from the domain root
+env.remoteHost = self.location.origin + '/assets/whisper-models';
+env.remotePathTemplate = '{model}';
+
 const MODEL_NAME = 'Xenova/whisper-tiny.en';
-// Key file to check in Cache Storage to determine if model is already downloaded.
-// Transformers.js stores files with their CDN URL as the cache key.
-const MODEL_CACHE_CHECK_URL = 'https://huggingface.co/Xenova/whisper-tiny.en/resolve/main/config.json';
 
 let transcriber = null;
+
+// ── Custom fetch that redirects HuggingFace URLs to our local domain ────────
+const originalFetch = self.fetch.bind(self);
+self.fetch = async function(input, init) {
+  let url = typeof input === 'string' ? input : input.url;
+
+  // Transformers.js still tries to hit huggingface.co occasionally for config/tokenizer
+  if (url.includes('huggingface.co') && url.includes('whisper-tiny')) {
+    const parts = url.split('/resolve/main/');
+    if (parts.length === 2) {
+      const filename = parts[1].split('?')[0];
+      const newUrl = `${self.location.origin}/assets/whisper-models/${MODEL_NAME}/${filename}`;
+      console.log(`[Whisper] Loading local model file: ${filename}`);
+      return originalFetch(newUrl, init);
+    }
+  }
+
+  return originalFetch(input, init);
+};
 
 // ── Check if the model is already in the browser cache ───────────────────────
 async function isModelCached() {
@@ -61,7 +84,7 @@ async function getTranscriber() {
       message: '⚡ Loading Whisper from cache…',
     });
   } else {
-    // First time — need to download ~39 MB
+    // First time — need to download ~39 MB from Firebase Storage
     self.postMessage({
       type: 'loading',
       cached: false,

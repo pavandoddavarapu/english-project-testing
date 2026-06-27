@@ -5,10 +5,10 @@
  * asynchronous background execution, returning a taskId instantly.
  */
 
-import { query } from './db.js';
+import { query } from '../shared/db.js';
 import crypto from 'crypto';
-import { verifyFirebaseIdToken } from './auth-helper.js';
-import { setCorsHeaders, checkRateLimit, safeError, sanitizeString, getWorkerSecret } from './middleware.js';
+import { verifyFirebaseIdToken } from '../shared/auth-helper.js';
+import { setCorsHeaders, checkRateLimit, safeError, sanitizeString, getWorkerSecret } from '../shared/middleware.js';
 
 export const config = {
   api: {

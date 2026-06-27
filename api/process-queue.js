@@ -6,8 +6,8 @@
  * and saves the final result back to the PostgreSQL database.
  */
 
-import { query } from './db.js';
-import { setCorsHeaders, safeError, verifyWorkerSecret } from './middleware.js';
+import { query } from '../shared/db.js';
+import { setCorsHeaders, safeError, verifyWorkerSecret } from '../shared/middleware.js';
 
 export const config = {
   api: {
@@ -144,7 +144,7 @@ export default async function handler(req, res) {
       const formData = new FormData();
       const audioBlob = new Blob([audioBuffer], { type: baseMime });
       formData.append('file', audioBlob, `audio.${ext}`);
-      formData.append('model', 'whisper-large-v3-turbo');
+      formData.append('model', process.env.GROQ_WHISPER_MODEL || 'whisper-large-v3-turbo');
       formData.append('response_format', 'json');
       formData.append('language', 'en');
 
@@ -239,7 +239,7 @@ Evaluate their speech and return ONLY a valid JSON object (no markdown, no extra
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            model: 'llama-3.1-8b-instant',
+            model: process.env.GROQ_SCORING_MODEL || 'llama-3.1-8b-instant',
             messages: [{ role: 'user', content: scoringPrompt }],
             temperature: 0.3,
             max_tokens: 400,

@@ -1,5 +1,5 @@
-import { setCorsHeaders, checkRateLimit, safeError, sanitizeString } from './middleware.js';
-import { verifyFirebaseIdToken } from './auth-helper.js';
+import { setCorsHeaders, checkRateLimit, safeError, sanitizeString } from '../shared/middleware.js';
+import { verifyFirebaseIdToken } from '../shared/auth-helper.js';
 
 export default async function handler(req, res) {
   setCorsHeaders(req, res);
@@ -94,7 +94,7 @@ If the user asks about something totally unrelated to language learning, gently 
             'Authorization': `Bearer ${GROQ_KEY}`
           },
           body: JSON.stringify({
-            model: 'llama-3.3-70b-versatile',
+            model: process.env.GROQ_CHAT_MODEL || 'llama-3.3-70b-versatile',
             messages: groqMessages,
             temperature: 0.5,
             max_tokens: 1024

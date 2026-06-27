@@ -7,8 +7,8 @@
  * If the task is stalled (timed out), initiates a synchronous recovery.
  */
 
-import { query } from './db.js';
-import { setCorsHeaders, checkRateLimit, safeError, getWorkerSecret } from './middleware.js';
+import { query } from '../shared/db.js';
+import { setCorsHeaders, checkRateLimit, safeError, getWorkerSecret } from '../shared/middleware.js';
 
 export default async function handler(req, res) {
   setCorsHeaders(req, res);

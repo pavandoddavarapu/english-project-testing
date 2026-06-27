@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="pink">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy – Speak Up!</title>
+  <meta name="description" content="Speak Up! Privacy Policy – Learn how we collect, use, and protect your personal data including voice recordings and account information.">
+  <link rel="manifest" href="assets/manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/images/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&family=Pacifico&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script src="assets/js/page-transitions.js" defer></script>
+  <script>(function () { const t = localStorage.getItem("speakup-theme") || "pink"; document.documentElement.setAttribute("data-theme", t); })();</script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; }
+
+    /* ── NAVBAR ── */
+    .lp-nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 40px;
+      background: rgba(255,255,255,0.65); backdrop-filter: blur(16px);
+      border-bottom: 1.5px solid var(--accent2);
+      box-shadow: 0 4px 24px var(--shadow);
+    }
+    html[data-theme="dark"] .lp-nav { background: rgba(26,26,26,0.7); }
+    .lp-brand { font-family: 'Pacifico', cursive; font-size: 1.5rem; color: var(--primary); text-decoration: none; text-shadow: 2px 2px 0 var(--accent2); }
+    .lp-nav-right { display: flex; align-items: center; gap: 16px; }
+    .btn-nav-back {
+      padding: 9px 22px; border-radius: 99px; font-weight: 800; font-size: 0.9rem;
+      border: 2px solid var(--primary); color: var(--primary); background: transparent;
+      text-decoration: none; transition: all .2s;
+    }
+    .btn-nav-back:hover { background: var(--primary); color: #fff; transform: translateY(-2px); }
+
+    /* ── PAGE HERO ── */
+    .legal-hero {
+      padding: 120px 24px 60px;
+      text-align: center;
+      background: linear-gradient(135deg, var(--bg) 0%, var(--accent3) 100%);
+      position: relative; overflow: hidden;
+    }
+    .legal-hero-blob {
+      position: absolute; border-radius: 50%; filter: blur(80px); pointer-events: none; opacity: 0.2;
+    }
+    .blob-a { width: 450px; height: 450px; background: var(--primary); top: -80px; left: -80px; }
+    .blob-b { width: 500px; height: 500px; background: var(--accent); bottom: -100px; right: -80px; }
+    .legal-hero > :not(.legal-hero-blob) { position: relative; z-index: 1; }
+    .legal-badge {
+      display: inline-block; background: var(--primary); color: #fff;
+      font-weight: 800; font-size: 0.8rem; padding: 6px 18px;
+      border-radius: 99px; margin-bottom: 20px; letter-spacing: 1px; text-transform: uppercase;
+    }
+    .legal-title {
+      font-family: 'Fredoka One', cursive;
+      font-size: clamp(2.4rem, 6vw, 4rem);
+      color: var(--text); margin-bottom: 16px;
+    }
+    .legal-title span { color: var(--primary); }
+    .legal-meta {
+      font-size: 1rem; color: var(--text-muted); font-weight: 700;
+    }
+
+    /* ── CONTENT ── */
+    .legal-wrap {
+      max-width: 860px; margin: 0 auto; padding: 60px 24px 80px;
+    }
+
+    /* Table of contents */
+    .toc {
+      background: rgba(255,255,255,0.7); border: 1.5px solid var(--accent2);
+      border-radius: 20px; padding: 28px 32px; margin-bottom: 50px;
+      backdrop-filter: blur(8px); box-shadow: 0 8px 24px var(--shadow);
+    }
+    html[data-theme="dark"] .toc { background: rgba(40,40,40,0.7); }
+    .toc-title {
+      font-family: 'Fredoka One', cursive; font-size: 1.3rem;
+      color: var(--primary); margin-bottom: 16px;
+    }
+    .toc ol { padding-left: 20px; display: flex; flex-direction: column; gap: 8px; }
+    .toc a { color: var(--primary); font-weight: 700; text-decoration: none; font-size: 0.95rem; }
+    .toc a:hover { text-decoration: underline; }
+
+    /* Sections */
+    .legal-section { margin-bottom: 48px; scroll-margin-top: 90px; }
+    .legal-section h2 {
+      font-family: 'Fredoka One', cursive; font-size: 1.8rem;
+      color: var(--primary); margin-bottom: 16px;
+      padding-bottom: 10px; border-bottom: 2px solid var(--accent2);
+      display: flex; align-items: center; gap: 12px;
+    }
+    .legal-section h2 .sec-icon { font-size: 1.6rem; }
+    .legal-section h3 {
+      font-family: 'Fredoka One', cursive; font-size: 1.2rem;
+      color: var(--text); margin: 20px 0 10px;
+    }
+    .legal-section p {
+      font-size: 1rem; line-height: 1.85; color: var(--text-muted);
+      font-weight: 600; margin-bottom: 12px;
+    }
+    .legal-section ul, .legal-section ol {
+      padding-left: 22px; display: flex; flex-direction: column; gap: 8px;
+      margin-bottom: 16px;
+    }
+    .legal-section li {
+      font-size: 0.97rem; line-height: 1.7; color: var(--text-muted); font-weight: 600;
+    }
+    .legal-section li strong { color: var(--text); }
+
+    /* Highlight box */
+    .info-box {
+      background: rgba(var(--primary-rgb), 0.07);
+      border: 1.5px solid rgba(var(--primary-rgb), 0.25);
+      border-left: 4px solid var(--primary);
+      border-radius: 12px; padding: 16px 20px; margin: 16px 0;
+      font-size: 0.95rem; color: var(--text); font-weight: 700; line-height: 1.7;
+    }
+
+    /* Contact card */
+    .contact-card {
+      background: var(--primary); border-radius: 20px; padding: 32px;
+      text-align: center; color: #fff; margin-top: 20px;
+      box-shadow: 0 16px 40px var(--shadow-lg);
+    }
+    .contact-card h3 { font-family: 'Fredoka One', cursive; font-size: 1.6rem; margin-bottom: 10px; }
+    .contact-card p { font-size: 1rem; margin-bottom: 6px; opacity: 0.9; font-weight: 600; }
+    .contact-card a { color: var(--accent3); font-weight: 800; }
+
+    /* ── FOOTER ── */
+    .lp-footer {
+      padding: 48px 40px 36px;
+      background: var(--bg-card);
+      border-top: 1.5px solid var(--accent2);
+    }
+    .footer-inner {
+      max-width: 1100px; margin: 0 auto;
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 24px;
+    }
+    .footer-brand { font-family: 'Pacifico', cursive; font-size: 1.6rem; color: var(--primary); }
+    .footer-tagline { color: var(--text-muted); font-weight: 600; font-size: .85rem; margin-top: 4px; }
+    .footer-links { display: flex; gap: 22px; flex-wrap: wrap; }
+    .footer-links a { color: var(--text-muted); font-weight: 700; text-decoration: none; font-size: .88rem; transition: color .2s; }
+    .footer-links a:hover, .footer-links a[aria-current] { color: var(--primary); }
+    .footer-copy {
+      text-align: center; color: var(--text-muted); font-weight: 700;
+      font-size: .82rem; padding-top: 28px; margin-top: 28px;
+      border-top: 1.5px solid var(--accent2);
+    }
+
+    @media (max-width: 600px) {
+      .lp-nav { padding: 10px 16px; }
+      .legal-hero { padding: 100px 16px 40px; }
+      .legal-wrap { padding: 40px 16px 60px; }
+      .toc { padding: 20px; }
+      .footer-inner { flex-direction: column; text-align: center; }
+      .footer-links { justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="lp-nav" role="navigation" aria-label="Main navigation">
+    <a href="index.html" class="lp-brand">Speak Up!</a>
+    <div class="lp-nav-right">
+      <a href="index.html" class="btn-nav-back">← Back to Home</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="legal-hero">
+    <div class="legal-hero-blob blob-a"></div>
+    <div class="legal-hero-blob blob-b"></div>
+    <div class="legal-badge">🔒 Legal</div>
+    <h1 class="legal-title">Privacy <span>Policy</span></h1>
+    <p class="legal-meta">Last updated: June 27, 2025 &nbsp;·&nbsp; Effective: June 27, 2025</p>
+  </section>
+
+  <!-- CONTENT -->
+  <main class="legal-wrap">
+
+    <!-- TABLE OF CONTENTS -->
+    <nav class="toc" aria-label="Table of contents">
+      <div class="toc-title">📋 Table of Contents</div>
+      <ol>
+        <li><a href="#who-we-are">Who We Are</a></li>
+        <li><a href="#data-we-collect">Data We Collect</a></li>
+        <li><a href="#how-we-use">How We Use Your Data</a></li>
+        <li><a href="#voice-audio">Voice Audio & AI Processing</a></li>
+        <li><a href="#data-sharing">Data Sharing & Third Parties</a></li>
+        <li><a href="#data-storage">Data Storage & Security</a></li>
+        <li><a href="#retention">Data Retention</a></li>
+        <li><a href="#your-rights">Your Rights</a></li>
+        <li><a href="#children">Children's Privacy</a></li>
+        <li><a href="#cookies">Cookies & Local Storage</a></li>
+        <li><a href="#changes">Changes to This Policy</a></li>
+        <li><a href="#contact">Contact Us</a></li>
+      </ol>
+    </nav>
+
+    <div class="info-box">
+      📌 <strong>Plain English Summary:</strong> Speak Up! is a free English speaking practice app. We collect your email, name, and the audio you record during practice sessions. Your audio is processed by AI to give you feedback and is then deleted. We never sell your data. You can delete your account at any time.
+    </div>
+
+    <!-- 1 -->
+    <section class="legal-section" id="who-we-are">
+      <h2><span class="sec-icon">🏠</span> 1. Who We Are</h2>
+      <p>Speak Up! ("we", "our", "us") is an AI-powered English speaking practice platform available at our Vercel-hosted domain. We are operated as an independent project by its developer and are committed to protecting your privacy in accordance with applicable laws including India's Digital Personal Data Protection (DPDP) Act, 2023.</p>
+      <p>This Privacy Policy explains what personal data we collect from you when you use the Speak Up! platform, how we use it, who we share it with, and what rights you have over it.</p>
+    </section>
+
+    <!-- 2 -->
+    <section class="legal-section" id="data-we-collect">
+      <h2><span class="sec-icon">📊</span> 2. Data We Collect</h2>
+      <p>We only collect information that is necessary to provide and improve our service.</p>
+
+      <h3>2.1 Account Information</h3>
+      <ul>
+        <li><strong>Email address</strong> — collected during Google Sign-In via Firebase Authentication.</li>
+        <li><strong>Display name</strong> — your name from your Google account, used to personalise your dashboard.</li>
+        <li><strong>Gender (optional)</strong> — used only to assign a default avatar colour.</li>
+        <li><strong>Username (optional)</strong> — a public handle you can choose for your profile.</li>
+        <li><strong>Social profile links (optional)</strong> — LinkedIn and Instagram URLs if you choose to add them.</li>
+      </ul>
+
+      <h3>2.2 Practice Session Data</h3>
+      <ul>
+        <li><strong>Voice audio recordings</strong> — recorded in your browser when you tap "Start Recording" during a practice session.</li>
+        <li><strong>Speech transcripts</strong> — generated from your voice by our on-device AI (Whisper) or our server.</li>
+        <li><strong>Practice scores</strong> — fluency, clarity, and confidence scores generated by AI after each session.</li>
+        <li><strong>Practice topic</strong> — the topic you were asked to speak about.</li>
+        <li><strong>Practice date and time</strong> — logged to track your streak.</li>
+      </ul>
+
+      <h3>2.3 Usage Data</h3>
+      <ul>
+        <li><strong>IP address</strong> — captured in server logs for rate limiting and abuse prevention. Not linked to your account.</li>
+        <li><strong>Browser & device type</strong> — captured automatically by our hosting provider (Vercel) for analytics.</li>
+      </ul>
+    </section>
+
+    <!-- 3 -->
+    <section class="legal-section" id="how-we-use">
+      <h2><span class="sec-icon">⚙️</span> 3. How We Use Your Data</h2>
+      <p>We use your personal data for the following specific purposes:</p>
+      <ul>
+        <li><strong>To provide the core service</strong> — authentication, displaying your dashboard, storing your practice history, and showing your streaks and scores.</li>
+        <li><strong>To generate AI feedback</strong> — your voice recording or transcript is sent to Groq's AI API to produce your fluency, clarity, and confidence scores and personalised feedback.</li>
+        <li><strong>To personalise content</strong> — daily practice topics and interview questions are generated based on general settings (not individual profiling).</li>
+        <li><strong>To prevent abuse</strong> — IP-based rate limiting prevents spam and misuse of the service.</li>
+        <li><strong>To improve the service</strong> — aggregated, anonymised usage patterns may be reviewed to improve features. We do not profile individual users.</li>
+      </ul>
+      <div class="info-box">
+        ✅ <strong>We do NOT use your data for:</strong> advertising, selling to third parties, training our own AI models, or sending you marketing emails without your explicit consent.
+      </div>
+    </section>
+
+    <!-- 4 -->
+    <section class="legal-section" id="voice-audio">
+      <h2><span class="sec-icon">🎙️</span> 4. Voice Audio & AI Processing</h2>
+      <p>Voice data is the most sensitive data we handle. Here is exactly what happens to it:</p>
+      <ol>
+        <li><strong>Recording:</strong> Your audio is captured locally in your browser. It never leaves your device until you press "Stop & Analyse".</li>
+        <li><strong>On-device processing (primary):</strong> If the on-device Whisper AI model is ready, your audio is transcribed entirely on your device. Only the text transcript — not the audio — is sent to our server.</li>
+        <li><strong>Server processing (fallback):</strong> If the on-device model is not ready, the audio is converted to base64 and sent to our server, which passes it to the Groq Whisper API for transcription.</li>
+        <li><strong>AI scoring:</strong> The text transcript is sent to Groq's AI (Llama) to generate your score and feedback.</li>
+        <li><strong>Deletion:</strong> The raw audio base64 data is automatically deleted from our database as soon as transcription is complete and the score is saved. We do not store your raw audio permanently.</li>
+      </ol>
+      <p>Your transcripts and scores are stored to build your practice history and are retained until you delete your account.</p>
+    </section>
+
+    <!-- 5 -->
+    <section class="legal-section" id="data-sharing">
+      <h2><span class="sec-icon">🤝</span> 5. Data Sharing & Third Parties</h2>
+      <p>We only share your data with the following trusted service providers who are essential for running the application:</p>
+      <ul>
+        <li><strong>Google Firebase (Google LLC)</strong> — provides user authentication (Sign In with Google) and Firestore real-time database for storing user profile data. <a href="https://firebase.google.com/support/privacy" target="_blank" rel="noopener noreferrer">Firebase Privacy Policy →</a></li>
+        <li><strong>Groq Inc.</strong> — receives audio or transcripts to perform AI transcription (Whisper) and scoring (Llama). Groq processes this as a data processor on our behalf. <a href="https://groq.com/privacy-policy/" target="_blank" rel="noopener noreferrer">Groq Privacy Policy →</a></li>
+        <li><strong>Google Gemini (Google LLC)</strong> — used as a fallback for audio transcription and for generating daily practice topics. <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Google Privacy Policy →</a></li>
+        <li><strong>Supabase / Neon (PostgreSQL)</strong> — stores practice sessions, scores, and the task queue. Located in the Singapore region. <a href="https://supabase.com/privacy" target="_blank" rel="noopener noreferrer">Supabase Privacy Policy →</a></li>
+        <li><strong>Vercel Inc.</strong> — hosts the application and all API functions. <a href="https://vercel.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer">Vercel Privacy Policy →</a></li>
+        <li><strong>Unsplash / Pexels</strong> — used to fetch practice images for the "Picture Talk" feature. We do not send any of your personal data to these providers.</li>
+      </ul>
+      <p>We do not sell, rent, trade, or otherwise transfer your personal data to any other third parties.</p>
+    </section>
+
+    <!-- 6 -->
+    <section class="legal-section" id="data-storage">
+      <h2><span class="sec-icon">🔐</span> 6. Data Storage & Security</h2>
+      <p>Your data is stored in the following locations:</p>
+      <ul>
+        <li><strong>User profile & auth data:</strong> Google Firebase (data centres in the USA and globally distributed).</li>
+        <li><strong>Practice sessions & scores:</strong> Supabase PostgreSQL database in the Asia Pacific (Singapore) region.</li>
+      </ul>
+      <p>We implement the following security measures:</p>
+      <ul>
+        <li>All data in transit is encrypted via HTTPS/TLS.</li>
+        <li>Database connections require SSL.</li>
+        <li>Firebase Authentication tokens are verified server-side for all sensitive API calls.</li>
+        <li>API endpoints use rate limiting to prevent brute-force or denial-of-service attacks.</li>
+        <li>Internal API endpoints are protected with a secret key.</li>
+      </ul>
+      <p>While we implement industry-standard security measures, no method of internet transmission is 100% secure. We encourage you to use a strong, unique password for your Google account.</p>
+    </section>
+
+    <!-- 7 -->
+    <section class="legal-section" id="retention">
+      <h2><span class="sec-icon">🗓️</span> 7. Data Retention</h2>
+      <ul>
+        <li><strong>Voice audio (raw base64):</strong> Deleted immediately from the queue after AI processing is complete (typically within 60 seconds of recording).</li>
+        <li><strong>Practice scores and transcripts:</strong> Retained until you delete your account. Your 20 most recent sessions are actively shown on your dashboard.</li>
+        <li><strong>User profile (name, email, streak):</strong> Retained until you request account deletion.</li>
+        <li><strong>Completed/failed task queue entries:</strong> Automatically purged after 1 hour.</li>
+        <li><strong>Server logs (IP address):</strong> Retained by Vercel for up to 30 days for security purposes.</li>
+      </ul>
+    </section>
+
+    <!-- 8 -->
+    <section class="legal-section" id="your-rights">
+      <h2><span class="sec-icon">⚖️</span> 8. Your Rights</h2>
+      <p>Under the DPDP Act, 2023 (India) and general privacy best practices, you have the following rights:</p>
+      <ul>
+        <li><strong>Right to Access:</strong> You can view your practice history and profile data on your dashboard at any time.</li>
+        <li><strong>Right to Correction:</strong> You can update your display name, username, and social links from your profile settings.</li>
+        <li><strong>Right to Erasure (Deletion):</strong> You can request complete deletion of all your data by contacting us. We will process your request within 30 days.</li>
+        <li><strong>Right to Withdraw Consent:</strong> You may stop using the service and request deletion of your data at any time.</li>
+        <li><strong>Right to Complain:</strong> You have the right to file a complaint with the Data Protection Board of India if you believe your rights have been violated.</li>
+      </ul>
+      <p>To exercise any of these rights, please contact us using the details in Section 12 below.</p>
+    </section>
+
+    <!-- 9 -->
+    <section class="legal-section" id="children">
+      <h2><span class="sec-icon">👶</span> 9. Children's Privacy</h2>
+      <p>Speak Up! is not directed at children under the age of 13. We do not knowingly collect personal data from children under 13. If you are a parent or guardian and believe your child has provided us with personal data, please contact us immediately and we will delete that information.</p>
+      <p>Users between 13 and 18 should use the service with the consent and supervision of a parent or guardian.</p>
+    </section>
+
+    <!-- 10 -->
+    <section class="legal-section" id="cookies">
+      <h2><span class="sec-icon">🍪</span> 10. Cookies & Local Storage</h2>
+      <p>Speak Up! does not use advertising cookies or third-party tracking cookies. We use browser <strong>localStorage</strong> for the following functional purposes only:</p>
+      <ul>
+        <li><strong>Theme preference</strong> (<code>speakup-theme</code>) — remembers your chosen colour theme (e.g., Pink, Dark, Blue).</li>
+        <li><strong>Firebase Authentication</strong> — Firebase SDK stores authentication tokens in IndexedDB/localStorage to keep you logged in between sessions.</li>
+        <li><strong>Service Worker cache</strong> — used to enable offline access and faster page loads (PWA functionality).</li>
+      </ul>
+      <p>None of this data is used for tracking, advertising, or profiling. You can clear your browser's local storage at any time to reset these preferences.</p>
+    </section>
+
+    <!-- 11 -->
+    <section class="legal-section" id="changes">
+      <h2><span class="sec-icon">🔄</span> 11. Changes to This Policy</h2>
+      <p>We may update this Privacy Policy from time to time to reflect changes in our practices, services, or legal requirements. When we make significant changes, we will update the "Last updated" date at the top of this page.</p>
+      <p>Your continued use of Speak Up! after any changes to this policy constitutes your acceptance of the revised policy. We encourage you to review this page periodically.</p>
+    </section>
+
+    <!-- 12 -->
+    <section class="legal-section" id="contact">
+      <h2><span class="sec-icon">📬</span> 12. Contact Us</h2>
+      <p>If you have any questions, concerns, or requests regarding this Privacy Policy or your personal data, please contact us:</p>
+      <div class="contact-card">
+        <h3>📬 Get in Touch</h3>
+        <p>Speak Up! — Data Privacy</p>
+        <p>📧 Email: <a href="mailto:pavandoddavarapu7@gmail.com">pavandoddavarapu7@gmail.com</a></p>
+        <p>We aim to respond to all privacy-related requests within <strong>5 business days</strong>.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="lp-footer">
+    <div class="footer-inner">
+      <div>
+        <div class="footer-brand">Speak Up!</div>
+        <div class="footer-tagline">AI-powered English speaking practice</div>
+      </div>
+      <nav class="footer-links" aria-label="Footer navigation">
+        <a href="index.html">Home</a>
+        <a href="about.html">About</a>
+        <a href="privacy.html" aria-current="page">Privacy Policy</a>
+        <a href="terms.html">Terms of Service</a>
+      </nav>
+    </div>
+    <p class="footer-copy">© 2025 Speak Up! · All rights reserved</p>
+  </footer>
+
+</body>
+</html>

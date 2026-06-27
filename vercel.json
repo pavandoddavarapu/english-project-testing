@@ -39,5 +39,9 @@
       "source": "/dashboard",
       "destination": "/genz-streak-test"
     }
-  ]
+  ],
+  "redirects": [],
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "outputDirectory": "."
 }

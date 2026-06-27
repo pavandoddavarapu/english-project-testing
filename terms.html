@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="pink">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Terms of Service – Speak Up!</title>
+  <meta name="description" content="Speak Up! Terms of Service – Read the rules and guidelines for using our AI-powered English speaking practice platform.">
+  <link rel="manifest" href="assets/manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/images/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&family=Pacifico&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script src="assets/js/page-transitions.js" defer></script>
+  <script>(function () { const t = localStorage.getItem("speakup-theme") || "pink"; document.documentElement.setAttribute("data-theme", t); })();</script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; }
+
+    .lp-nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 40px;
+      background: rgba(255,255,255,0.65); backdrop-filter: blur(16px);
+      border-bottom: 1.5px solid var(--accent2);
+      box-shadow: 0 4px 24px var(--shadow);
+    }
+    html[data-theme="dark"] .lp-nav { background: rgba(26,26,26,0.7); }
+    .lp-brand { font-family: 'Pacifico', cursive; font-size: 1.5rem; color: var(--primary); text-decoration: none; text-shadow: 2px 2px 0 var(--accent2); }
+    .lp-nav-right { display: flex; align-items: center; gap: 16px; }
+    .btn-nav-back {
+      padding: 9px 22px; border-radius: 99px; font-weight: 800; font-size: 0.9rem;
+      border: 2px solid var(--primary); color: var(--primary); background: transparent;
+      text-decoration: none; transition: all .2s;
+    }
+    .btn-nav-back:hover { background: var(--primary); color: #fff; transform: translateY(-2px); }
+
+    .legal-hero {
+      padding: 120px 24px 60px; text-align: center;
+      background: linear-gradient(135deg, var(--bg) 0%, var(--accent3) 100%);
+      position: relative; overflow: hidden;
+    }
+    .legal-hero-blob { position: absolute; border-radius: 50%; filter: blur(80px); pointer-events: none; opacity: 0.2; }
+    .blob-a { width: 450px; height: 450px; background: var(--primary); top: -80px; left: -80px; }
+    .blob-b { width: 500px; height: 500px; background: var(--accent); bottom: -100px; right: -80px; }
+    .legal-hero > :not(.legal-hero-blob) { position: relative; z-index: 1; }
+    .legal-badge {
+      display: inline-block; background: var(--primary); color: #fff;
+      font-weight: 800; font-size: 0.8rem; padding: 6px 18px;
+      border-radius: 99px; margin-bottom: 20px; letter-spacing: 1px; text-transform: uppercase;
+    }
+    .legal-title { font-family: 'Fredoka One', cursive; font-size: clamp(2.4rem, 6vw, 4rem); color: var(--text); margin-bottom: 16px; }
+    .legal-title span { color: var(--primary); }
+    .legal-meta { font-size: 1rem; color: var(--text-muted); font-weight: 700; }
+
+    .legal-wrap { max-width: 860px; margin: 0 auto; padding: 60px 24px 80px; }
+
+    .toc {
+      background: rgba(255,255,255,0.7); border: 1.5px solid var(--accent2);
+      border-radius: 20px; padding: 28px 32px; margin-bottom: 50px;
+      backdrop-filter: blur(8px); box-shadow: 0 8px 24px var(--shadow);
+    }
+    html[data-theme="dark"] .toc { background: rgba(40,40,40,0.7); }
+    .toc-title { font-family: 'Fredoka One', cursive; font-size: 1.3rem; color: var(--primary); margin-bottom: 16px; }
+    .toc ol { padding-left: 20px; display: flex; flex-direction: column; gap: 8px; }
+    .toc a { color: var(--primary); font-weight: 700; text-decoration: none; font-size: 0.95rem; }
+    .toc a:hover { text-decoration: underline; }
+
+    .legal-section { margin-bottom: 48px; scroll-margin-top: 90px; }
+    .legal-section h2 {
+      font-family: 'Fredoka One', cursive; font-size: 1.8rem;
+      color: var(--primary); margin-bottom: 16px;
+      padding-bottom: 10px; border-bottom: 2px solid var(--accent2);
+      display: flex; align-items: center; gap: 12px;
+    }
+    .legal-section h2 .sec-icon { font-size: 1.6rem; }
+    .legal-section h3 { font-family: 'Fredoka One', cursive; font-size: 1.2rem; color: var(--text); margin: 20px 0 10px; }
+    .legal-section p { font-size: 1rem; line-height: 1.85; color: var(--text-muted); font-weight: 600; margin-bottom: 12px; }
+    .legal-section ul, .legal-section ol { padding-left: 22px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+    .legal-section li { font-size: 0.97rem; line-height: 1.7; color: var(--text-muted); font-weight: 600; }
+    .legal-section li strong { color: var(--text); }
+
+    .info-box {
+      background: rgba(var(--primary-rgb), 0.07);
+      border: 1.5px solid rgba(var(--primary-rgb), 0.25);
+      border-left: 4px solid var(--primary);
+      border-radius: 12px; padding: 16px 20px; margin: 16px 0;
+      font-size: 0.95rem; color: var(--text); font-weight: 700; line-height: 1.7;
+    }
+    .warn-box {
+      background: rgba(212, 88, 10, 0.07);
+      border: 1.5px solid rgba(212, 88, 10, 0.25);
+      border-left: 4px solid #D4580A;
+      border-radius: 12px; padding: 16px 20px; margin: 16px 0;
+      font-size: 0.95rem; color: var(--text); font-weight: 700; line-height: 1.7;
+    }
+
+    .contact-card {
+      background: var(--primary); border-radius: 20px; padding: 32px;
+      text-align: center; color: #fff; margin-top: 20px;
+      box-shadow: 0 16px 40px var(--shadow-lg);
+    }
+    .contact-card h3 { font-family: 'Fredoka One', cursive; font-size: 1.6rem; margin-bottom: 10px; }
+    .contact-card p { font-size: 1rem; margin-bottom: 6px; opacity: 0.9; font-weight: 600; }
+    .contact-card a { color: var(--accent3); font-weight: 800; }
+
+    .lp-footer { padding: 48px 40px 36px; background: var(--bg-card); border-top: 1.5px solid var(--accent2); }
+    .footer-inner { max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 24px; }
+    .footer-brand { font-family: 'Pacifico', cursive; font-size: 1.6rem; color: var(--primary); }
+    .footer-tagline { color: var(--text-muted); font-weight: 600; font-size: .85rem; margin-top: 4px; }
+    .footer-links { display: flex; gap: 22px; flex-wrap: wrap; }
+    .footer-links a { color: var(--text-muted); font-weight: 700; text-decoration: none; font-size: .88rem; transition: color .2s; }
+    .footer-links a:hover, .footer-links a[aria-current] { color: var(--primary); }
+    .footer-copy { text-align: center; color: var(--text-muted); font-weight: 700; font-size: .82rem; padding-top: 28px; margin-top: 28px; border-top: 1.5px solid var(--accent2); }
+
+    @media (max-width: 600px) {
+      .lp-nav { padding: 10px 16px; }
+      .legal-hero { padding: 100px 16px 40px; }
+      .legal-wrap { padding: 40px 16px 60px; }
+      .footer-inner { flex-direction: column; text-align: center; }
+      .footer-links { justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="lp-nav" role="navigation" aria-label="Main navigation">
+    <a href="index.html" class="lp-brand">Speak Up!</a>
+    <div class="lp-nav-right">
+      <a href="index.html" class="btn-nav-back">← Back to Home</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="legal-hero">
+    <div class="legal-hero-blob blob-a"></div>
+    <div class="legal-hero-blob blob-b"></div>
+    <div class="legal-badge">📜 Legal</div>
+    <h1 class="legal-title">Terms of <span>Service</span></h1>
+    <p class="legal-meta">Last updated: June 27, 2025 &nbsp;·&nbsp; Effective: June 27, 2025</p>
+  </section>
+
+  <!-- CONTENT -->
+  <main class="legal-wrap">
+
+    <nav class="toc" aria-label="Table of contents">
+      <div class="toc-title">📋 Table of Contents</div>
+      <ol>
+        <li><a href="#acceptance">Acceptance of Terms</a></li>
+        <li><a href="#eligibility">Eligibility</a></li>
+        <li><a href="#accounts">User Accounts</a></li>
+        <li><a href="#the-service">The Service</a></li>
+        <li><a href="#ai-disclaimer">AI Features & Disclaimer</a></li>
+        <li><a href="#acceptable-use">Acceptable Use Policy</a></li>
+        <li><a href="#intellectual-property">Intellectual Property</a></li>
+        <li><a href="#user-content">Your Content & Data</a></li>
+        <li><a href="#free-tier">Free Tier & Service Availability</a></li>
+        <li><a href="#liability">Limitation of Liability</a></li>
+        <li><a href="#termination">Termination</a></li>
+        <li><a href="#governing-law">Governing Law</a></li>
+        <li><a href="#changes">Changes to Terms</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ol>
+    </nav>
+
+    <div class="info-box">
+      📌 <strong>Plain English Summary:</strong> Use Speak Up! responsibly, don't abuse the free service, and understand that AI feedback is for practice purposes only — not professional advice. By creating an account, you agree to these rules.
+    </div>
+
+    <!-- 1 -->
+    <section class="legal-section" id="acceptance">
+      <h2><span class="sec-icon">✅</span> 1. Acceptance of Terms</h2>
+      <p>By accessing or using Speak Up! ("the Service", "the Platform"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree to these Terms, please do not use the Service.</p>
+      <p>These Terms constitute a legally binding agreement between you ("User") and Speak Up! ("we", "us", "our"). Please read them carefully before using the platform.</p>
+    </section>
+
+    <!-- 2 -->
+    <section class="legal-section" id="eligibility">
+      <h2><span class="sec-icon">👤</span> 2. Eligibility</h2>
+      <ul>
+        <li>You must be at least <strong>13 years old</strong> to use Speak Up!</li>
+        <li>If you are between 13 and 18, you confirm that you have parental or guardian consent to use this Service.</li>
+        <li>You must have the legal capacity to enter into binding contracts in your jurisdiction.</li>
+        <li>By creating an account, you represent that all information you provide is accurate and truthful.</li>
+      </ul>
+    </section>
+
+    <!-- 3 -->
+    <section class="legal-section" id="accounts">
+      <h2><span class="sec-icon">🔑</span> 3. User Accounts</h2>
+      <p>To access the core features of Speak Up!, you must create an account using Google Sign-In.</p>
+      <ul>
+        <li>You are responsible for maintaining the confidentiality and security of your Google account credentials.</li>
+        <li>You are responsible for all activities that occur under your account.</li>
+        <li>You may not create accounts using false information or impersonate another person.</li>
+        <li>You must notify us immediately at <a href="mailto:pavandoddavarapu7@gmail.com">pavandoddavarapu7@gmail.com</a> if you suspect any unauthorised use of your account.</li>
+        <li>We reserve the right to suspend or terminate accounts that violate these Terms.</li>
+      </ul>
+    </section>
+
+    <!-- 4 -->
+    <section class="legal-section" id="the-service">
+      <h2><span class="sec-icon">🎤</span> 4. The Service</h2>
+      <p>Speak Up! is an AI-powered English speaking practice platform that provides:</p>
+      <ul>
+        <li>Daily AI-generated speaking topics and interview questions</li>
+        <li>Voice recording and AI-powered speech transcription and scoring</li>
+        <li>"Picture Talk" practice with AI-sourced images</li>
+        <li>Practice streaks, Aura points, and personal progress tracking</li>
+        <li>Group discussion features via third-party video conferencing</li>
+        <li>An AI chat assistant for English learning guidance</li>
+      </ul>
+      <p>The Service is provided free of charge and is hosted on Vercel's infrastructure.</p>
+    </section>
+
+    <!-- 5 -->
+    <section class="legal-section" id="ai-disclaimer">
+      <h2><span class="sec-icon">🤖</span> 5. AI Features & Disclaimer</h2>
+      <p>Speak Up! uses Artificial Intelligence to generate topics, transcribe speech, and score your practice sessions. <strong>You must understand the following before using these features:</strong></p>
+      <ul>
+        <li><strong>AI is not infallible:</strong> AI-generated scores, feedback, and transcriptions may be inaccurate, incomplete, or inconsistent. They are provided for practice and self-improvement purposes only.</li>
+        <li><strong>Not professional advice:</strong> AI feedback on your speech does not constitute professional language assessment, accreditation, or certification. Do not use it as a substitute for a qualified English teacher or assessor.</li>
+        <li><strong>AI content variability:</strong> Daily topics and feedback are generated dynamically. Content may occasionally be repeated, imperfect, or not perfectly suited to your level.</li>
+        <li><strong>Third-party AI providers:</strong> We use Groq (Llama, Whisper) and Google Gemini for AI processing. By using our Service, you acknowledge that your data may be processed by these providers subject to their respective terms of service.</li>
+        <li><strong>User responsibility:</strong> You are responsible for how you interpret and use AI feedback. We are not liable for any decisions made based on AI-generated content.</li>
+      </ul>
+      <div class="warn-box">
+        ⚠️ <strong>Important:</strong> AI-generated fluency and confidence scores are estimates based on text analysis. They are fun, motivational indicators — not official assessments. They may not reflect your actual English proficiency.
+      </div>
+    </section>
+
+    <!-- 6 -->
+    <section class="legal-section" id="acceptable-use">
+      <h2><span class="sec-icon">🚫</span> 6. Acceptable Use Policy</h2>
+      <p>You agree NOT to use Speak Up! for any of the following:</p>
+      <ul>
+        <li>Uploading or submitting audio containing hate speech, threats, harassment, sexual content, or content that promotes violence.</li>
+        <li>Attempting to reverse-engineer, copy, or extract the source code, AI models, or proprietary algorithms of the platform.</li>
+        <li>Using automated tools, bots, or scripts to access the Service, bypass rate limits, or scrape data.</li>
+        <li>Attempting to gain unauthorized access to other users' accounts or data.</li>
+        <li>Submitting false information during registration or in the chat assistant.</li>
+        <li>Using the Service in any way that violates applicable local, national, or international law.</li>
+        <li>Deliberately overloading or disrupting our servers, APIs, or infrastructure.</li>
+        <li>Using the platform to generate content for spam, phishing, or fraudulent purposes.</li>
+      </ul>
+      <p>Violation of this policy may result in immediate account suspension or termination without notice.</p>
+    </section>
+
+    <!-- 7 -->
+    <section class="legal-section" id="intellectual-property">
+      <h2><span class="sec-icon">©️</span> 7. Intellectual Property</h2>
+      <p>All content, features, code, designs, logos, trademarks, and AI prompts used to generate content on Speak Up! are the exclusive property of Speak Up! and its developers, protected by applicable intellectual property laws.</p>
+      <p>You may not reproduce, distribute, modify, or create derivative works from any part of the Service without explicit written permission from us.</p>
+      <p>Practice images displayed in the "Picture Talk" section are sourced from Unsplash and Pexels under their respective free-use licences. Images remain the property of their original creators.</p>
+    </section>
+
+    <!-- 8 -->
+    <section class="legal-section" id="user-content">
+      <h2><span class="sec-icon">🎙️</span> 8. Your Content & Data</h2>
+      <p>You retain ownership of any personal content you create or upload, including your voice recordings and chat messages.</p>
+      <ul>
+        <li>By using the Service, you grant us a limited, non-exclusive licence to process your voice recordings and transcripts solely for the purpose of providing AI feedback to you.</li>
+        <li>We do not claim ownership of your voice recordings or transcripts.</li>
+        <li>We do not use your personal voice data to train our own AI models.</li>
+        <li>Your raw audio recordings are automatically deleted from our systems immediately after processing. See our <a href="privacy.html">Privacy Policy</a> for full details.</li>
+      </ul>
+    </section>
+
+    <!-- 9 -->
+    <section class="legal-section" id="free-tier">
+      <h2><span class="sec-icon">🆓</span> 9. Free Tier & Service Availability</h2>
+      <p>Speak Up! is currently offered entirely free of charge. As a free service:</p>
+      <ul>
+        <li><strong>No uptime guarantee:</strong> We do not guarantee 100% availability. The Service may be temporarily unavailable due to maintenance, server issues, or third-party provider outages.</li>
+        <li><strong>No SLA:</strong> There is no Service Level Agreement (SLA) for free users.</li>
+        <li><strong>Rate limits apply:</strong> To ensure fair access for all users, a maximum of 2 speech analyses per minute and 5 analyses per minute per API are enforced.</li>
+        <li><strong>Feature changes:</strong> We reserve the right to modify, add, or remove features from the free tier at any time without prior notice.</li>
+        <li><strong>Service discontinuation:</strong> We reserve the right to discontinue the Service at any time. We will make reasonable efforts to notify registered users in advance.</li>
+      </ul>
+    </section>
+
+    <!-- 10 -->
+    <section class="legal-section" id="liability">
+      <h2><span class="sec-icon">⚖️</span> 10. Limitation of Liability</h2>
+      <p>To the maximum extent permitted by applicable law:</p>
+      <ul>
+        <li>Speak Up! is provided on an <strong>"as is" and "as available"</strong> basis, without warranties of any kind, either express or implied.</li>
+        <li>We expressly disclaim all warranties including but not limited to merchantability, fitness for a particular purpose, and non-infringement.</li>
+        <li>We shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of or inability to use the Service.</li>
+        <li>Our total liability to you for any claim arising from the use of Speak Up! shall not exceed ₹1,000 (Indian Rupees One Thousand) or the amount you paid us in the past 12 months, whichever is lower.</li>
+        <li>We are not liable for the accuracy, completeness, or usefulness of AI-generated content, scores, or feedback.</li>
+        <li>We are not responsible for third-party services (Firebase, Groq, Supabase, Vercel) and their downtime or errors.</li>
+      </ul>
+    </section>
+
+    <!-- 11 -->
+    <section class="legal-section" id="termination">
+      <h2><span class="sec-icon">🚪</span> 11. Termination</h2>
+      <p>Either party may terminate the relationship at any time:</p>
+      <ul>
+        <li><strong>By you:</strong> You may stop using the Service and contact us to request deletion of all your account data at any time.</li>
+        <li><strong>By us:</strong> We reserve the right to suspend or permanently terminate your access to the Service, with or without notice, if you violate these Terms, engage in fraudulent or abusive behaviour, or for any other reason we deem appropriate.</li>
+      </ul>
+      <p>Upon termination, your right to use the Service immediately ceases. We may retain your data for a period as described in our Privacy Policy, or delete it upon your request.</p>
+    </section>
+
+    <!-- 12 -->
+    <section class="legal-section" id="governing-law">
+      <h2><span class="sec-icon">🏛️</span> 12. Governing Law</h2>
+      <p>These Terms shall be governed by and construed in accordance with the laws of <strong>India</strong>, without regard to its conflict of law principles.</p>
+      <p>Any disputes arising from these Terms or your use of the Service shall be subject to the exclusive jurisdiction of the courts located in <strong>Andhra Pradesh, India</strong>.</p>
+      <p>If any provision of these Terms is found to be unenforceable or invalid, that provision will be limited or eliminated to the minimum extent necessary so that the remaining provisions remain in full force and effect.</p>
+    </section>
+
+    <!-- 13 -->
+    <section class="legal-section" id="changes">
+      <h2><span class="sec-icon">🔄</span> 13. Changes to Terms</h2>
+      <p>We reserve the right to modify these Terms at any time. When we make material changes, we will update the "Last updated" date at the top of this page.</p>
+      <p>Your continued use of the Service after any changes to these Terms constitutes your acceptance of the revised Terms. If you do not agree to the revised Terms, you must stop using the Service.</p>
+      <p>We recommend bookmarking this page and reviewing it periodically.</p>
+    </section>
+
+    <!-- 14 -->
+    <section class="legal-section" id="contact">
+      <h2><span class="sec-icon">📬</span> 14. Contact</h2>
+      <p>If you have any questions about these Terms of Service, please contact us:</p>
+      <div class="contact-card">
+        <h3>📬 Get in Touch</h3>
+        <p>Speak Up! — Legal Enquiries</p>
+        <p>📧 Email: <a href="mailto:pavandoddavarapu7@gmail.com">pavandoddavarapu7@gmail.com</a></p>
+        <p>We aim to respond to all legal enquiries within <strong>5 business days</strong>.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="lp-footer">
+    <div class="footer-inner">
+      <div>
+        <div class="footer-brand">Speak Up!</div>
+        <div class="footer-tagline">AI-powered English speaking practice</div>
+      </div>
+      <nav class="footer-links" aria-label="Footer navigation">
+        <a href="index.html">Home</a>
+        <a href="about.html">About</a>
+        <a href="privacy.html">Privacy Policy</a>
+        <a href="terms.html" aria-current="page">Terms of Service</a>
+      </nav>
+    </div>
+    <p class="footer-copy">© 2025 Speak Up! · All rights reserved</p>
+  </footer>
+
+</body>
+</html>

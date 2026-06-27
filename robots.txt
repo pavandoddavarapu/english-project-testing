@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /scripts/
+
+Sitemap: https://english-project-testing-o32g.vercel.app/sitemap.xml

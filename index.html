@@ -152,6 +152,85 @@
   }
   </script>
 
+  <!-- ═══════════════════════════════════════════════
+       ADVANCED SCHEMAS – HowTo + Course + Speakable
+  ═══════════════════════════════════════════════ -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    "name": "How to Improve English Speaking with AI in 5 Steps",
+    "description": "Use Speak Up! to practise English speaking daily with AI feedback and see measurable improvement in fluency, clarity, and confidence within weeks.",
+    "totalTime": "PT5M",
+    "estimatedCost": { "@type": "MonetaryAmount", "currency": "INR", "value": "0" },
+    "tool": [{ "@type": "HowToTool", "name": "Speak Up! Web App" }, { "@type": "HowToTool", "name": "A microphone" }],
+    "step": [
+      { "@type": "HowToStep", "position": 1, "name": "Sign in with Google", "text": "Create your free account in one click using Google Sign-In. No password needed.", "url": "https://english-project-testing-o32g.vercel.app/login" },
+      { "@type": "HowToStep", "position": 2, "name": "Choose your practice mode", "text": "Pick from Random Topics, Interview Prep, Vocabulary, or Picture Talk based on what you want to improve.", "url": "https://english-project-testing-o32g.vercel.app/practice" },
+      { "@type": "HowToStep", "position": 3, "name": "Spin for a topic", "text": "Click Spin to get an AI-generated speaking topic. Read it, think for 10 seconds, then start speaking.", "url": "https://english-project-testing-o32g.vercel.app/practice" },
+      { "@type": "HowToStep", "position": 4, "name": "Record your speech", "text": "Click Start Recording and speak for 30–60 seconds. The on-device Whisper AI transcribes your speech privately in the browser.", "url": "https://english-project-testing-o32g.vercel.app/practice" },
+      { "@type": "HowToStep", "position": 5, "name": "Get your AI score and improve", "text": "Receive instant Fluency, Clarity, and Confidence scores plus personalised feedback. Practise daily to build your streak and watch your scores climb!", "url": "https://english-project-testing-o32g.vercel.app/practice" }
+    ]
+  }
+  </script>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Course",
+    "name": "AI-Powered English Speaking Practice",
+    "description": "A free, self-paced English speaking course using AI feedback. Practise daily topics, interview questions, vocabulary, and picture descriptions. Get instant scores on fluency, clarity and confidence.",
+    "url": "https://english-project-testing-o32g.vercel.app/",
+    "provider": { "@type": "Organization", "name": "Speak Up!", "url": "https://english-project-testing-o32g.vercel.app/" },
+    "educationalLevel": "Beginner to Advanced",
+    "inLanguage": "en",
+    "isAccessibleForFree": true,
+    "hasCourseInstance": {
+      "@type": "CourseInstance",
+      "courseMode": "Online",
+      "courseWorkload": "PT5M",
+      "instructor": { "@type": "Person", "name": "Speak Up! AI" }
+    },
+    "teaches": [
+      "English speaking fluency",
+      "English clarity and pronunciation",
+      "Speaking confidence in English",
+      "English interview skills",
+      "English vocabulary usage",
+      "Picture description in English"
+    ],
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "INR", "availability": "https://schema.org/InStock" }
+  }
+  </script>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "@id": "https://english-project-testing-o32g.vercel.app/#webpage",
+    "url": "https://english-project-testing-o32g.vercel.app/",
+    "name": "Speak Up! – Free AI English Speaking Practice App",
+    "speakable": {
+      "@type": "SpeakableSpecification",
+      "cssSelector": [".speakable-summary", ".hero-sub", "h1"]
+    },
+    "breadcrumb": { "@type": "BreadcrumbList", "itemListElement": [{ "@type": "ListItem", "position": 1, "name": "Home", "item": "https://english-project-testing-o32g.vercel.app/" }] }
+  }
+  </script>
+
+  <!-- ═══════════════════════════════════════════════
+       PERFORMANCE: Resource Hints
+  ═══════════════════════════════════════════════ -->
+  <!-- DNS Prefetch for critical 3rd parties -->
+  <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+  <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+  <link rel="dns-prefetch" href="https://firebasestorage.googleapis.com">
+  <link rel="dns-prefetch" href="https://identitytoolkit.googleapis.com">
+  <!-- Preload critical CSS -->
+  <link rel="preload" href="assets/css/style.css" as="style">
+  <!-- Preload critical JS -->
+  <link rel="preload" href="assets/js/page-transitions.js" as="script">
+
   <!-- FONTS -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

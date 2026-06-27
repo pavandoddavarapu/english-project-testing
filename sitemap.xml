@@ -26,6 +26,14 @@
     <priority>0.7</priority>
   </url>
 
+  <!-- Group Discussion Rooms -->
+  <url>
+    <loc>https://english-project-testing-o32g.vercel.app/group-meet</loc>
+    <lastmod>2025-06-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
   <!-- Login Page -->
   <url>
     <loc>https://english-project-testing-o32g.vercel.app/login</loc>

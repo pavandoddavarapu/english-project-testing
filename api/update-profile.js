@@ -19,7 +19,7 @@ export default async function handler(req, res) {
   if (!checkRateLimit(req, res, { maxRequests: 5, windowMs: 60_000 })) return;
 
   try {
-    const { idToken, uid, name, gender, avatar_bg, avatar_seed, linkedin_url, instagram_url, username } = req.body || {};
+    const { idToken, uid, name, gender, avatar_bg, avatar_seed, linkedin_url, instagram_url, username, action, subscription } = req.body || {};
 
     if (!idToken || !uid) {
       return res.status(400).json({ error: 'Missing idToken or uid' });
@@ -29,6 +29,16 @@ export default async function handler(req, res) {
     const verifiedUser = await verifyFirebaseIdToken(idToken);
     if (verifiedUser.uid !== uid) {
       return res.status(403).json({ error: 'Unauthorized: UID mismatch' });
+    }
+
+    // ── PUSH SUBSCRIPTION ACTION ──────────────────────────────────────────────
+    if (action === 'push-subscribe') {
+      await query('UPDATE users SET push_subscription = $1 WHERE uid = $2', [JSON.stringify(subscription), uid]);
+      return res.status(200).json({ ok: true, action: 'subscribed' });
+    }
+    if (action === 'push-unsubscribe') {
+      await query('UPDATE users SET push_subscription = NULL WHERE uid = $1', [uid]);
+      return res.status(200).json({ ok: true, action: 'unsubscribed' });
     }
 
     // 2. Validate input variables

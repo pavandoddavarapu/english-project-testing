@@ -237,7 +237,7 @@
     // Load challenge
     async function loadChallenge() {
       try {
-        const res = await fetch('/api/daily-challenge');
+        const res = await fetch('/api/daily?challenge=1');
         const data = await res.json();
 
         todayTopic = data.topic;

@@ -1,5 +1,6 @@
-// v11 — mobile performance optimizations + GPU compositing
-const CACHE_NAME = 'speakup-cache-v11';
+// v12 — fix CSP: expanded passthrough list for Google Sign-In + Wikimedia
+const CACHE_NAME = 'speakup-cache-v12';
+
 
 const ASSETS_TO_CACHE = [
   './',
@@ -36,12 +37,18 @@ self.addEventListener('fetch', event => {
   // Never intercept third-party API / auth / firestore / AI model CDN calls
   if (
     url.includes('googleapis.com') ||
+    url.includes('apis.google.com') ||
+    url.includes('google.com') ||
+    url.includes('wikimedia.org') ||
     url.includes('api.groq.com') ||
     url.includes('firebaseapp.com') ||
+    url.includes('firebaseio.com') ||
     url.includes('gstatic.com') ||
     url.includes('jsdelivr.net') ||
     url.includes('huggingface.co') ||
     url.includes('hf.co') ||
+    url.includes('dicebear.com') ||
+    url.includes('resend.com') ||
     url.includes('systemli.org') ||
     url.includes('jit.si') ||
     url.includes('ffmuc.net') ||

@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="green">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="page-title">Speak Up! – Public Profile</title>
+  <meta name="description" content="View English speaking practice profile on Speak Up!">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" id="canonical-url" href="https://speakupai.me/u/">
+  <meta property="og:type" content="profile">
+  <meta property="og:site_name" content="Speak Up!">
+  <meta property="og:title" id="og-title" content="Speak Up! Profile">
+  <meta property="og:description" id="og-desc" content="English speaking practice profile">
+  <meta property="og:image" content="https://speakupai.me/assets/images/og-banner.png">
+  <link rel="manifest" href="../assets/manifest.json">
+  <meta name="theme-color" content="#D63384">
+  <link rel="icon" type="image/png" sizes="192x192" href="../assets/images/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── NAV ── */
+    .profile-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 24px;
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(12px);
+    }
+    .nav-logo { font-family: 'Fredoka One', cursive; font-size: 1.4rem; color: var(--primary); text-decoration: none; }
+    .nav-actions { display: flex; gap: 10px; }
+    .btn-nav { padding: 8px 18px; border-radius: 20px; font-weight: 700; font-size: 0.85rem; cursor: pointer; border: none; text-decoration: none; transition: all 0.2s; }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-ghost { background: transparent; color: var(--text-muted); border: 1.5px solid var(--border); }
+    .btn-nav:hover { transform: translateY(-1px); opacity: 0.9; }
+
+    /* ── LOADING / ERROR ── */
+    .profile-loading, .profile-error {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      min-height: 60vh; gap: 16px; text-align: center; padding: 40px;
+    }
+    .spinner { width: 48px; height: 48px; border: 4px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .error-emoji { font-size: 4rem; }
+    .error-title { font-size: 1.5rem; font-weight: 800; }
+    .error-sub { color: var(--text-muted); }
+
+    /* ── HERO CARD ── */
+    .profile-hero {
+      max-width: 860px;
+      margin: 40px auto 0;
+      padding: 0 20px;
+    }
+    .hero-card {
+      background: var(--card-bg);
+      border-radius: 24px;
+      border: 1px solid var(--border);
+      padding: 36px;
+      display: flex;
+      gap: 32px;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-card::before {
+      content: '';
+      position: absolute;
+      top: -60px; right: -60px;
+      width: 200px; height: 200px;
+      background: var(--primary);
+      opacity: 0.06;
+      border-radius: 50%;
+    }
+    .avatar-wrap {
+      flex-shrink: 0;
+      width: 100px; height: 100px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 3px solid var(--primary);
+      box-shadow: 0 0 0 6px rgba(var(--primary-rgb, 214,51,132), 0.12);
+    }
+    .avatar-wrap img { width: 100%; height: 100%; object-fit: cover; }
+    .hero-info { flex: 1; }
+    .hero-name { font-size: 1.8rem; font-weight: 900; margin-bottom: 4px; }
+    .hero-username { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 12px; }
+    .hero-joined { color: var(--text-muted); font-size: 0.85rem; margin-top: 8px; }
+    .hero-socials { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+    .social-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 14px; border-radius: 20px;
+      background: var(--bg); border: 1.5px solid var(--border);
+      font-size: 0.82rem; font-weight: 700; text-decoration: none;
+      color: var(--text); transition: all 0.2s;
+    }
+    .social-link:hover { border-color: var(--primary); color: var(--primary); }
+
+    /* ── STATS ROW ── */
+    .stats-row {
+      max-width: 860px;
+      margin: 20px auto;
+      padding: 0 20px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+    .stat-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px 16px;
+      text-align: center;
+    }
+    .stat-val { font-size: 2rem; font-weight: 900; color: var(--primary); line-height: 1; }
+    .stat-label { font-size: 0.78rem; color: var(--text-muted); font-weight: 600; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* ── BADGES ── */
+    .section {
+      max-width: 860px;
+      margin: 20px auto;
+      padding: 0 20px;
+    }
+    .section-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+    .badges-grid { display: flex; gap: 10px; flex-wrap: wrap; }
+    .badge-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 16px; border-radius: 20px;
+      background: var(--card-bg); border: 1.5px solid var(--border);
+      font-size: 0.85rem; font-weight: 700;
+    }
+    .badge-pill.earned { border-color: var(--primary); background: rgba(var(--primary-rgb, 214,51,132), 0.08); color: var(--primary); }
+
+    /* ── HEATMAP ── */
+    .heatmap-wrap {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      overflow-x: auto;
+    }
+    .heatmap-grid { display: flex; gap: 3px; }
+    .heatmap-col { display: flex; flex-direction: column; gap: 3px; }
+    .heatmap-cell {
+      width: 12px; height: 12px; border-radius: 2px;
+      background: var(--border);
+    }
+    .heatmap-cell.active { background: var(--primary); }
+    .heatmap-cell.light { background: color-mix(in srgb, var(--primary) 40%, transparent); }
+
+    /* ── RECENT SESSIONS ── */
+    .sessions-list { display: flex; flex-direction: column; gap: 10px; }
+    .session-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    .session-left { flex: 1; }
+    .session-topic { font-weight: 700; font-size: 0.95rem; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 400px; }
+    .session-meta { font-size: 0.78rem; color: var(--text-muted); }
+    .session-scores { display: flex; gap: 8px; flex-shrink: 0; }
+    .score-pill {
+      padding: 4px 10px; border-radius: 12px;
+      font-size: 0.78rem; font-weight: 800;
+      background: var(--bg); border: 1px solid var(--border);
+    }
+    .score-pill.high { color: #22c55e; border-color: #22c55e33; background: #22c55e11; }
+    .score-pill.mid { color: #f59e0b; border-color: #f59e0b33; background: #f59e0b11; }
+    .score-pill.low { color: #ef4444; border-color: #ef444433; background: #ef444411; }
+
+    /* ── SHARE BUTTON ── */
+    .share-btn {
+      position: fixed; bottom: 28px; right: 28px;
+      padding: 14px 22px; border-radius: 50px;
+      background: var(--primary); color: white;
+      font-weight: 800; font-size: 0.95rem;
+      border: none; cursor: pointer;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+      display: flex; align-items: center; gap: 8px;
+      transition: all 0.2s; z-index: 200;
+    }
+    .share-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 28px rgba(0,0,0,0.3); }
+
+    /* ── CTA FOOTER ── */
+    .profile-cta {
+      max-width: 860px;
+      margin: 24px auto 60px;
+      padding: 0 20px;
+    }
+    .cta-card {
+      background: linear-gradient(135deg, var(--primary) 0%, color-mix(in srgb, var(--primary) 60%, #7c3aed) 100%);
+      border-radius: 20px;
+      padding: 30px;
+      text-align: center;
+      color: white;
+    }
+    .cta-card h3 { font-size: 1.4rem; font-weight: 900; margin-bottom: 8px; }
+    .cta-card p { opacity: 0.9; margin-bottom: 18px; }
+    .cta-btn {
+      display: inline-block; padding: 12px 28px;
+      background: white; color: var(--primary);
+      border-radius: 50px; font-weight: 800; font-size: 0.95rem;
+      text-decoration: none; transition: transform 0.2s;
+    }
+    .cta-btn:hover { transform: scale(1.04); }
+
+    @media (max-width: 600px) {
+      .hero-card { flex-direction: column; text-align: center; padding: 24px; }
+      .hero-socials { justify-content: center; }
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+      .session-topic { max-width: 180px; }
+      .session-scores { flex-direction: column; gap: 4px; }
+    }
+  </style>
+</head>
+<body>
+  <script>(function(){ const t = localStorage.getItem('speakup-theme') || 'green'; document.documentElement.setAttribute('data-theme', t); })();</script>
+
+  <!-- NAV -->
+  <nav class="profile-nav">
+    <a href="/" class="nav-logo">🎤 Speak Up!</a>
+    <div class="nav-actions">
+      <a href="/practice" class="btn-nav btn-ghost">Practice</a>
+      <a href="/signup" class="btn-nav btn-primary">Join Free</a>
+    </div>
+  </nav>
+
+  <!-- CONTENT -->
+  <div id="profile-loading" class="profile-loading">
+    <div class="spinner"></div>
+    <p>Loading profile…</p>
+  </div>
+
+  <div id="profile-error" class="profile-error" style="display:none;">
+    <div class="error-emoji">🤔</div>
+    <div class="error-title">Profile not found</div>
+    <div class="error-sub">This user doesn't exist or hasn't set a username yet.</div>
+    <a href="/practice" class="btn-nav btn-primary" style="margin-top:16px;">Start Practicing →</a>
+  </div>
+
+  <div id="profile-content" style="display:none;">
+    <!-- HERO -->
+    <div class="profile-hero">
+      <div class="hero-card">
+        <div class="avatar-wrap">
+          <img id="profile-avatar" src="" alt="Avatar">
+        </div>
+        <div class="hero-info">
+          <div class="hero-name" id="profile-name">–</div>
+          <div class="hero-username" id="profile-username">@–</div>
+          <div id="profile-socials" class="hero-socials"></div>
+          <div class="hero-joined" id="profile-joined"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-val" id="stat-aura">0</div>
+        <div class="stat-label">✨ Aura Points</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="stat-streak">0</div>
+        <div class="stat-label">🔥 Day Streak</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="stat-yaps">0</div>
+        <div class="stat-label">🎙️ Total Yaps</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="stat-rank">#1</div>
+        <div class="stat-label">🏆 Global Rank</div>
+      </div>
+    </div>
+
+    <!-- BADGES -->
+    <div class="section">
+      <div class="section-title">🏅 Badges</div>
+      <div class="badges-grid" id="badges-grid"></div>
+    </div>
+
+    <!-- HEATMAP -->
+    <div class="section">
+      <div class="section-title">📅 Practice Activity</div>
+      <div class="heatmap-wrap">
+        <div class="heatmap-grid" id="heatmap-grid"></div>
+      </div>
+    </div>
+
+    <!-- RECENT SESSIONS -->
+    <div class="section">
+      <div class="section-title">🎯 Recent Sessions</div>
+      <div class="sessions-list" id="sessions-list"></div>
+    </div>
+
+    <!-- CTA -->
+    <div class="profile-cta">
+      <div class="cta-card">
+        <h3>Want to beat this score?</h3>
+        <p>Join Speak Up! for free — practice English speaking with AI and track your own progress.</p>
+        <a href="/signup" class="cta-btn">Start Practicing Free →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- SHARE BUTTON -->
+  <button class="share-btn" id="share-btn" style="display:none;" onclick="shareProfile()">
+    🔗 Share Profile
+  </button>
+
+  <script>
+    const BADGE_DEFS = [
+      { id: 'first_yap',    emoji: '🎤', label: 'First Yap',      req: (u) => u.total_yaps >= 1 },
+      { id: 'streak_7',     emoji: '🔥', label: '7-Day Streak',   req: (u) => u.streak >= 7 },
+      { id: 'streak_30',    emoji: '💎', label: '30-Day Streak',  req: (u) => u.streak >= 30 },
+      { id: 'aura_100',     emoji: '⭐', label: '100 Aura',       req: (u) => u.aura_points >= 100 },
+      { id: 'aura_500',     emoji: '🌟', label: '500 Aura',       req: (u) => u.aura_points >= 500 },
+      { id: 'aura_1000',    emoji: '🏆', label: '1000 Aura',      req: (u) => u.aura_points >= 1000 },
+      { id: 'yaps_10',      emoji: '🎯', label: '10 Sessions',    req: (u) => u.total_yaps >= 10 },
+      { id: 'yaps_50',      emoji: '🚀', label: '50 Sessions',    req: (u) => u.total_yaps >= 50 },
+    ];
+
+    const MODE_LABELS = { random: '🎲 Random', interview: '💼 Interview', vocab: '📖 Vocab', picture: '🖼️ Picture' };
+
+    async function loadProfile() {
+      // Extract username from URL: /u/username
+      const path = window.location.pathname;
+      const username = path.split('/u/')[1]?.replace(/\/$/, '');
+
+      if (!username) {
+        showError(); return;
+      }
+
+      // Update meta tags dynamically
+      document.getElementById('canonical-url').href = `https://speakupai.me/u/${username}`;
+
+      try {
+        const res = await fetch(`/api/get-public-profile?username=${encodeURIComponent(username)}`);
+        const json = await res.json();
+
+        if (!json.exists || !json.data) { showError(); return; }
+
+        renderProfile(json.data, username);
+      } catch (e) {
+        showError();
+      }
+    }
+
+    function renderProfile(d, username) {
+      // Update page title & OG
+      document.title = `${d.name} (@${username}) – Speak Up!`;
+      document.getElementById('og-title').content = `${d.name} (@${username}) – Speak Up!`;
+      document.getElementById('og-desc').content = `${d.name} has ${d.aura_points} Aura Points and a ${d.streak}-day streak on Speak Up! AI English Practice.`;
+
+      // Avatar
+      document.getElementById('profile-avatar').src =
+        `https://api.dicebear.com/9.x/avataaars/svg?seed=${d.avatar_seed || 'Felix'}&backgroundColor=${d.avatar_bg || 'b6e3f4'}`;
+      document.getElementById('profile-avatar').alt = d.name;
+
+      // Name & username
+      document.getElementById('profile-name').textContent = d.name;
+      document.getElementById('profile-username').textContent = `@${username}`;
+
+      // Socials
+      const socialsEl = document.getElementById('profile-socials');
+      if (d.linkedin_url) {
+        socialsEl.innerHTML += `<a class="social-link" href="${d.linkedin_url}" target="_blank" rel="noopener">💼 LinkedIn</a>`;
+      }
+      if (d.instagram_url) {
+        socialsEl.innerHTML += `<a class="social-link" href="${d.instagram_url}" target="_blank" rel="noopener">📸 Instagram</a>`;
+      }
+
+      // Joined
+      const joined = d.created_at ? new Date(d.created_at).toLocaleDateString('en-IN', { year: 'numeric', month: 'long' }) : '';
+      if (joined) document.getElementById('profile-joined').textContent = `📅 Joined ${joined}`;
+
+      // Stats
+      document.getElementById('stat-aura').textContent = d.aura_points?.toLocaleString() || '0';
+      document.getElementById('stat-streak').textContent = d.streak || '0';
+      document.getElementById('stat-yaps').textContent = d.total_yaps || '0';
+      document.getElementById('stat-rank').textContent = `#${d.rank || 1}`;
+
+      // Badges
+      const badgesEl = document.getElementById('badges-grid');
+      BADGE_DEFS.forEach(b => {
+        const earned = b.req(d);
+        badgesEl.innerHTML += `<div class="badge-pill${earned ? ' earned' : ''}">${b.emoji} ${b.label}</div>`;
+      });
+
+      // Heatmap
+      buildHeatmap(d.practice_dates || []);
+
+      // Sessions
+      const sessionsEl = document.getElementById('sessions-list');
+      const sessions = d.recent_sessions || [];
+      if (sessions.length === 0) {
+        sessionsEl.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:20px;">No sessions yet.</p>';
+      } else {
+        sessions.slice(0, 10).forEach(s => {
+          const date = new Date(s.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+          const scoreClass = s.score >= 75 ? 'high' : s.score >= 50 ? 'mid' : 'low';
+          sessionsEl.innerHTML += `
+            <div class="session-card">
+              <div class="session-left">
+                <div class="session-topic">${s.topic}</div>
+                <div class="session-meta">${MODE_LABELS[s.mode] || s.mode} &nbsp;·&nbsp; ${date}</div>
+              </div>
+              <div class="session-scores">
+                <span class="score-pill ${scoreClass}">Score ${s.score}</span>
+                <span class="score-pill">F:${s.fluency}</span>
+                <span class="score-pill">C:${s.clarity}</span>
+              </div>
+            </div>`;
+        });
+      }
+
+      // Show content
+      document.getElementById('profile-loading').style.display = 'none';
+      document.getElementById('profile-content').style.display = 'block';
+      document.getElementById('share-btn').style.display = 'flex';
+    }
+
+    function buildHeatmap(practiceDates) {
+      const grid = document.getElementById('heatmap-grid');
+      const dateSet = new Set(practiceDates);
+      const today = new Date();
+      const weeks = 26; // 6 months
+
+      for (let w = weeks - 1; w >= 0; w--) {
+        const colEl = document.createElement('div');
+        colEl.className = 'heatmap-col';
+        for (let d = 0; d < 7; d++) {
+          const date = new Date(today);
+          date.setDate(today.getDate() - (w * 7 + (6 - d)));
+          const dateStr = date.toISOString().split('T')[0];
+          const cell = document.createElement('div');
+          cell.className = 'heatmap-cell' + (dateSet.has(dateStr) ? ' active' : '');
+          cell.title = dateStr;
+          colEl.appendChild(cell);
+        }
+        grid.appendChild(colEl);
+      }
+    }
+
+    function showError() {
+      document.getElementById('profile-loading').style.display = 'none';
+      document.getElementById('profile-error').style.display = 'flex';
+    }
+
+    function shareProfile() {
+      const url = window.location.href;
+      if (navigator.share) {
+        navigator.share({ title: document.title, url });
+      } else {
+        navigator.clipboard.writeText(url).then(() => {
+          const btn = document.getElementById('share-btn');
+          btn.textContent = '✅ Link Copied!';
+          setTimeout(() => { btn.innerHTML = '🔗 Share Profile'; }, 2000);
+        });
+      }
+    }
+
+    loadProfile();
+  </script>
+</body>
+</html>

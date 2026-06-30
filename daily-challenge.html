@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="green">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daily Challenge – Speak Up! AI English Practice</title>
+  <meta name="description" content="One topic. All learners. Compete globally in Speak Up!'s Daily English Speaking Challenge. Practice today's topic and see how you rank.">
+  <meta name="keywords" content="daily english challenge, english speaking challenge, practice english daily, english speaking competition">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+  <link rel="canonical" href="https://speakupai.me/daily-challenge">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Speak Up!">
+  <meta property="og:title" content="Daily Challenge – Speak Up! AI English Practice">
+  <meta property="og:description" content="One topic for all learners every day. Practice and compete!">
+  <meta property="og:image" content="https://speakupai.me/assets/images/og-banner.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://speakupai.me/assets/images/og-banner.png">
+  <link rel="manifest" href="assets/manifest.json">
+  <meta name="theme-color" content="#D63384">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/images/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* NAV */
+    .navbar { display: flex; align-items: center; justify-content: space-between; padding: 14px 24px; background: var(--card-bg); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+    .nav-logo { font-family: 'Fredoka One', cursive; font-size: 1.3rem; color: var(--primary); text-decoration: none; }
+    .nav-links { display: flex; gap: 12px; }
+    .btn-nav { padding: 8px 18px; border-radius: 20px; font-weight: 700; font-size: 0.85rem; text-decoration: none; transition: all 0.2s; border: none; cursor: pointer; }
+    .btn-primary-nav { background: var(--primary); color: white; }
+    .btn-ghost { background: transparent; color: var(--text-muted); border: 1.5px solid var(--border); }
+
+    /* HERO */
+    .challenge-hero {
+      text-align: center;
+      padding: 48px 20px 32px;
+      position: relative;
+      overflow: hidden;
+    }
+    .challenge-hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 50% 0%, rgba(var(--primary-rgb, 214,51,132), 0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(var(--primary-rgb, 214,51,132), 0.1);
+      border: 1px solid rgba(var(--primary-rgb, 214,51,132), 0.3);
+      color: var(--primary); padding: 6px 16px; border-radius: 20px;
+      font-size: 0.82rem; font-weight: 700; margin-bottom: 16px;
+    }
+    .hero-title { font-size: 2.4rem; font-weight: 900; margin-bottom: 10px; }
+    .hero-sub { color: var(--text-muted); font-size: 1rem; max-width: 480px; margin: 0 auto 20px; line-height: 1.6; }
+    .countdown-row { display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--text-muted); font-size: 0.88rem; }
+    .countdown-time { font-weight: 800; color: var(--primary); font-size: 1rem; }
+
+    /* TOPIC CARD */
+    .topic-section { max-width: 720px; margin: 0 auto 32px; padding: 0 20px; }
+    .topic-card {
+      background: var(--card-bg);
+      border: 2px solid var(--primary);
+      border-radius: 24px;
+      padding: 36px;
+      position: relative;
+      overflow: hidden;
+    }
+    .topic-card::before {
+      content: '💬';
+      position: absolute; top: 16px; right: 20px;
+      font-size: 3rem; opacity: 0.1;
+    }
+    .topic-label { font-size: 0.78rem; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+    .topic-text { font-size: 1.3rem; font-weight: 700; line-height: 1.5; color: var(--text); margin-bottom: 24px; }
+    .topic-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+    .btn-practice {
+      flex: 1; min-width: 180px;
+      padding: 14px 24px; border-radius: 50px;
+      background: var(--primary); color: white;
+      font-weight: 800; font-size: 1rem;
+      border: none; cursor: pointer;
+      transition: all 0.2s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn-practice:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(var(--primary-rgb, 214,51,132), 0.35); }
+    .btn-share-topic {
+      padding: 14px 20px; border-radius: 50px;
+      background: transparent; color: var(--text);
+      font-weight: 700; font-size: 0.9rem;
+      border: 1.5px solid var(--border); cursor: pointer;
+      transition: all 0.2s; display: flex; align-items: center; gap: 6px;
+    }
+    .btn-share-topic:hover { border-color: var(--primary); color: var(--primary); }
+
+    /* HOW IT WORKS */
+    .how-section { max-width: 720px; margin: 0 auto 32px; padding: 0 20px; }
+    .how-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 16px; }
+    .how-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .how-step { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 20px; text-align: center; }
+    .step-num { font-size: 1.8rem; margin-bottom: 8px; }
+    .step-title { font-weight: 800; font-size: 0.9rem; margin-bottom: 4px; }
+    .step-desc { color: var(--text-muted); font-size: 0.8rem; line-height: 1.4; }
+
+    /* LEADERBOARD */
+    .lb-section { max-width: 720px; margin: 0 auto 60px; padding: 0 20px; }
+    .lb-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; }
+    .lb-date { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; }
+    .lb-empty { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 40px; text-align: center; color: var(--text-muted); }
+    .lb-empty .lb-empty-icon { font-size: 2.5rem; margin-bottom: 10px; }
+    .lb-list { display: flex; flex-direction: column; gap: 8px; }
+    .lb-entry {
+      background: var(--card-bg); border: 1px solid var(--border);
+      border-radius: 14px; padding: 14px 18px;
+      display: flex; align-items: center; gap: 14px;
+      transition: border-color 0.2s;
+    }
+    .lb-entry:hover { border-color: var(--primary); }
+    .lb-entry.top-1 { border-color: #f59e0b; background: rgba(245,158,11,0.05); }
+    .lb-entry.top-2 { border-color: #94a3b8; }
+    .lb-entry.top-3 { border-color: #cd7c2a; }
+    .lb-rank { font-size: 1.2rem; font-weight: 900; min-width: 30px; text-align: center; }
+    .lb-avatar { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; }
+    .lb-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .lb-info { flex: 1; }
+    .lb-name { font-weight: 800; font-size: 0.95rem; }
+    .lb-username { font-size: 0.78rem; color: var(--text-muted); }
+    .lb-scores { display: flex; gap: 6px; flex-shrink: 0; }
+    .lb-score { padding: 4px 10px; border-radius: 12px; font-size: 0.78rem; font-weight: 800; background: var(--bg); border: 1px solid var(--border); }
+
+    .spinner { display: inline-block; width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 600px) {
+      .hero-title { font-size: 1.8rem; }
+      .how-steps { grid-template-columns: 1fr; }
+      .topic-card { padding: 24px; }
+    }
+  </style>
+</head>
+<body>
+  <script>(function(){ const t = localStorage.getItem('speakup-theme') || 'green'; document.documentElement.setAttribute('data-theme', t); })();</script>
+
+  <!-- NAV -->
+  <nav class="navbar">
+    <a href="/" class="nav-logo">🎤 Speak Up!</a>
+    <div class="nav-links">
+      <a href="/practice" class="btn-nav btn-ghost">Practice</a>
+      <a href="/dashboard" id="dash-btn" class="btn-nav btn-primary-nav" style="display:none;">Dashboard</a>
+      <a href="/login" id="login-btn" class="btn-nav btn-primary-nav">Login</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <div class="challenge-hero">
+    <div class="hero-badge">🌍 Global Daily Challenge</div>
+    <h1 class="hero-title">Today's Challenge</h1>
+    <p class="hero-sub">One topic. Every learner. Practice the same topic and see where you rank globally!</p>
+    <div class="countdown-row">
+      🕐 Resets in: <span class="countdown-time" id="countdown">–</span>
+    </div>
+  </div>
+
+  <!-- TOPIC CARD -->
+  <div class="topic-section">
+    <div class="topic-card" id="topic-card">
+      <div style="text-align:center;padding:20px;"><div class="spinner"></div></div>
+    </div>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <div class="how-section">
+    <div class="how-title">⚡ How it works</div>
+    <div class="how-steps">
+      <div class="how-step">
+        <div class="step-num">📋</div>
+        <div class="step-title">Get today's topic</div>
+        <div class="step-desc">Every learner gets the same topic — fresh each day at midnight IST.</div>
+      </div>
+      <div class="how-step">
+        <div class="step-num">🎙️</div>
+        <div class="step-title">Record your answer</div>
+        <div class="step-desc">Speak for 30–60 seconds. AI scores your fluency, clarity & confidence.</div>
+      </div>
+      <div class="how-step">
+        <div class="step-num">🏆</div>
+        <div class="step-title">Climb the leaderboard</div>
+        <div class="step-desc">See how your score compares to other learners globally today.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LEADERBOARD -->
+  <div class="lb-section">
+    <div class="lb-title">
+      🏆 Today's Leaderboard
+      <span class="lb-date" id="lb-date">–</span>
+    </div>
+    <div id="lb-container">
+      <div style="text-align:center;padding:40px;"><div class="spinner"></div></div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { auth } from './assets/js/firebase-config.js';
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+
+    let todayTopic = '';
+
+    // Auth state
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        document.getElementById('dash-btn').style.display = 'block';
+        document.getElementById('login-btn').style.display = 'none';
+      }
+    });
+
+    // Countdown to midnight IST
+    function updateCountdown() {
+      const now = new Date();
+      const istNow = new Date(now.getTime() + 5.5 * 3600000);
+      const midnight = new Date(istNow);
+      midnight.setHours(24, 0, 0, 0);
+      const diff = midnight - istNow;
+      const h = Math.floor(diff / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      const s = Math.floor((diff % 60000) / 1000);
+      document.getElementById('countdown').textContent =
+        `${String(h).padStart(2,'0')}h ${String(m).padStart(2,'0')}m ${String(s).padStart(2,'0')}s`;
+    }
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+
+    // Load challenge
+    async function loadChallenge() {
+      try {
+        const res = await fetch('/api/daily-challenge');
+        const data = await res.json();
+
+        todayTopic = data.topic;
+        document.getElementById('lb-date').textContent = data.date;
+
+        // Render topic card
+        document.getElementById('topic-card').innerHTML = `
+          <div class="topic-label">📅 Today's Challenge Topic</div>
+          <div class="topic-text">${data.topic}</div>
+          <div class="topic-actions">
+            <button class="btn-practice" onclick="goToPractice()">
+              🎙️ Practice This Topic
+            </button>
+            <button class="btn-share-topic" onclick="shareChallenge()">
+              🔗 Share Challenge
+            </button>
+          </div>`;
+
+        // Render leaderboard
+        renderLeaderboard(data.leaderboard || []);
+
+      } catch (e) {
+        document.getElementById('topic-card').innerHTML =
+          '<p style="color:var(--text-muted);text-align:center">Failed to load. Please refresh.</p>';
+      }
+    }
+
+    function renderLeaderboard(entries) {
+      const container = document.getElementById('lb-container');
+      if (entries.length === 0) {
+        container.innerHTML = `
+          <div class="lb-empty">
+            <div class="lb-empty-icon">🌱</div>
+            <div style="font-weight:700;margin-bottom:6px;">Be the first to practice today!</div>
+            <div style="color:var(--text-muted);font-size:0.88rem;">No one has completed today's challenge yet. Go first and claim the #1 spot!</div>
+          </div>`;
+        return;
+      }
+
+      const rankIcons = ['🥇','🥈','🥉'];
+      const topClass = ['top-1','top-2','top-3'];
+
+      container.innerHTML = '<div class="lb-list">' + entries.map((e, i) => `
+        <div class="lb-entry ${topClass[i] || ''}">
+          <div class="lb-rank">${rankIcons[i] || `#${i+1}`}</div>
+          <div class="lb-avatar">
+            <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=${e.avatar_seed || 'Felix'}&backgroundColor=${e.avatar_bg || 'b6e3f4'}" alt="${e.name}">
+          </div>
+          <div class="lb-info">
+            <div class="lb-name">${e.name}</div>
+            <div class="lb-username">${e.username ? '@'+e.username : ''}</div>
+          </div>
+          <div class="lb-scores">
+            <span class="lb-score">🏅 ${e.best_score}</span>
+            <span class="lb-score">F:${e.best_fluency}</span>
+            <span class="lb-score">C:${e.best_clarity}</span>
+          </div>
+        </div>`).join('') + '</div>';
+    }
+
+    window.goToPractice = function() {
+      if (!todayTopic) return;
+      sessionStorage.setItem('speakup_daily_topic', todayTopic);
+      window.location.href = '/practice?mode=random&daily=1';
+    };
+
+    window.shareChallenge = function() {
+      const url = 'https://speakupai.me/daily-challenge';
+      const text = `🎤 Today's English speaking challenge on Speak Up!:\n\n"${todayTopic}"\n\nPractice & compete: ${url}`;
+      if (navigator.share) {
+        navigator.share({ title: "Today's English Challenge", text, url });
+      } else {
+        navigator.clipboard.writeText(text).then(() => alert('Challenge copied to clipboard!'));
+      }
+    };
+
+    loadChallenge();
+  </script>
+</body>
+</html>

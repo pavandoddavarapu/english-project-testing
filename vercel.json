@@ -35,10 +35,9 @@
     }
   ],
   "rewrites": [
-    {
-      "source": "/dashboard",
-      "destination": "/genz-streak-test"
-    }
+    { "source": "/dashboard", "destination": "/genz-streak-test" },
+    { "source": "/daily-challenge", "destination": "/daily-challenge" },
+    { "source": "/u/:username", "destination": "/u/index.html" }
   ],
   "redirects": [
     {

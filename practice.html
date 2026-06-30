@@ -113,21 +113,30 @@
     })();
   </script>
 
+
   <!-- Auth Script -->
   <script type="module">
     import { auth } from './assets/js/firebase-config.js';
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+
+    // Do NOT redirect known bots/crawlers — let them read the page for SEO
+    const botPattern = /googlebot|bingbot|slurp|duckduckbot|baiduspider|yandexbot|facebookexternalhit|twitterbot|linkedinbot|crawler|spider|bot/i;
+    const isBot = botPattern.test(navigator.userAgent);
 
     onAuthStateChanged(auth, (user) => {
       const authBtn = document.getElementById('auth-btn');
       if (user) {
         authBtn.innerText = 'Dashboard';
         authBtn.href = 'genz-streak-test.html';
-      } else {
-        window.location.href = 'login.html';
+      } else if (!isBot) {
+        // Delay redirect slightly so page renders (helps SEO pre-rendering too)
+        setTimeout(() => {
+          window.location.href = 'login.html';
+        }, 2500);
       }
     });
   </script>
+
 
   <!-- MAIN CONTENT -->
   <main class="main-layout">

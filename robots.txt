@@ -3,5 +3,22 @@ Allow: /
 Disallow: /api/
 Disallow: /scripts/
 Disallow: /shared/
+Disallow: /logout
 
-Sitemap: https://english-project-testing-o32g.vercel.app/sitemap.xml
+# Crawl delay to be polite
+Crawl-delay: 1
+
+# Block AI scrapers that don't respect content
+User-agent: GPTBot
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
+
+User-agent: Google-Extended
+Allow: /
+
+Sitemap: https://speakupai.me/sitemap.xml

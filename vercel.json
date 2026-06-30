@@ -40,7 +40,14 @@
       "destination": "/genz-streak-test"
     }
   ],
-  "redirects": [],
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [{ "type": "host", "value": "english-project-testing-o32g.vercel.app" }],
+      "destination": "https://speakupai.me/$1",
+      "permanent": true
+    }
+  ],
   "cleanUrls": true,
   "trailingSlash": false,
   "outputDirectory": "."

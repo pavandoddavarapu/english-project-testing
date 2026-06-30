@@ -1,7 +1,7 @@
 # 🎤 Speak Up! — Project Pitch Document
 ### AI-Powered English Speaking Practice Platform
 
-**Live URL:** https://english-project-testing-o32g.vercel.app  
+**Live URL:** https://speakupai.me  
 **GitHub:** https://github.com/pavandoddavarapu/english-project-testing  
 **Built by:** Pavan Doddavarapu
 
@@ -214,11 +214,11 @@ CREATE UNIQUE INDEX idx_users_username ON users(LOWER(username));
 
 | Resource | Link |
 |---|---|
-| 🌐 Live App | https://english-project-testing-o32g.vercel.app |
-| 🎤 Practice Page | https://english-project-testing-o32g.vercel.app/practice |
-| 👥 Group Discussion | https://english-project-testing-o32g.vercel.app/group-meet |
+| 🌐 Live App | https://speakupai.me |
+| 🎤 Practice Page | https://speakupai.me/practice |
+| 👥 Group Discussion | https://speakupai.me/group-meet |
 | 📂 GitHub Repo | https://github.com/pavandoddavarapu/english-project-testing |
-| ℹ️ About Page | https://english-project-testing-o32g.vercel.app/about |
+| ℹ️ About Page | https://speakupai.me/about |
 
 ---
 

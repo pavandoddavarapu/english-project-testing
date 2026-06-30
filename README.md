@@ -5,13 +5,13 @@
 **AI-powered English speaking practice platform with real-time speech scoring, gamification, and group discussion rooms.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?logo=vercel)](https://english-project-testing-o32g.vercel.app)
+[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?logo=vercel)](https://speakupai.me)
 [![Node.js](https://img.shields.io/badge/Node.js-ESM-green?logo=node.js)](https://nodejs.org)
 [![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-blue?logo=postgresql)](https://www.postgresql.org)
 [![Firebase](https://img.shields.io/badge/Auth-Firebase-orange?logo=firebase)](https://firebase.google.com)
 [![AI](https://img.shields.io/badge/AI-Groq%20%2B%20Gemini-purple)](https://groq.com)
 
-**[Live Demo](https://english-project-testing-o32g.vercel.app)** · **[Practice Now](https://english-project-testing-o32g.vercel.app/practice)** · **[Group Discussion](https://english-project-testing-o32g.vercel.app/group-meet)**
+**[Live Demo](https://speakupai.me)** · **[Practice Now](https://speakupai.me/practice)** · **[Group Discussion](https://speakupai.me/group-meet)**
 
 </div>
 
@@ -900,6 +900,6 @@ This project is licensed under the MIT License. See [LICENSE](./LICENSE) for det
 
 Built with purpose for English learners everywhere.
 
-**[speakup.app](https://english-project-testing-o32g.vercel.app)**
+**[speakup.app](https://speakupai.me)**
 
 </div>

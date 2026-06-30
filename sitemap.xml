@@ -4,64 +4,64 @@
 
   <!-- Homepage — highest priority -->
   <url>
-    <loc>https://english-project-testing-o32g.vercel.app/</loc>
-    <lastmod>2025-06-27</lastmod>
+    <loc>https://speakupai.me/</loc>
+    <lastmod>2026-06-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://speakupai.me/"/>
+    <xhtml:link rel="alternate" hreflang="en-IN" href="https://speakupai.me/"/>
   </url>
 
   <!-- Practice Page — core feature -->
   <url>
-    <loc>https://english-project-testing-o32g.vercel.app/practice</loc>
-    <lastmod>2025-06-27</lastmod>
+    <loc>https://speakupai.me/practice</loc>
+    <lastmod>2026-06-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
-  </url>
-
-  <!-- About Page -->
-  <url>
-    <loc>https://english-project-testing-o32g.vercel.app/about</loc>
-    <lastmod>2025-06-27</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://speakupai.me/practice"/>
+    <xhtml:link rel="alternate" hreflang="en-IN" href="https://speakupai.me/practice"/>
   </url>
 
   <!-- Group Discussion Rooms -->
   <url>
-    <loc>https://english-project-testing-o32g.vercel.app/group-meet</loc>
-    <lastmod>2025-06-27</lastmod>
+    <loc>https://speakupai.me/group-meet</loc>
+    <lastmod>2026-06-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://speakupai.me/group-meet"/>
+    <xhtml:link rel="alternate" hreflang="en-IN" href="https://speakupai.me/group-meet"/>
+  </url>
+
+  <!-- Dashboard -->
+  <url>
+    <loc>https://speakupai.me/dashboard</loc>
+    <lastmod>2026-06-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
-  <!-- Login Page -->
+  <!-- About Page -->
   <url>
-    <loc>https://english-project-testing-o32g.vercel.app/login</loc>
-    <lastmod>2025-06-27</lastmod>
+    <loc>https://speakupai.me/about</loc>
+    <lastmod>2026-06-30</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-
-  <!-- Sign Up Page -->
-  <url>
-    <loc>https://english-project-testing-o32g.vercel.app/signup</loc>
-    <lastmod>2025-06-27</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://speakupai.me/about"/>
+    <xhtml:link rel="alternate" hreflang="en-IN" href="https://speakupai.me/about"/>
   </url>
 
   <!-- Privacy Policy -->
   <url>
-    <loc>https://english-project-testing-o32g.vercel.app/privacy</loc>
-    <lastmod>2025-06-27</lastmod>
+    <loc>https://speakupai.me/privacy</loc>
+    <lastmod>2026-06-30</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>
   </url>
 
   <!-- Terms of Service -->
   <url>
-    <loc>https://english-project-testing-o32g.vercel.app/terms</loc>
-    <lastmod>2025-06-27</lastmod>
+    <loc>https://speakupai.me/terms</loc>
+    <lastmod>2026-06-30</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>
   </url>

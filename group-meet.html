@@ -1384,9 +1384,8 @@
     // ── 1. AUTH STATE CHECK & INITIALIZE ──
     onAuthStateChanged(auth, async (user) => {
       if (!user) {
-        // Redirect to login preserving the redirect target
-        const redirectTarget = encodeURIComponent(window.location.pathname + window.location.search);
-        window.location.href = `login.html?redirect=${redirectTarget}`;
+        // Do NOT redirect — keep page public and indexable by Google
+        // Users who try to join a room will be prompted to login at that point
         return;
       }
 

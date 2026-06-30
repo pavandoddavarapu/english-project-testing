@@ -187,13 +187,16 @@ async function audioBlobToFloat32(blob) {
   return resampled.getChannelData(0);
 }
 
-// Kick off the worker as soon as the page loads.
-// On mobile, delay Whisper init to avoid blocking the main thread during page load.
-if (_isMobileDevice) {
-  requestIdleCallback ? requestIdleCallback(initWhisperWorker) 
-    : setTimeout(initWhisperWorker, 2000);
-} else {
-  initWhisperWorker();
+// ── LAZY LOAD: Only init Whisper when user actually clicks Record ──────────
+// This makes the practice page load instantly instead of blocking on a
+// 39MB model download / cache read on every page visit.
+// lazyInitWhisper() is called the FIRST TIME the record button is clicked.
+let _whisperInitialized = false;
+function lazyInitWhisper() {
+  if (!_whisperInitialized) {
+    _whisperInitialized = true;
+    initWhisperWorker();
+  }
 }
 
 // ─── AI CONFIG & FILTER STATE ───────────────────────────
@@ -844,6 +847,9 @@ recordBtn.addEventListener("click", async () => {
       recordStatus.innerHTML = `<span style="color: #D4580A; font-weight: bold;">Whoa there, speedster! 🏃‍♂️</span><br>We love the enthusiasm, but let’s focus on quality over quantity! Take a deep breath and prepare your next amazing speech. Please wait ${waitSeconds} seconds.`;
       return;
     }
+
+    // ── LAZY INIT WHISPER on first record click ──
+    lazyInitWhisper();
 
     // ── START RECORDING ──
     try {

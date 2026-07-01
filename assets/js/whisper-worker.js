@@ -57,13 +57,24 @@ self.fetch = async function(input, init) {
 // ── Check if the model is already in the browser cache ───────────────────────
 async function isModelCached() {
   try {
-    // Transformers.js v2 uses 'transformers-cache' as the Cache Storage name
     const cache = await caches.open('transformers-cache');
     const keys = await cache.keys();
-    // If any cached key contains our model name, it's already downloaded
-    return keys.some(req => req.url.includes('whisper-tiny'));
+    const modelKeys = keys.filter(req => req.url.includes('whisper-tiny'));
+    if (modelKeys.length === 0) return false;
+
+    // Validate cache entries — delete any that return null/corrupt responses
+    let validCount = 0;
+    for (const key of modelKeys) {
+      const resp = await cache.match(key);
+      if (!resp || !resp.ok) {
+        console.warn('[Whisper] Corrupt cache entry, deleting:', key.url);
+        await cache.delete(key);
+      } else {
+        validCount++;
+      }
+    }
+    return validCount > 0;
   } catch {
-    // Cache API not available (very rare) — assume not cached
     return false;
   }
 }
@@ -126,8 +137,9 @@ async function getTranscriber() {
 self.addEventListener('message', async (e) => {
   const { type, audio } = e.data;
 
-  // ── 'load': Called on every page visit.
-  //    Checks cache → loads from cache or downloads → signals 'ready'.
+  // ── LAZY LOAD: Only init Whisper when user actually clicks Record ──────────────
+  // This makes the practice page load instantly instead of blocking on a
+  // 39MB model download / cache read on every page visit.
   if (type === 'load') {
     try {
       await getTranscriber();

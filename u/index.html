@@ -341,23 +341,17 @@
     const MODE_LABELS = { random: '🎲 Random', interview: '💼 Interview', vocab: '📖 Vocab', picture: '🖼️ Picture' };
 
     async function loadProfile() {
-      // Extract username from URL: /u/username
       const path = window.location.pathname;
       const username = path.split('/u/')[1]?.replace(/\/$/, '');
 
-      if (!username) {
-        showError(); return;
-      }
+      if (!username) { showError(); return; }
 
-      // Update meta tags dynamically
       document.getElementById('canonical-url').href = `https://speakupai.me/u/${username}`;
 
       try {
         const res = await fetch(`/api/get-public-profile?username=${encodeURIComponent(username)}`);
         const json = await res.json();
-
         if (!json.exists || !json.data) { showError(); return; }
-
         renderProfile(json.data, username);
       } catch (e) {
         showError();

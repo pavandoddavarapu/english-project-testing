@@ -234,7 +234,6 @@
     updateCountdown();
     setInterval(updateCountdown, 1000);
 
-    // Load challenge
     async function loadChallenge() {
       try {
         const res = await fetch('/api/daily?challenge=1');

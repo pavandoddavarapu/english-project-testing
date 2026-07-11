@@ -285,6 +285,9 @@ async function fetchAIData() {
 }
 
 async function initDailyData() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const isDaily = urlParams.get('daily') === '1';
+
   topicAbove.textContent = '🤖 AI';
   topicMain.textContent = 'Loading today\'s fresh content…';
   topicBelow.textContent = 'Powered by AI · updates every day';
@@ -302,14 +305,47 @@ async function initDailyData() {
         .filter(k => k.startsWith('speakup-daily-') && k !== CACHE_KEY)
         .forEach(k => localStorage.removeItem(k));
     }
+
+    if (isDaily) {
+      let challengeTopic = sessionStorage.getItem('speakup_daily_topic');
+      if (!challengeTopic) {
+        // Fallback: fetch directly from daily challenge endpoint
+        const challengeRes = await fetch('/api/daily?challenge=1');
+        const challengeJson = await challengeRes.json();
+        challengeTopic = challengeJson.topic;
+      }
+      if (challengeTopic) {
+        showTopic({
+          above: '🏆 Daily Challenge',
+          main: challengeTopic,
+          below: 'Speak for 30-60s to submit your score to today\'s global leaderboard!'
+        });
+        spinBtn.disabled = true;
+        spinBtn.title = "Spin is disabled during the Daily Challenge";
+        spinBtn.style.opacity = '0.5';
+        spinBtn.style.cursor = 'not-allowed';
+        return;
+      }
+    }
+
     const pool = getRandomPool();
     showTopic(pool[Math.floor(Math.random() * pool.length)]);
   } catch (err) {
     console.error('AI failed — using built-in fallback:', err);
     DAILY_DATA = null;
-    showTopic(RANDOM_TOPICS[0]);
+    if (isDaily && sessionStorage.getItem('speakup_daily_topic')) {
+      showTopic({
+        above: '🏆 Daily Challenge',
+        main: sessionStorage.getItem('speakup_daily_topic'),
+        below: 'Speak for 30-60s to submit your score to today\'s global leaderboard!'
+      });
+    } else {
+      showTopic(RANDOM_TOPICS[0]);
+    }
   } finally {
-    spinBtn.disabled = false;
+    if (!isDaily) {
+      spinBtn.disabled = false;
+    }
   }
 }
 

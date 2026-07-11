@@ -147,7 +147,7 @@
 
   <!-- NAV -->
   <nav class="navbar">
-    <a href="/" class="nav-logo">🎤 Speak Up!</a>
+    <a href="index.html" class="nav-logo">🎤 Speak Up!</a>
     <div class="nav-links" style="display: flex; align-items: center; gap: 12px;">
       <!-- Streak Fire Widget -->
       <div id="nav-streak-widget" class="nav-streak-widget" onclick="window.location.href='daily-challenge.html'" title="Daily Challenge Status" style="display: none; margin-right: 8px;">
@@ -162,9 +162,9 @@
         </svg>
         <span id="nav-streak-count" class="streak-count-text">0</span>
       </div>
-      <a href="/practice" class="btn-nav btn-ghost">Practice</a>
-      <a href="/dashboard" id="dash-btn" class="btn-nav btn-primary-nav" style="display:none;">Dashboard</a>
-      <a href="/login" id="login-btn" class="btn-nav btn-primary-nav">Login</a>
+      <a href="practice.html" class="btn-nav btn-ghost">Practice</a>
+      <a href="genz-streak-test.html" id="dash-btn" class="btn-nav btn-primary-nav" style="display:none;">Dashboard</a>
+      <a href="login.html" id="login-btn" class="btn-nav btn-primary-nav">Login</a>
     </div>
   </nav>
 
@@ -322,7 +322,7 @@
     window.goToPractice = function() {
       if (!todayTopic) return;
       sessionStorage.setItem('speakup_daily_topic', todayTopic);
-      window.location.href = '/practice?mode=random&daily=1';
+      window.location.href = 'practice.html?mode=random&daily=1';
     };
 
     window.shareChallenge = function() {

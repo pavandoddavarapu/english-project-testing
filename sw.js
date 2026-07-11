@@ -1,5 +1,5 @@
-// v13 — fix blank page on back button: skip all navigate requests so bfcache works
-const CACHE_NAME = 'speakup-cache-v13';
+// v14 — fix blank page on back button + push notification support
+const CACHE_NAME = 'speakup-cache-v14';
 
 const ASSETS_TO_CACHE = [
   './assets/css/style.css',
@@ -83,6 +83,42 @@ self.addEventListener('fetch', event => {
         }
         return networkRes;
       });
+    })
+  );
+});
+
+// ── PUSH: Show notification when streak reminder arrives ──────────────────────
+self.addEventListener('push', event => {
+  let data = { title: 'Speak Up! 🔥', body: 'Your streak is at risk! Practice now.' };
+  try {
+    if (event.data) data = event.data.json();
+  } catch (e) {}
+
+  event.waitUntil(
+    self.registration.showNotification(data.title || 'Speak Up!', {
+      body: data.body || 'Keep your streak alive!',
+      icon: '/assets/images/icon-192.png',
+      badge: '/assets/images/icon-192.png',
+      tag: 'streak-reminder',
+      renotify: true,
+      data: { url: data.url || '/practice' }
+    })
+  );
+});
+
+// ── NOTIFICATION CLICK: Open practice page when user taps notification ────────
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  const targetUrl = (event.notification.data && event.notification.data.url) || '/practice';
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
+      for (const client of clientList) {
+        if (client.url.includes(self.location.origin) && 'focus' in client) {
+          client.navigate(targetUrl);
+          return client.focus();
+        }
+      }
+      return clients.openWindow(targetUrl);
     })
   );
 });

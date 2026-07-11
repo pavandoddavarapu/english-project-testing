@@ -9,9 +9,10 @@
  *   initPushNotifications(user, idToken);
  */
 
-const VAPID_PUBLIC_KEY = 'REPLACE_WITH_YOUR_VAPID_PUBLIC_KEY';
-// Generate VAPID keys: run -> npx web-push generate-vapid-keys
-// Add VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT to Vercel env vars
+// VAPID public key is injected via a <meta name="vapid-key"> tag in the dashboard HTML.
+// To generate keys: npx web-push generate-vapid-keys
+// Then add VAPID_PUBLIC_KEY to Vercel env vars and inject below in genz-streak-test.html.
+const VAPID_PUBLIC_KEY = (document.querySelector('meta[name="vapid-key"]') || {}).content || '';
 
 function urlBase64ToUint8Array(base64String) {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -33,14 +34,14 @@ async function getOrCreateSubscription() {
 }
 
 async function saveSubscription(user, idToken, subscription) {
-  const res = await fetch('/api/push-subscribe', {
+  const res = await fetch('/api/update-profile', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       idToken,
       uid: user.uid,
       subscription: subscription.toJSON(),
-      action: 'subscribe',
+      action: 'push-subscribe',
     }),
   });
   return res.ok;
@@ -51,10 +52,10 @@ async function removeSubscription(user, idToken) {
   const sub = await sw.pushManager.getSubscription();
   if (sub) await sub.unsubscribe();
 
-  await fetch('/api/push-subscribe', {
+  await fetch('/api/update-profile', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ idToken, uid: user.uid, action: 'unsubscribe' }),
+    body: JSON.stringify({ idToken, uid: user.uid, action: 'push-unsubscribe' }),
   });
 }
 

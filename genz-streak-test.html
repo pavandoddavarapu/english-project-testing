@@ -19,6 +19,8 @@
   <meta name="twitter:image" content="https://speakupai.me/assets/images/og-banner.png">
   <link rel="manifest" href="assets/manifest.json">
   <meta name="theme-color" content="#D63384">
+  <!-- VAPID public key for push notifications (injected server-side or set via Vercel env) -->
+  <meta name="vapid-key" content="YOUR_VAPID_PUBLIC_KEY_HERE">
   <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
   <link rel="icon" type="image/png" sizes="192x192" href="assets/images/icon-192.png">
   <link rel="apple-touch-icon" href="assets/images/icon-192.png">
@@ -916,6 +918,41 @@
       background: var(--accent2);
       color: var(--primary);
     }
+    .hamburger-section-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 6px 0;
+    }
+    .hamburger-section-label {
+      padding: 4px 16px 2px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .hamburger-toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 9px 16px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--text);
+      cursor: pointer;
+      transition: background 0.2s;
+      gap: 12px;
+    }
+    .hamburger-toggle-row:hover {
+      background: var(--accent2);
+    }
+    .hamburger-toggle-row input[type="checkbox"] {
+      width: 36px;
+      height: 20px;
+      accent-color: var(--primary);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
     
     /* ── Dashboard Responsive: Tablet ── */
     @media (max-width: 900px) {
@@ -1182,6 +1219,17 @@
         <button class="hamburger-btn" id="hamburger-btn" title="Menu">☰</button>
         <div class="hamburger-dropdown hidden" id="hamburger-dropdown">
           <a href="#" id="share-profile-btn" onclick="shareUserProfile(); return false;">🔗 Share Profile</a>
+          <div class="hamburger-section-divider"></div>
+          <div class="hamburger-section-label">Notifications</div>
+          <label class="hamburger-toggle-row" id="email-reminder-row" title="Get an email when your streak is at risk">
+            <span>📧 Email Reminders</span>
+            <input type="checkbox" id="email-reminder-toggle" checked onchange="handleEmailReminderToggle(this.checked)">
+          </label>
+          <label class="hamburger-toggle-row" id="push-notif-row" title="Get push notifications to your device">
+            <span>🔔 Push Notifications</span>
+            <input type="checkbox" id="push-notif-toggle" onchange="handlePushToggle(this.checked)">
+          </label>
+          <div class="hamburger-section-divider"></div>
           <a href="logout.html">🚪 Logout</a>
         </div>
       </div>
@@ -2570,6 +2618,51 @@
       }
     }
     window.shareUserProfile = shareUserProfile;
+    // -- Email Reminders Toggle -------------------------------------------------
+    async function handleEmailReminderToggle(enabled) {
+      const user = auth.currentUser;
+      if (!user) return;
+      try {
+        const idToken = await user.getIdToken();
+        const res = await fetch('/api/update-profile', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ idToken, uid: user.uid, action: 'email-reminders', enabled })
+        });
+        if (!res.ok) throw new Error('Failed to update email reminders');
+        console.log('[Dashboard] Email reminders', enabled ? 'enabled' : 'disabled');
+      } catch (e) {
+        console.error('[Dashboard] Email reminder toggle failed:', e.message);
+        const toggle = document.getElementById('email-reminder-toggle');
+        if (toggle) toggle.checked = !enabled;
+      }
+    }
+    window.handleEmailReminderToggle = handleEmailReminderToggle;
+
+    // -- Push Notifications Toggle ----------------------------------------------
+    async function handlePushToggle(enabled) {
+      const user = auth.currentUser;
+      if (!user) return;
+      try {
+        const idToken = await user.getIdToken();
+        if (enabled) {
+          const { initPushNotifications } = await import('./assets/js/push-notifications.js');
+          await initPushNotifications(user, idToken);
+          const toggle = document.getElementById('push-notif-toggle');
+          if (toggle) toggle.checked = Notification.permission === 'granted';
+        } else {
+          const { removeSubscription } = await import('./assets/js/push-notifications.js');
+          await removeSubscription(user, idToken);
+          const toggle = document.getElementById('push-notif-toggle');
+          if (toggle) toggle.checked = false;
+        }
+      } catch (e) {
+        console.error('[Dashboard] Push toggle failed:', e.message);
+        const toggle = document.getElementById('push-notif-toggle');
+        if (toggle) toggle.checked = !enabled;
+      }
+    }
+    window.handlePushToggle = handlePushToggle;
 
     // ── Public View Mode layout changes ──
     if (isPublicView) {
@@ -2638,6 +2731,22 @@
         }
 
         await loadFromBackend(user);
+
+        // ── Push notifications opt-in (runs once after login) ──────────────────
+        try {
+          const idToken = await user.getIdToken();
+          const { initPushNotifications } = await import('./assets/js/push-notifications.js');
+          // Small delay so banner doesn't compete with page load animations
+          setTimeout(() => initPushNotifications(user, idToken), 4000);
+
+          // Sync push toggle state with current browser permission
+          const pushToggle = document.getElementById('push-notif-toggle');
+          if (pushToggle) {
+            pushToggle.checked = Notification.permission === 'granted';
+          }
+        } catch (pushErr) {
+          console.warn('[Dashboard] Push notifications not available:', pushErr.message);
+        }
       } else {
         window.location.href = 'login.html';
       }

@@ -41,6 +41,13 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true, action: 'unsubscribed' });
     }
 
+    // -- EMAIL REMINDERS TOGGLE --------------------------------------------------
+    if (action === 'email-reminders') {
+      const emailEnabled = enabled === true || enabled === 'true';
+      await query('UPDATE users SET email_reminders = $1 WHERE uid = $2', [emailEnabled, uid]);
+      return res.status(200).json({ ok: true, action: 'email-reminders', enabled: emailEnabled });
+    }
+
     // 2. Validate input variables
     const cleanName = (name || '').trim().substring(0, 100);
     const validGenders = ['male', 'female', 'prefer_not'];

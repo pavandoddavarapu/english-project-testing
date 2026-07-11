@@ -1212,6 +1212,11 @@
           </div>
         </div>
       </div>
+      <!-- Streak Fire Widget -->
+      <div id="nav-streak-widget" class="nav-streak-widget" onclick="window.location.href='daily-challenge.html'" title="Daily Challenge Status" style="display: none; margin-right: 5px;">
+        <span id="nav-streak-fire" class="streak-fire-icon" style="font-size: 1.25rem;">🔥</span>
+        <span id="nav-streak-count" class="streak-count-text" style="font-weight: 800; font-size: 0.9rem; color: var(--text-muted);">0</span>
+      </div>
       <a href="practice.html" style="text-decoration: none; font-weight: 800; font-family: 'Nunito', sans-serif; background: var(--primary); color: white; padding: 8px 18px; border-radius: 20px; font-size: 0.9rem; transition: all 0.2s; box-shadow: 0 4px 12px var(--shadow);">Practice Now 🎤</a>
       
       <!-- Hamburger Menu for Settings/Logout/Sharing -->
@@ -2732,6 +2737,14 @@
         }
 
         await loadFromBackend(user);
+
+        // ── Streak fire widget ───────────────────────────────────────────────
+        try {
+          const { initStreakFireWidget } = await import('./assets/js/streak-fire.js');
+          initStreakFireWidget(user);
+        } catch (e) {
+          console.warn('[Dashboard] Failed to init streak fire widget:', e);
+        }
 
         // ── Push notifications opt-in (runs once after login) ──────────────────
         try {

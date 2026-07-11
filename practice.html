@@ -101,7 +101,11 @@
             <button class="theme-swatch" data-theme="teal" title="Teal Breeze" style="--sw:#0D9488"><span
                 class="swatch-dot" style="background:#0D9488"></span>Teal</button>
           </div>
-        </div>
+      </div>
+      <!-- Streak Fire Widget -->
+      <div id="nav-streak-widget" class="nav-streak-widget" onclick="window.location.href='daily-challenge.html'" title="Daily Challenge Status" style="display: none; margin-right: 5px;">
+        <span id="nav-streak-fire" class="streak-fire-icon" style="font-size: 1.25rem;">🔥</span>
+        <span id="nav-streak-count" class="streak-count-text" style="font-weight: 800; font-size: 0.9rem; color: var(--text-muted);">0</span>
       </div>
       <a href="login.html" id="auth-btn"
         style="text-decoration: none; font-weight: 800; font-family: 'Nunito', sans-serif; background: var(--primary); color: white; padding: 6px 14px; border-radius: 20px; font-size: 0.9rem; transition: background 0.2s;">Login</a>
@@ -632,10 +636,18 @@
     }
 
     // ── Auth listener ──────────────────────────────────────────────────────────
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, async (user) => {
       if (user) {
         interceptAnalysis(user);
         watchTimerCompletion(user);
+
+        // Initialize streak fire widget
+        try {
+          const { initStreakFireWidget } = await import('./assets/js/streak-fire.js');
+          initStreakFireWidget(user);
+        } catch (e) {
+          console.warn('[Practice] Failed to init streak fire widget:', e);
+        }
       } else {
         if (typeof window._speakup_unwrap === 'function') window._speakup_unwrap();
         if (_timerObserver) { _timerObserver.disconnect(); _timerObserver = null; }

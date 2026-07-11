@@ -2880,3 +2880,43 @@ html[data-theme="dark"] .chatbot-window {
   .chatbot-window { background: rgba(255,255,255,0.95); }
   .modal-overlay { background: rgba(74,16,48,0.55); }
 }
+
+/* ── 9. LeetCode-style Streak Fire Widget ── */
+.nav-streak-widget {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  background: rgba(0, 0, 0, 0.05);
+  border: 1.5px solid var(--accent2);
+  cursor: pointer;
+  transition: all 0.25s ease;
+  user-select: none;
+}
+html[data-theme="dark"] .nav-streak-widget {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+.nav-streak-widget:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px var(--shadow);
+}
+.nav-streak-widget.active {
+  background: rgba(255, 161, 22, 0.1) !important;
+  border-color: rgba(255, 161, 22, 0.35) !important;
+  box-shadow: 0 0 15px rgba(255, 161, 22, 0.15);
+}
+.nav-streak-widget.active .streak-fire-icon {
+  filter: none !important;
+  opacity: 1 !important;
+  animation: firePulse 1.5s infinite alternate ease-in-out;
+}
+.nav-streak-widget.active .streak-count-text {
+  color: #ffa116 !important;
+  font-weight: 900;
+}
+@keyframes firePulse {
+  0% { transform: scale(1); filter: drop-shadow(0 0 2px rgba(255,161,22,0.4)); }
+  100% { transform: scale(1.12); filter: drop-shadow(0 0 8px rgba(255,161,22,0.85)); }
+}

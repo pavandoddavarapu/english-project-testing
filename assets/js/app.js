@@ -1264,66 +1264,72 @@ const themeToggleBtn = document.getElementById("theme-toggle-btn");
 const themeDropdown = document.getElementById("theme-dropdown");
 const themeSwatches = document.querySelectorAll(".theme-swatch");
 
-// Toggle dropdown open/close
-themeToggleBtn.addEventListener("click", (e) => {
-  e.stopPropagation();
-  const isOpen = !themeDropdown.classList.contains("hidden");
-  themeDropdown.classList.toggle("hidden", isOpen);
-  themeToggleBtn.classList.toggle("open", !isOpen);
-});
+if (themeToggleBtn && themeDropdown) {
+  // Toggle dropdown open/close
+  themeToggleBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const isOpen = !themeDropdown.classList.contains("hidden");
+    themeDropdown.classList.toggle("hidden", isOpen);
+    themeToggleBtn.classList.toggle("open", !isOpen);
+  });
 
-// Close dropdown when clicking outside
-document.addEventListener("click", (e) => {
-  if (!e.target.closest("#theme-switcher")) {
-    themeDropdown.classList.add("hidden");
-    themeToggleBtn.classList.remove("open");
-  }
-});
-
-// Apply theme on swatch click
-themeSwatches.forEach(swatch => {
-  swatch.addEventListener("click", () => {
-    const theme = swatch.dataset.theme;
-    applyTheme(theme);
-
-    // Update active swatch
-    themeSwatches.forEach(s => s.classList.remove("active"));
-    swatch.classList.add("active");
-
-    // Close dropdown with a small delay for visual feedback
-    setTimeout(() => {
+  // Close dropdown when clicking outside
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest("#theme-switcher")) {
       themeDropdown.classList.add("hidden");
       themeToggleBtn.classList.remove("open");
-    }, 220);
+    }
   });
-});
+
+  // Apply theme on swatch click
+  themeSwatches.forEach(swatch => {
+    swatch.addEventListener("click", () => {
+      const theme = swatch.dataset.theme;
+      applyTheme(theme);
+
+      // Update active swatch
+      themeSwatches.forEach(s => s.classList.remove("active"));
+      swatch.classList.add("active");
+
+      // Close dropdown with a small delay for visual feedback
+      setTimeout(() => {
+        themeDropdown.classList.add("hidden");
+        themeToggleBtn.classList.remove("open");
+      }, 220);
+    });
+  });
+}
 
 function applyTheme(theme) {
   document.documentElement.setAttribute("data-theme", theme);
   localStorage.setItem("speakup-theme", theme);
 
-  // Update the toggle button swatch dot color to match chosen theme
-  const THEME_COLORS = {
-    pink: "#D63384",
-    green: "#2D6A4F",
-    blue: "#1A6FA8",
-    purple: "#7B2FBE",
-    orange: "#D4580A",
-    teal: "#0D9488",
-    dark: "#ffa116",
-  };
-  const color = THEME_COLORS[theme] || THEME_COLORS.green;
-  themeToggleBtn.style.borderColor = color + "80"; // 50% opacity border hint
+  if (themeToggleBtn) {
+    // Update the toggle button swatch dot color to match chosen theme
+    const THEME_COLORS = {
+      pink: "#D63384",
+      green: "#2D6A4F",
+      blue: "#1A6FA8",
+      purple: "#7B2FBE",
+      orange: "#D4580A",
+      teal: "#0D9488",
+      dark: "#ffa116",
+    };
+    const color = THEME_COLORS[theme] || THEME_COLORS.green;
+    themeToggleBtn.style.borderColor = color + "80"; // 50% opacity border hint
+  }
 }
 
 function initTheme() {
   const saved = localStorage.getItem("speakup-theme") || "green";
   document.documentElement.setAttribute("data-theme", saved);
 
-  // Mark the matching swatch as active
-  themeSwatches.forEach(s => {
-    s.classList.toggle("active", s.dataset.theme === saved);
-  });
+  if (themeSwatches.length > 0) {
+    // Mark the matching swatch as active
+    themeSwatches.forEach(s => {
+      s.classList.toggle("active", s.dataset.theme === saved);
+    });
+  }
 
   // Apply color hint to toggle button
   applyTheme(saved);

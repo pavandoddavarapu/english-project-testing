@@ -103,9 +103,17 @@
           </div>
       </div>
       <!-- Streak Fire Widget -->
-      <div id="nav-streak-widget" class="nav-streak-widget" onclick="window.location.href='daily-challenge.html'" title="Daily Challenge Status" style="display: none; margin-right: 5px;">
-        <span id="nav-streak-fire" class="streak-fire-icon" style="font-size: 1.25rem;">🔥</span>
-        <span id="nav-streak-count" class="streak-count-text" style="font-weight: 800; font-size: 0.9rem; color: var(--text-muted);">0</span>
+      <div id="nav-streak-widget" class="nav-streak-widget" onclick="window.location.href='daily-challenge.html'" title="Daily Challenge Status" style="display: none; margin-right: 8px;">
+        <svg class="streak-fire-icon" id="nav-streak-fire" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="fire-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#ff4d00" />
+              <stop offset="100%" stop-color="#ffa116" />
+            </linearGradient>
+          </defs>
+          <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span id="nav-streak-count" class="streak-count-text">0</span>
       </div>
       <a href="login.html" id="auth-btn"
         style="text-decoration: none; font-weight: 800; font-family: 'Nunito', sans-serif; background: var(--primary); color: white; padding: 6px 14px; border-radius: 20px; font-size: 0.9rem; transition: background 0.2s;">Login</a>

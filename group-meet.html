@@ -1141,6 +1141,67 @@
         display: none;
       }
     }
+
+    /* Full-screen Loading Overlay matching Speak Up aesthetics */
+    .loading-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(13, 13, 26, 0.88);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      z-index: 100000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--text);
+      font-family: 'Nunito', sans-serif;
+      transition: opacity 0.4s ease, visibility 0.4s ease;
+      opacity: 0;
+      visibility: hidden;
+    }
+    .loading-overlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
+    html[data-theme="dark"] .loading-overlay {
+      background: rgba(10, 10, 15, 0.94);
+    }
+    .loading-card {
+      background: var(--glass-bg);
+      border: 1.5px solid var(--glass-border);
+      border-radius: 28px;
+      padding: 44px 36px;
+      text-align: center;
+      max-width: 440px;
+      width: 90%;
+      box-shadow: var(--glass-shadow);
+      animation: scaleUpModal 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+    .loading-spinner {
+      width: 68px;
+      height: 68px;
+      border: 5px solid rgba(var(--primary-rgb), 0.1);
+      border-top: 5px solid var(--primary);
+      border-radius: 50%;
+      animation: spin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+      margin: 0 auto 28px;
+      box-shadow: 0 4px 15px rgba(var(--primary-rgb), 0.15);
+    }
+    .loading-tip {
+      font-size: 0.84rem;
+      color: var(--text-muted);
+      margin-top: 20px;
+      font-weight: 800;
+      line-height: 1.6;
+      background: rgba(var(--primary-rgb), 0.05);
+      padding: 12px 18px;
+      border-radius: 14px;
+      border: 1.5px solid rgba(var(--primary-rgb), 0.08);
+      animation: pulse 2s infinite alternate ease-in-out;
+    }
   </style>
 </head>
 <body>
@@ -1436,6 +1497,7 @@
 
       // Handle Routing based on room parameter
       if (roomIdParam) {
+        showLoadingOverlay("Joining Room...", "Entering discussion zone...");
         joinRoom(roomIdParam.toUpperCase().trim());
       } else {
         showLobby();
@@ -1450,12 +1512,14 @@
 
       // Create Room Event
       document.getElementById('btn-create-room').onclick = async () => {
+        showLoadingOverlay("Creating Room...", "Configuring secure voice channel...");
         const generatedId = Math.random().toString(36).substring(2, 8).toUpperCase();
         try {
           await initializeRoomDocument(generatedId);
           window.location.search = `?room=${generatedId}`;
         } catch (err) {
           console.error("[Room Creation Error]", err);
+          hideLoadingOverlay();
           showCustomModal("Error", "Could not create room. Firestore error: " + err.message, "❌");
         }
       };
@@ -1467,6 +1531,7 @@
           showCustomModal("Invalid Code", "Please enter a valid room code.", "⚠️");
           return;
         }
+        showLoadingOverlay("Joining Room...", "Checking room credentials...");
         window.location.search = `?room=${inputVal}`;
       };
     }
@@ -1527,6 +1592,7 @@
         });
       } catch (err) {
         console.error("[Room Join Error]", err);
+        hideLoadingOverlay();
         showCustomModal(
           "Join Room Failed",
           "Failed to join room: " + err.message + "<br><br>Make sure your Firestore Database rules allow reading/writing to the 'group_rooms' collection.",
@@ -2071,6 +2137,7 @@
           if (statusText.textContent.includes("Connecting")) {
             statusText.textContent = "Voice Connected";
             console.log("[Jitsi] Connection state fallback triggered: Voice Connected");
+            hideLoadingOverlay();
           }
         }, 8000);
 
@@ -2078,6 +2145,7 @@
           clearTimeout(fallbackTimeout);
           statusText.textContent = "Voice Connected";
           console.log("[Jitsi] Successfully connected to room:", roomId);
+          hideLoadingOverlay();
         });
 
         jitsiApi.addEventListener('audioMuteStatusChanged', (e) => {
@@ -2100,6 +2168,7 @@
       } catch (err) {
         statusText.textContent = "Voice Offline (Error)";
         console.error("[Jitsi] Integration error:", err);
+        hideLoadingOverlay();
       }
     }
 
@@ -2269,6 +2338,63 @@
       }
       
       initTheme();
+    }
+
+    // ── 10. LOADING OVERLAY CONTROLLER ──
+    const LOADING_TIPS = [
+      "Connecting to Jitsi voice servers...",
+      "Configuring high-definition audio channels...",
+      "Setting up noise cancellation filters...",
+      "Checking microphone permissions...",
+      "Generating secure room connection...",
+      "Preparing the discussion topics..."
+    ];
+
+    function showLoadingOverlay(title = "Loading Room...", subtitle = "Please wait a moment") {
+      let overlay = document.getElementById('global-loading-overlay');
+      if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'global-loading-overlay';
+        overlay.className = 'loading-overlay';
+        overlay.innerHTML = `
+          <div class="loading-card">
+            <div class="loading-spinner"></div>
+            <h3 style="font-family:'Fredoka One', cursive; font-size:1.6rem; color:var(--primary); margin-bottom:8px;" id="loading-title">Loading Room...</h3>
+            <p style="font-size:0.95rem; color:var(--text-muted); font-weight:700; margin-bottom:0;" id="loading-subtitle">Please wait a moment</p>
+            <div class="loading-tip" id="loading-tip">Connecting to Jitsi voice servers...</div>
+          </div>
+        `;
+        document.body.appendChild(overlay);
+        // Force reflow
+        overlay.offsetHeight;
+      } else {
+        document.getElementById('loading-title').textContent = title;
+        document.getElementById('loading-subtitle').textContent = subtitle;
+      }
+      overlay.classList.add('show');
+
+      // Cycle tips every 2.5 seconds
+      let tipIdx = 0;
+      const tipEl = document.getElementById('loading-tip');
+      if (tipEl) {
+        tipEl.textContent = LOADING_TIPS[0];
+        if (window.loadingTipInterval) clearInterval(window.loadingTipInterval);
+        window.loadingTipInterval = setInterval(() => {
+          tipIdx = (tipIdx + 1) % LOADING_TIPS.length;
+          tipEl.textContent = LOADING_TIPS[tipIdx];
+        }, 2500);
+      }
+    }
+
+    function hideLoadingOverlay() {
+      const overlay = document.getElementById('global-loading-overlay');
+      if (overlay) {
+        overlay.classList.remove('show');
+        if (window.loadingTipInterval) {
+          clearInterval(window.loadingTipInterval);
+          window.loadingTipInterval = null;
+        }
+      }
     }
   </script>
 </body>

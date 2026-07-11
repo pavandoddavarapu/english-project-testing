@@ -31,11 +31,6 @@ export default async function handler(req, res) {
     // 1. Fetch public user details by uid or username
     const userRes = await query(`
       SELECT u.name, u.gender, u.avatar_bg, u.avatar_seed, u.aura_points, u.streak, u.total_yaps, u.created_at, u.linkedin_url, u.instagram_url, u.username, u.uid as user_id,
-             CASE
-               WHEN NOT EXISTS (SELECT 1 FROM practice_sessions WHERE user_id = u.uid) THEN 0
-               WHEN (DATE(NOW() AT TIME ZONE 'Asia/Kolkata') - (SELECT MAX(DATE(date AT TIME ZONE 'Asia/Kolkata')) FROM practice_sessions WHERE user_id = u.uid)) > 1 THEN 0
-               ELSE u.streak
-             END as calculated_streak,
              (SELECT COUNT(*) + 1 FROM public.users WHERE aura_points > u.aura_points) as rank
       FROM public.users u
       WHERE u.uid = $1 OR LOWER(u.username) = LOWER($1)
@@ -47,13 +42,6 @@ export default async function handler(req, res) {
 
     const user = userRes.rows[0];
     const actualUid = user.user_id;
-    const activeStreak = Number(user.calculated_streak);
-
-    // Sync decayed streak to database in background if stale
-    if (Number(user.streak) !== activeStreak) {
-      query('UPDATE public.users SET streak = $2 WHERE uid = $1', [actualUid, activeStreak])
-        .catch(err => console.error('[get-public-profile] Failed to sync decayed streak:', err.message));
-    }
 
     // 2. Fetch practice dates for heatmap
     const datesRes = await query(`
@@ -72,6 +60,35 @@ export default async function handler(req, res) {
       ORDER BY date DESC 
       LIMIT 20
     `, [actualUid]);
+    const recentSessions = sessionsRes.rows || [];
+
+    // Calculate active streak decay in memory in JavaScript
+    let activeStreak = Number(user.streak) || 0;
+    if (recentSessions.length > 0) {
+      const lastSessionDate = new Date(recentSessions[0].date);
+      
+      // Convert to IST dates
+      const istOffset = 5.5 * 60 * 60 * 1000;
+      const todayISTStr = new Date(Date.now() + istOffset).toISOString().split('T')[0];
+      const lastSessionISTStr = new Date(lastSessionDate.getTime() + istOffset).toISOString().split('T')[0];
+
+      if (todayISTStr !== lastSessionISTStr) {
+        const todayMid = new Date(todayISTStr + 'T00:00:00Z');
+        const lastMid = new Date(lastSessionISTStr + 'T00:00:00Z');
+        const diffDays = Math.round((todayMid - lastMid) / 86400000);
+        if (diffDays > 1) {
+          activeStreak = 0;
+        }
+      }
+    } else {
+      activeStreak = 0;
+    }
+
+    // Sync decayed streak to database in background if stale
+    if (Number(user.streak) !== activeStreak) {
+      query('UPDATE public.users SET streak = $2 WHERE uid = $1', [actualUid, activeStreak])
+        .catch(err => console.error('[get-public-profile] Failed to sync decayed streak:', err.message));
+    }
 
     return res.status(200).json({
       exists: true,

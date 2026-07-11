@@ -34,11 +34,6 @@ export default async function handler(req, res) {
     const userRes = await query(`
       SELECT 
         u.*,
-        CASE
-          WHEN NOT EXISTS (SELECT 1 FROM practice_sessions WHERE user_id = u.uid) THEN 0
-          WHEN (DATE(NOW() AT TIME ZONE 'Asia/Kolkata') - (SELECT MAX(DATE(date AT TIME ZONE 'Asia/Kolkata')) FROM practice_sessions WHERE user_id = u.uid)) > 1 THEN 0
-          ELSE u.streak
-        END as calculated_streak,
         (SELECT COUNT(*) + 1 FROM public.users WHERE aura_points > u.aura_points) as rank,
         COALESCE(
           (SELECT json_agg(d) FROM (
@@ -65,7 +60,29 @@ export default async function handler(req, res) {
     
     if (userRes.rowCount > 0) {
       const user = userRes.rows[0];
-      const activeStreak = Number(user.calculated_streak);
+      const recentSessions = user.recent_sessions || [];
+
+      // Calculate active streak decay in memory in JavaScript
+      let activeStreak = Number(user.streak) || 0;
+      if (recentSessions.length > 0) {
+        const lastSessionDate = new Date(recentSessions[0].date);
+        
+        // Convert to IST dates
+        const istOffset = 5.5 * 60 * 60 * 1000;
+        const todayISTStr = new Date(Date.now() + istOffset).toISOString().split('T')[0];
+        const lastSessionISTStr = new Date(lastSessionDate.getTime() + istOffset).toISOString().split('T')[0];
+
+        if (todayISTStr !== lastSessionISTStr) {
+          const todayMid = new Date(todayISTStr + 'T00:00:00Z');
+          const lastMid = new Date(lastSessionISTStr + 'T00:00:00Z');
+          const diffDays = Math.round((todayMid - lastMid) / 86400000);
+          if (diffDays > 1) {
+            activeStreak = 0;
+          }
+        }
+      } else {
+        activeStreak = 0;
+      }
 
       // Sync decayed streak to database in background if stale
       if (Number(user.streak) !== activeStreak) {
@@ -91,7 +108,7 @@ export default async function handler(req, res) {
           created_at: user.created_at,
           rank: Number(user.rank) || 1,
           practice_dates: user.practice_dates || [],
-          recent_sessions: user.recent_sessions || []
+          recent_sessions: recentSessions
         }
       });
     }

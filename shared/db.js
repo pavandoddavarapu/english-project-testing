@@ -77,6 +77,12 @@ export async function query(text, params) {
       )
     `);
 
+    // 5. Optimized index for practice sessions lookup
+    await pool.query(`
+      CREATE INDEX IF NOT EXISTS idx_practice_sessions_user_id_date
+      ON public.practice_sessions(user_id, date DESC)
+    `);
+
     console.log('🔌 [DB Migration] All users columns (profile, email, push) and indexes are verified/migrated.');
   } catch (err) {
     console.error('❌ [DB Migration] Failed to run startup migrations:', err.message);

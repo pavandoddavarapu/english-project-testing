@@ -34,6 +34,11 @@ export default async function handler(req, res) {
     const userRes = await query(`
       SELECT 
         u.*,
+        CASE
+          WHEN NOT EXISTS (SELECT 1 FROM practice_sessions WHERE user_id = u.uid) THEN 0
+          WHEN (DATE(NOW() AT TIME ZONE 'Asia/Kolkata') - (SELECT MAX(DATE(date AT TIME ZONE 'Asia/Kolkata')) FROM practice_sessions WHERE user_id = u.uid)) > 1 THEN 0
+          ELSE u.streak
+        END as calculated_streak,
         (SELECT COUNT(*) + 1 FROM public.users WHERE aura_points > u.aura_points) as rank,
         COALESCE(
           (SELECT json_agg(d) FROM (
@@ -60,6 +65,13 @@ export default async function handler(req, res) {
     
     if (userRes.rowCount > 0) {
       const user = userRes.rows[0];
+      const activeStreak = Number(user.calculated_streak);
+
+      // Sync decayed streak to database in background if stale
+      if (Number(user.streak) !== activeStreak) {
+        query('UPDATE public.users SET streak = $2 WHERE uid = $1', [uid, activeStreak])
+          .catch(err => console.error('[get-user] Failed to sync decayed streak:', err.message));
+      }
 
       return res.status(200).json({
         exists: true,
@@ -71,7 +83,7 @@ export default async function handler(req, res) {
           avatar_bg: user.avatar_bg,
           avatar_seed: user.avatar_seed || 'Felix',
           aura_points: user.aura_points,
-          streak: user.streak,
+          streak: activeStreak,
           total_yaps: user.total_yaps,
           linkedin_url: user.linkedin_url || '',
           instagram_url: user.instagram_url || '',

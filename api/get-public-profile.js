@@ -31,6 +31,11 @@ export default async function handler(req, res) {
     // 1. Fetch public user details by uid or username
     const userRes = await query(`
       SELECT u.name, u.gender, u.avatar_bg, u.avatar_seed, u.aura_points, u.streak, u.total_yaps, u.created_at, u.linkedin_url, u.instagram_url, u.username, u.uid as user_id,
+             CASE
+               WHEN NOT EXISTS (SELECT 1 FROM practice_sessions WHERE user_id = u.uid) THEN 0
+               WHEN (DATE(NOW() AT TIME ZONE 'Asia/Kolkata') - (SELECT MAX(DATE(date AT TIME ZONE 'Asia/Kolkata')) FROM practice_sessions WHERE user_id = u.uid)) > 1 THEN 0
+               ELSE u.streak
+             END as calculated_streak,
              (SELECT COUNT(*) + 1 FROM public.users WHERE aura_points > u.aura_points) as rank
       FROM public.users u
       WHERE u.uid = $1 OR LOWER(u.username) = LOWER($1)
@@ -42,6 +47,13 @@ export default async function handler(req, res) {
 
     const user = userRes.rows[0];
     const actualUid = user.user_id;
+    const activeStreak = Number(user.calculated_streak);
+
+    // Sync decayed streak to database in background if stale
+    if (Number(user.streak) !== activeStreak) {
+      query('UPDATE public.users SET streak = $2 WHERE uid = $1', [actualUid, activeStreak])
+        .catch(err => console.error('[get-public-profile] Failed to sync decayed streak:', err.message));
+    }
 
     // 2. Fetch practice dates for heatmap
     const datesRes = await query(`
@@ -69,7 +81,7 @@ export default async function handler(req, res) {
         avatar_bg: user.avatar_bg,
         avatar_seed: user.avatar_seed || 'Felix',
         aura_points: user.aura_points,
-        streak: user.streak,
+        streak: activeStreak,
         total_yaps: user.total_yaps,
         created_at: user.created_at,
         linkedin_url: user.linkedin_url || '',

@@ -240,13 +240,25 @@
       }
     });
 
-    // Countdown to midnight IST
+    // Countdown to midnight IST (Indian Standard Time, UTC +5:30)
     function updateCountdown() {
       const now = new Date();
-      const istNow = new Date(now.getTime() + 5.5 * 3600000);
+      // Get current UTC time in milliseconds
+      const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
+      // Shift to IST (UTC +5:30)
+      const istNow = new Date(utcTime + (5.5 * 3600000));
+      
+      // Calculate next midnight in IST representation
       const midnight = new Date(istNow);
       midnight.setHours(24, 0, 0, 0);
+      
       const diff = midnight - istNow;
+      if (diff <= 0) {
+        // Automatically reload to fetch the new day's challenge topic
+        window.location.reload();
+        return;
+      }
+
       const h = Math.floor(diff / 3600000);
       const m = Math.floor((diff % 3600000) / 60000);
       const s = Math.floor((diff % 60000) / 1000);

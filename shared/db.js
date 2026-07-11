@@ -35,9 +35,10 @@ export async function query(text, params) {
   return res;
 }
 
-// Startup Migration: Ensure users table has avatar_seed, linkedin_url, instagram_url, and username columns
+// Startup Migration: Ensure users table has all required columns and indexes
 (async () => {
   try {
+    // 1. Core Profile Columns
     await pool.query(`
       ALTER TABLE public.users 
       ADD COLUMN IF NOT EXISTS avatar_seed VARCHAR(100) DEFAULT 'Felix',
@@ -45,8 +46,40 @@ export async function query(text, params) {
       ADD COLUMN IF NOT EXISTS instagram_url VARCHAR(255),
       ADD COLUMN IF NOT EXISTS username VARCHAR(50) UNIQUE
     `);
-    console.log('🔌 [DB Migration] public.users columns (avatar_seed, linkedin_url, instagram_url, username) are verified/added.');
+
+    // 2. Email & Push Notifications Columns
+    await pool.query(`
+      ALTER TABLE public.users
+      ADD COLUMN IF NOT EXISTS email_reminders BOOLEAN DEFAULT true,
+      ADD COLUMN IF NOT EXISTS push_subscription TEXT,
+      ADD COLUMN IF NOT EXISTS last_practice_date DATE
+    `);
+
+    // 3. Optimized index for streak reminder cron
+    await pool.query(`
+      CREATE INDEX IF NOT EXISTS idx_users_streak_reminders
+      ON public.users(streak, email_reminders, last_practice_date)
+      WHERE streak >= 2 AND email_reminders = true
+    `);
+
+    // 4. Backfill last_practice_date for users with existing sessions
+    await pool.query(`
+      UPDATE public.users u
+      SET last_practice_date = (
+        SELECT DATE(ps.date AT TIME ZONE 'Asia/Kolkata')
+        FROM public.practice_sessions ps
+        WHERE ps.user_id = u.uid
+        ORDER BY ps.date DESC
+        LIMIT 1
+      )
+      WHERE u.last_practice_date IS NULL AND EXISTS (
+        SELECT 1 FROM public.practice_sessions WHERE user_id = u.uid
+      )
+    `);
+
+    console.log('🔌 [DB Migration] All users columns (profile, email, push) and indexes are verified/migrated.');
   } catch (err) {
-    console.error('❌ [DB Migration] Failed to ensure users columns:', err.message);
+    console.error('❌ [DB Migration] Failed to run startup migrations:', err.message);
   }
 })();
+

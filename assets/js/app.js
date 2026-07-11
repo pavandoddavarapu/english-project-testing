@@ -445,6 +445,24 @@ tabBtns.forEach(btn => {
 function switchTab(tab) {
   currentTab = tab;
 
+  // Clean URL parameters when switching tabs to exit Daily Challenge mode
+  try {
+    if (window.history.replaceState) {
+      const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+      window.history.replaceState({ path: newUrl }, '', newUrl);
+    }
+  } catch (historyErr) {
+    console.warn('[History] Could not clean URL parameters:', historyErr);
+  }
+
+  // Restore spin button state (in case it was disabled by Daily Challenge)
+  if (spinBtn) {
+    spinBtn.disabled = false;
+    spinBtn.title = "";
+    spinBtn.style.opacity = '1';
+    spinBtn.style.cursor = 'pointer';
+  }
+
   // Update nav
   tabBtns.forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
 

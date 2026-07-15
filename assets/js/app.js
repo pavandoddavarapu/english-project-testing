@@ -58,71 +58,25 @@ let confettiParticles = [];
 const _isMobileDevice = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
   || (window.innerWidth <= 768);
 
-// ── WEB SPEECH API (Free, native browser transcription) ─────────────────────
-// Uses the browser's built-in SpeechRecognition (powered by Google on Chrome/Edge).
-// Zero cost, no model download, no rate limits — falls back to server if unavailable.
-let webSpeechTranscript = '';
-let webSpeechRecognition = null;
-let webSpeechSupported = ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window);
+// ── TRANSCRIPTION: Always server-side via Groq Whisper ───────────────────────
+// Groq Whisper transcribes what was ACTUALLY said — including mispronunciations
+// and grammar errors — which is critical for accurate speech scoring.
+// (Web Speech API auto-corrects, which would inflate scores unfairly.)
 
-// Dummy stubs so legacy references to whisperWorker/whisperReady don't throw
+// Dummy stubs retained for any legacy badge references
 const whisperWorker = null;
 const whisperReady  = false;
 
-// ── UI helper: update the speech status badge in the modal ──────────────────
+// ── UI helper: update the status badge in the modal ──────────────────────────
 function updateWhisperBadge(state) {
   const badge = document.getElementById('whisper-badge');
   if (!badge) return;
   badge.style.transition = 'opacity 0.3s';
   if (state === 'ready') {
-    badge.textContent = webSpeechSupported
-      ? '🎙️ Live transcription active (free & private)'
-      : '☁️ Cloud AI transcription active';
+    badge.textContent = '☁️ Groq Whisper transcription active (accurate & faithful)';
     badge.style.color = 'var(--primary, #2D6A4F)'; badge.style.opacity = '1';
   } else {
     badge.textContent = '';
-  }
-}
-
-// ── WEB SPEECH API: start continuous transcription ──────────────────────────
-// Returns a promise that resolves with the accumulated transcript when stopped.
-function startWebSpeechTranscription() {
-  return new Promise((resolve) => {
-    if (!webSpeechSupported) { resolve(null); return; }
-
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    const rec = new SR();
-    webSpeechRecognition = rec;
-    webSpeechTranscript = '';
-
-    rec.lang = 'en-US';
-    rec.continuous = true;
-    rec.interimResults = false; // only accumulate final results
-    rec.maxAlternatives = 1;
-
-    rec.onresult = (e) => {
-      for (let i = e.resultIndex; i < e.results.length; i++) {
-        if (e.results[i].isFinal) {
-          webSpeechTranscript += e.results[i][0].transcript + ' ';
-        }
-      }
-    };
-
-    // Resolve with whatever was collected when recognition ends
-    rec.onend = () => resolve(webSpeechTranscript.trim() || null);
-    rec.onerror = (e) => {
-      console.warn('[WebSpeech] Error:', e.error);
-      resolve(null); // fall back to server transcription
-    };
-
-    try { rec.start(); } catch(e) { resolve(null); }
-  });
-}
-
-function stopWebSpeechTranscription() {
-  if (webSpeechRecognition) {
-    try { webSpeechRecognition.stop(); } catch(e) {}
-    webSpeechRecognition = null;
   }
 }
 
@@ -838,15 +792,9 @@ recordBtn.addEventListener("click", async () => {
       audioChunks = [];
       recordingStartTime = Date.now();
       mediaRecorder.addEventListener("dataavailable", event => { audioChunks.push(event.data); });
-
-      // Start Web Speech API transcription in parallel with the MediaRecorder
-      let webSpeechPromise = startWebSpeechTranscription();
       updateWhisperBadge('ready');
 
       mediaRecorder.addEventListener("stop", async () => {
-        // Stop Web Speech recognition and grab its transcript
-        stopWebSpeechTranscription();
-        const wsTranscript = await webSpeechPromise;
         const audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
 
         // ── Build topic / image context ──
@@ -865,19 +813,15 @@ recordBtn.addEventListener("click", async () => {
         }
 
         // ── TRANSCRIPTION ──
-        // Use Web Speech API transcript if available (free, no server cost).
-        // Fall back to sending raw audio to the server for Groq Whisper.
-        let transcript = wsTranscript || null;
-        const usedBrowserSpeech = !!transcript;
-
-        if (usedBrowserSpeech) {
-          console.log('[WebSpeech] Transcript:', transcript);
-        }
+        // Always send audio to server for Groq Whisper transcription.
+        // Groq Whisper is faithful to what was actually said (mispronunciations,
+        // grammar errors, fillers) — essential for accurate English scoring.
+        // Web Speech API is NOT used here as it auto-corrects speech.
 
         // ── SCORING ──
         try {
           analysisTimestamps.push(Date.now());
-          recordStatus.textContent = '📊 Scoring your speech with AI…';
+          recordStatus.textContent = '📊 Transcribing & scoring your speech with Groq AI…';
 
           // Get Firebase Auth token
           const user = window.auth ? window.auth.currentUser : null;
@@ -886,19 +830,13 @@ recordBtn.addEventListener("click", async () => {
           }
           const idToken = await user.getIdToken();
 
-          let bodyObj = {};
-          if (usedBrowserSpeech && transcript) {
-            // 🌟 Path A: Send only the text — zero Whisper API cost!
-            bodyObj = { transcript, topic: currentTopic, imageUrl: currentImageUrl, idToken };
-          } else {
-            // 🔄 Path B: Fallback — send audio so the server runs Groq Whisper
-            const reader = new FileReader();
-            const base64data = await new Promise((res) => {
-              reader.onloadend = () => res(reader.result.split(',')[1]);
-              reader.readAsDataURL(audioBlob);
-            });
-            bodyObj = { audioBase64: base64data, mimeType: audioBlob.type, topic: currentTopic, imageUrl: currentImageUrl, idToken };
-          }
+          // Always send raw audio — Groq Whisper transcribes on the server
+          const reader = new FileReader();
+          const base64data = await new Promise((res) => {
+            reader.onloadend = () => res(reader.result.split(',')[1]);
+            reader.readAsDataURL(audioBlob);
+          });
+          const bodyObj = { audioBase64: base64data, mimeType: audioBlob.type, topic: currentTopic, imageUrl: currentImageUrl, idToken };
 
           const res = await fetch('/api/analyze', {
             method: 'POST',
@@ -979,13 +917,10 @@ recordBtn.addEventListener("click", async () => {
       mediaRecorder.stop();
       mediaRecorder.stream.getTracks().forEach(t => t.stop());
     }
-    stopWebSpeechTranscription();
     isRecording = false;
     recordBtn.textContent = '🔄 Analysing…';
     recordBtn.disabled = true;
-    recordStatus.textContent = usedBrowserSpeech
-      ? '🧠 Transcribed free via your browser! Scoring with AI…'
-      : 'Processing your speech with AI…';
+    recordStatus.textContent = 'Processing your speech with Groq Whisper AI…';
   }
 });
 

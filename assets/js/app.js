@@ -787,7 +787,14 @@ recordBtn.addEventListener("click", async () => {
 
     // ── START RECORDING ──
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          channelCount: { ideal: 1 }, // mono — ~50% smaller file, faster upload
+          echoCancellation: true,     // removes mic echo
+          noiseSuppression: true,     // cleaner audio = better Whisper accuracy
+          autoGainControl: true       // normalises volume for consistent transcription
+        }
+      });
       mediaRecorder = new MediaRecorder(stream);
       audioChunks = [];
       recordingStartTime = Date.now();

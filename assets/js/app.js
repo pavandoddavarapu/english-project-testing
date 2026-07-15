@@ -193,10 +193,9 @@ async function audioBlobToFloat32(blob) {
 // lazyInitWhisper() is called the FIRST TIME the record button is clicked.
 let _whisperInitialized = false;
 function lazyInitWhisper() {
-  if (!_whisperInitialized) {
-    _whisperInitialized = true;
-    initWhisperWorker();
-  }
+  // Disabled for now to prevent downloading the Whisper model in the user's browser due to high latency.
+  // The system will always fall back to the cloud/server-side transcription.
+  console.log('[Whisper] Browser-side model download disabled to improve latency. Falling back to server-side AI.');
 }
 
 // ─── AI CONFIG & FILTER STATE ───────────────────────────

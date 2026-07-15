@@ -90,13 +90,13 @@ graph TD
 
     D -->|Audio base64| F[Groq Whisper API]
     F -->|429 rate limit| G[Next Groq Key]
-    G -->|Still failing| H[Gemini 1.5 Flash\nTranscription Fallback]
+    F -->|Still failing| H[Gemini 2.0 Flash Lite\nTranscription Fallback]
     F -->|Transcript text| I[Groq Llama 3.1\nScoring LLM]
     I -->|JSON scores| D
     D -->|UPDATE completed + clear audio| C
 
-    A -->|GET /api/daily| J[Gemini Flash\nTopic Generator]
-    J -->|Fallback| K[Groq LLaMA 3.3 70B]
+    A -->|GET /api/daily| J[DB Cache → Gemini 2.0 Flash Lite\nTopic Generator]
+    J -->|Fallback| K[Groq LLaMA 3.1 8B]
 
     A -->|GET /api/images| L[Smart Image Cache]
     L -->|Depleted| M[Unsplash API]
@@ -120,8 +120,8 @@ graph TD
 | Real-time DB | Firebase Firestore | GD room state (ephemeral) |
 | Speech-to-Text | Groq Whisper Large v3 Turbo | Server-side audio transcription |
 | Scoring LLM | Groq Llama 3.1 8B Instant | Fluency/Clarity/Confidence evaluation |
-| Daily Content | Gemini 1.5 Flash → Groq LLaMA 3.3 70B | Topic and vocabulary generation |
-| Chat Tutor | Gemini 1.5 Flash → Groq LLaMA 3.3 70B | Conversational English tutoring |
+| Daily Content | Gemini 2.0 Flash Lite → Groq LLaMA 3.1 8B | Topic and vocabulary generation (DB-cached per day) |
+| Chat Tutor | Gemini 2.0 Flash Lite → Groq LLaMA 3.1 8B | Conversational English tutoring |
 | Image Service | Unsplash → Pexels → Hardcoded | Picture-talk scenario images |
 | CDN / Infra | Vercel (Singapore region) | Static assets + serverless execution |
 
@@ -141,8 +141,8 @@ graph TD
 ### AI & Machine Learning
 - **Groq Whisper Large v3 Turbo** — Primary speech-to-text transcription (configurable via `GROQ_WHISPER_MODEL`)
 - **Groq Llama 3.1 8B Instant** — Speech scoring LLM (configurable via `GROQ_SCORING_MODEL`)
-- **Groq LLaMA 3.3 70B Versatile** — Daily topics and chat fallback (configurable via `GROQ_DAILY_MODEL`, `GROQ_CHAT_MODEL`)
-- **Google Gemini 1.5 Flash** — Primary daily topic generator, chat tutor, and audio transcription fallback
+- **Groq LLaMA 3.1 8B Instant** — Daily topics and chat fallback (configurable via `GROQ_DAILY_MODEL`, `GROQ_CHAT_MODEL`)
+- **Google Gemini 2.0 Flash Lite** — Primary daily topic generator, chat tutor, and audio transcription fallback
 
 ### Authentication
 - **Firebase Auth** — Client-side Google and Email/Password sign-in
@@ -162,8 +162,7 @@ graph TD
 - **GitHub** — Version control and source of truth for deployments
 
 ### Browser APIs Used
-- `MediaRecorder` — Audio capture
-- `Web Speech API` — Optional live transcription
+- `MediaRecorder` — Audio capture (mono, with echo/noise suppression for cleaner Whisper input)
 - `Service Worker` — Offline caching
 - `Web App Manifest` — PWA installability
 
@@ -285,7 +284,14 @@ Verifies Firebase ID tokens using the Google Identity Toolkit REST API (`/v1/acc
 
 ### `api/daily.js`
 
-Generates 11 topic categories + 8 interview questions + 10 vocabulary items per day using a structured JSON prompt. Attempts Gemini 1.5 Flash first; falls back to Groq LLaMA 3.3 70B. The CDN `Cache-Control` header (`s-maxage=86400, stale-while-revalidate=43200`) ensures Vercel Edge caches the response for 24 hours.
+Generates 11 topic categories + 8 interview questions + 10 vocabulary items per day using a structured JSON prompt.
+
+1. **DB Cache check first** — Queries `daily_content_cache` table for today's date. If found, returns instantly with zero AI cost.
+2. **Gemini 2.0 Flash Lite** — Cheapest/fastest model; more than sufficient for topic generation.
+3. **Groq LLaMA 3.1 8B fallback** — ~10× cheaper than the previous 70B fallback with no quality loss for structured JSON.
+4. **DB Cache write** — Saves the generated content so all subsequent requests (including Vercel cold-starts) skip the AI call entirely.
+
+The CDN `Cache-Control` header (`s-maxage=86400, stale-while-revalidate=43200`) provides an additional Edge-level cache layer.
 
 ### `api/images.js`
 
@@ -348,18 +354,24 @@ sequenceDiagram
 sequenceDiagram
     participant C as Client
     participant D as /api/daily
-    participant GF as Gemini 1.5 Flash
-    participant GR as Groq LLaMA 3.3 70B
+    participant GF as Gemini 2.0 Flash Lite
+    participant GR as Groq LLaMA 3.1 8B
 
     C->>D: GET /api/daily?date=YYYY-MM-DD
-    D->>GF: POST structured JSON prompt (11 categories + vocab)
-    alt Gemini succeeds
-        GF-->>D: JSON topics
-        D-->>C: 200 topics (__source__: Gemini)
-    else Gemini fails/rate-limited
-        D->>GR: POST same prompt (json_object response_format)
-        GR-->>D: JSON topics
-        D-->>C: 200 topics (__source__: Groq)
+    D->>DB: SELECT content FROM daily_content_cache WHERE date=today
+    alt DB cache hit
+        DB-->>D: cached JSON
+        D-->>C: 200 topics (__source__: DB Cache)
+    else Cache miss — call AI
+        D->>GF: POST structured JSON prompt (11 categories + vocab)
+        alt Gemini succeeds
+            GF-->>D: JSON topics
+        else Gemini fails/rate-limited
+            D->>GR: POST same prompt (json_object response_format)
+            GR-->>D: JSON topics
+        end
+        D->>DB: INSERT INTO daily_content_cache
+        D-->>C: 200 topics (__source__: Gemini/Groq)
     end
 ```
 
@@ -523,6 +535,13 @@ All endpoints apply CORS validation, attach a unique `X-Request-Id` header, and 
 | **Picture Talk** | Describe a high-quality contextual image; Gemini scores using image + transcript together |
 | **Group Discussion Rooms** | Real-time multi-user voice rooms via Jitsi Meet with topic spin wheel, participant approval flow, shared timer, and Firebase Firestore room state |
 
+### Recording Quality
+
+- **15-second minimum** — Submissions shorter than 15 seconds are rejected client-side with a friendly message, ensuring the AI receives enough speech to give meaningful scores
+- **Mono audio capture** — `MediaRecorder` requests `channelCount: { ideal: 1 }`, reducing audio payload size ~50% for faster uploads
+- **Noise & echo suppression** — `noiseSuppression: true` and `echoCancellation: true` constraints produce cleaner audio, reducing Whisper transcription errors
+- **Auto gain control** — Normalises microphone volume for consistent transcription regardless of mic distance
+
 ### Gamification
 
 - **Streaks** — Consecutive daily practice days tracked in PostgreSQL; reset if a day is missed
@@ -584,8 +603,11 @@ The single largest UX win. Returning a `taskId` immediately (< 50ms) instead of 
 ### In-Memory Image Cache
 Vercel keeps function instances warm for several minutes. The module-level `imageCache` array persists across requests within the same warm instance — effectively providing free in-process caching with no external dependency. A background async refill fires when stock drops below 15, so cache misses never block a user response.
 
+### DB-Level Daily Content Cache
+The new `daily_content_cache` PostgreSQL table stores generated topics keyed by date. On every `/api/daily` request, the DB is checked first — the AI is only called **once per calendar day** regardless of how many Vercel cold-starts occur or how many users visit. This eliminates the largest source of redundant AI spending.
+
 ### Edge Caching for Daily Topics
-`/api/daily` sets `Cache-Control: public, s-maxage=86400, stale-while-revalidate=43200`. Vercel's Edge Network caches the response for 24 hours, meaning the Gemini/Groq call happens at most once per day globally.
+`/api/daily` sets `Cache-Control: public, s-maxage=86400, stale-while-revalidate=43200`. Vercel's Edge Network provides an additional cache layer on top of the DB cache.
 
 ### Database Indexing
 
@@ -660,6 +682,14 @@ CREATE TABLE IF NOT EXISTS analysis_queue (
 CREATE INDEX        idx_sessions_user_date  ON practice_sessions(user_id, date DESC);
 CREATE INDEX        idx_queue_status_created ON analysis_queue(status, created_at);
 CREATE UNIQUE INDEX idx_users_username       ON users(LOWER(username)) WHERE username IS NOT NULL;
+
+-- Daily Content Cache (eliminates redundant AI calls)
+CREATE TABLE IF NOT EXISTS daily_content_cache (
+    date        DATE          PRIMARY KEY,
+    content     JSONB         NOT NULL,
+    created_at  TIMESTAMPTZ   DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX idx_daily_cache_date ON daily_content_cache(date DESC);
 ```
 
 ---
@@ -712,8 +742,8 @@ npm run dev
 | `PEXELS_API_KEY` | Optional | Pexels API key. Used when Unsplash is absent or quota-exhausted. |
 | `GROQ_WHISPER_MODEL` | Optional | Override Whisper model. Defaults to `whisper-large-v3-turbo`. |
 | `GROQ_SCORING_MODEL` | Optional | Override scoring LLM. Defaults to `llama-3.1-8b-instant`. |
-| `GROQ_DAILY_MODEL` | Optional | Override daily topics LLM. Defaults to `llama-3.3-70b-versatile`. |
-| `GROQ_CHAT_MODEL` | Optional | Override chat LLM. Defaults to `llama-3.3-70b-versatile`. |
+| `GROQ_DAILY_MODEL` | Optional | Override daily topics LLM. Defaults to `llama-3.1-8b-instant`. |
+| `GROQ_CHAT_MODEL` | Optional | Override chat LLM. Defaults to `llama-3.1-8b-instant`. |
 
 ---
 
@@ -791,6 +821,12 @@ The `firebase-admin` SDK adds significant bundle weight and initialization time.
 - SEO: 6 JSON-LD schemas, sitemap, canonical URLs, OG/Twitter cards
 - Privacy Policy and Terms of Service pages
 - Custom 404 page
+- **PostgreSQL DB cache for daily content** — AI called once per day max; all cold-starts served instantly from DB
+- **15-second minimum recording** — Client-side guard ensures meaningful audio for accurate AI scoring
+- **Mono audio capture with noise/echo suppression** — ~50% smaller uploads; cleaner Whisper transcription
+- **Cheaper AI models for non-scoring tasks** — `gemini-2.0-flash-lite` for daily/chat; `llama-3.1-8b-instant` for all Groq text tasks
+- **Trimmed scoring prompts** — `max_tokens: 250` (down from 400); shorter system prompt reduces cost on every analysis
+- **Reduced chat history window** — Last 10 messages (down from 20) halves chat input token cost
 
 ### 🚧 Documented / Planned
 - **AI Moderation for GD Rooms** — Web Speech API transcription + Gemini toxicity scoring, with host kick/ban controls. Full architecture spec: [`AI_MODERATION_DESIGN.md`](./AI_MODERATION_DESIGN.md)

@@ -29,6 +29,21 @@ SET last_practice_date = (
 WHERE EXISTS (SELECT 1 FROM practice_sessions WHERE user_id = u.uid);
 
 -- =====================================================
+-- 6. Daily Content Cache Table (COST SAVING)
+--    Stores AI-generated daily topics keyed by date.
+--    /api/daily reads from here first — AI is only
+--    called ONCE per day regardless of cold-starts.
+-- =====================================================
+CREATE TABLE IF NOT EXISTS daily_content_cache (
+    date DATE PRIMARY KEY,
+    content JSONB NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Auto-cleanup: delete cache entries older than 3 days to keep the table tiny
+CREATE INDEX IF NOT EXISTS idx_daily_cache_date ON daily_content_cache(date DESC);
+
+-- =====================================================
 -- How to use:
 -- 1. Go to Supabase → SQL Editor (or your Neon/Postgres dashboard)
 -- 2. Paste this entire file and Run

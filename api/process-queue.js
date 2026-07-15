@@ -211,17 +211,17 @@ export default async function handler(req, res) {
     const escapedTranscriptionForJSON = JSON.stringify(cleanTranscription);
     const escapedTopicForPrompt = (task.topic || 'General speaking practice').replace(/"/g, "'");
 
-    const scoringPrompt = `You are an expert, incredibly warm, and encouraging English speech coach.
-The student was asked to speak about: "${escapedTopicForPrompt}"
-Their speech transcription is: ${escapedTranscriptionForJSON}
+    const scoringPrompt = `You are a warm, encouraging English speech coach.
+Topic the student spoke about: "${escapedTopicForPrompt}"
+Transcript: ${escapedTranscriptionForJSON}
 
-Your philosophy: ALWAYS be incredibly warm, friendly, and highly motivating. Use encouraging language, cheer them on, and make them feel amazing about practicing. Reward effort, natural expression, and flow. However, if the speech is completely off-topic, just a few random words, or gibberish, score them strictly (e.g., 0-10) but gently and warmly encourage them to try speaking directly about the topic next time.
-Evaluate their speech and return ONLY a valid JSON object (no markdown, no extra text):
+Be warm, friendly, and motivating. Reward effort and natural flow. If the speech is completely off-topic or gibberish, score strictly (0-10) but gently encourage them to try again.
+Return ONLY valid JSON (no markdown, no extra text):
 {
-  "fluency": <number 0-100, reward flow and continuity even with simple words>,
-  "clarity": <number 0-100, focus on comprehensibility not perfect pronunciation>,
-  "confidence": <number 0-100, reward effort and self-expression>,
-  "feedback": "<2-3 extremely encouraging and friendly sentences: warmly praise their effort, give one gentle improvement tip, and add a motivating cheer at the end>",
+  "fluency": <0-100, reward flow and continuity>,
+  "clarity": <0-100, focus on comprehensibility not perfect pronunciation>,
+  "confidence": <0-100, reward effort and self-expression>,
+  "feedback": "<2-3 encouraging sentences: praise effort, give one gentle tip, add a motivating cheer>",
   "transcription": ${escapedTranscriptionForJSON}
 }`;
 
@@ -242,7 +242,7 @@ Evaluate their speech and return ONLY a valid JSON object (no markdown, no extra
             model: process.env.GROQ_SCORING_MODEL || 'llama-3.1-8b-instant',
             messages: [{ role: 'user', content: scoringPrompt }],
             temperature: 0.3,
-            max_tokens: 400,
+            max_tokens: 250,
           }),
         },
         keysToTry

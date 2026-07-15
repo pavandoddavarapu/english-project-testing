@@ -129,10 +129,27 @@ Other sections:
     return res.status(500).json({ error: "Missing API keys in environment variables." });
   }
 
-  // 1. Try Gemini
+  // 1. Check DB cache — avoids AI calls on every Vercel cold-start
+  try {
+    const cached = await query(
+      `SELECT content FROM daily_content_cache WHERE date = $1 LIMIT 1`,
+      [today]
+    );
+    if (cached.rows.length > 0) {
+      console.log(`[daily] Serving from DB cache for ${today}`);
+      const data = cached.rows[0].content;
+      data.__source__ = 'DB Cache';
+      return res.status(200).json(data);
+    }
+  } catch (dbCacheErr) {
+    // Non-fatal: if the table doesn't exist yet, fall through to AI generation
+    console.warn('[daily] DB cache read failed (table may not exist yet):', dbCacheErr.message);
+  }
+  // 2. Try Gemini Flash Lite (cheapest, fastest, good enough for topic generation)
+  let generatedData = null;
   try {
     const geminiRes = await fetch(
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent',
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-goog-api-key': GEMINI_KEY },
@@ -148,49 +165,68 @@ Other sections:
       let text = json.candidates[0].content.parts[0].text;
       const fence = text.match(/```(?:json)?\s*([\s\S]*?)```/);
       if (fence) text = fence[1];
-      const data = JSON.parse(text.trim());
-      data.__source__ = 'Gemini (Flash Latest)';
-      return res.status(200).json(data);
+      generatedData = JSON.parse(text.trim());
+      generatedData.__source__ = 'Gemini (Flash Lite)';
+    } else {
+      console.warn(`Gemini failed (${geminiRes.status})`);
     }
-    console.warn(`Gemini failed (${geminiRes.status})`);
   } catch (e) {
     console.error('Gemini error:', e);
   }
 
-  // 2. Try Groq Fallback
-  try {
-    const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${GROQ_KEY}`
-      },
-      body: JSON.stringify({
-        model: process.env.GROQ_DAILY_MODEL || 'llama-3.3-70b-versatile',
-        messages: [
-          {
-            role: 'system',
-            content: 'You are a JSON content generator. Always respond with ONLY valid JSON — no markdown, no explanation, no code fences.'
-          },
-          { role: 'user', content: AI_PROMPT }
-        ],
-        response_format: { type: 'json_object' },
-        temperature: 1.0,
-        max_tokens: 8192
-      })
-    });
+  // 3. Try Groq Fallback (8B — fast, cheap, good enough for topic lists)
+  if (!generatedData) {
+    try {
+      const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${GROQ_KEY}`
+        },
+        body: JSON.stringify({
+          model: process.env.GROQ_DAILY_MODEL || 'llama-3.1-8b-instant',
+          messages: [
+            {
+              role: 'system',
+              content: 'You are a JSON content generator. Always respond with ONLY valid JSON — no markdown, no explanation, no code fences.'
+            },
+            { role: 'user', content: AI_PROMPT }
+          ],
+          response_format: { type: 'json_object' },
+          temperature: 1.0,
+          max_tokens: 8192
+        })
+      });
 
-    if (groqRes.ok) {
-      const json = await groqRes.json();
-      const data = JSON.parse(json.choices[0].message.content);
-      data.__source__ = 'Groq (LLaMA 3.3 70B)';
-      return res.status(200).json(data);
+      if (groqRes.ok) {
+        const json = await groqRes.json();
+        generatedData = JSON.parse(json.choices[0].message.content);
+        generatedData.__source__ = 'Groq (LLaMA 3.1 8B)';
+      } else {
+        console.warn(`Groq failed (${groqRes.status})`);
+      }
+    } catch (e) {
+      console.error('Groq error:', e);
     }
-    console.warn(`Groq failed (${groqRes.status})`);
-  } catch (e) {
-    console.error('Groq error:', e);
   }
 
-  // Both failed
-  return safeError(res, 500, new Error('All AI models failed for daily topics'), '[daily]');
+  if (!generatedData) {
+    return safeError(res, 500, new Error('All AI models failed for daily topics'), '[daily]');
+  }
+
+  // 4. Save to DB cache — future requests and cold-starts skip the AI call entirely
+  try {
+    await query(
+      `INSERT INTO daily_content_cache (date, content) VALUES ($1, $2)
+       ON CONFLICT (date) DO UPDATE SET content = EXCLUDED.content`,
+      [today, generatedData]
+    );
+    console.log(`[daily] Saved to DB cache for ${today}`);
+  } catch (dbSaveErr) {
+    // Non-fatal: serve the data even if caching fails
+    console.warn('[daily] DB cache write failed:', dbSaveErr.message);
+  }
+
+  return res.status(200).json(generatedData);
 }
+

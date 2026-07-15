@@ -58,144 +58,72 @@ let confettiParticles = [];
 const _isMobileDevice = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
   || (window.innerWidth <= 768);
 
-// ── IN-BROWSER WHISPER (Transformers.js) ──────────────────────────────────
-// Runs Whisper speech-to-text inside the user's browser.
-// No API calls, no rate limits, completely free.
-let whisperWorker = null;
-let whisperReady = false; // true once the model is fully loaded
-let whisperLoading = false;
+// ── WEB SPEECH API (Free, native browser transcription) ─────────────────────
+// Uses the browser's built-in SpeechRecognition (powered by Google on Chrome/Edge).
+// Zero cost, no model download, no rate limits — falls back to server if unavailable.
+let webSpeechTranscript = '';
+let webSpeechRecognition = null;
+let webSpeechSupported = ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window);
 
-// ── UI helper: update the whisper status badge in the modal ─────────────────
-// The badge element (#whisper-badge) is added to practice.html near the record btn.
-function updateWhisperBadge(state, progress) {
+// Dummy stubs so legacy references to whisperWorker/whisperReady don't throw
+const whisperWorker = null;
+const whisperReady  = false;
+
+// ── UI helper: update the speech status badge in the modal ──────────────────
+function updateWhisperBadge(state) {
   const badge = document.getElementById('whisper-badge');
   if (!badge) return;
-  const s = badge.style;
-  s.transition = 'opacity 0.3s';
-  if (state === 'loading') {
-    badge.textContent = '⏳ Loading on-device AI (first time only)…';
-    s.color = 'var(--text, #555)'; s.opacity = '0.7';
-  } else if (state === 'downloading') {
-    const pct = (progress !== undefined) ? ` ${progress}%` : '';
-    badge.textContent = `⬇️ Downloading Whisper AI${pct} (39 MB, one time only)…`;
-    s.color = 'var(--text, #555)'; s.opacity = '0.8';
-  } else if (state === 'cache') {
-    badge.textContent = '⚡ Found in cache — loading instantly…';
-    s.color = 'var(--primary, #2D6A4F)'; s.opacity = '0.85';
-  } else if (state === 'ready') {
-    badge.textContent = '✅ On-device AI Ready — transcription is free & private!';
-    s.color = 'var(--primary, #2D6A4F)'; s.opacity = '1';
-  } else if (state === 'fallback') {
-    badge.textContent = '☁️ Using cloud AI (on-device AI still loading…)';
-    s.color = 'var(--text, #555)'; s.opacity = '0.7';
+  badge.style.transition = 'opacity 0.3s';
+  if (state === 'ready') {
+    badge.textContent = webSpeechSupported
+      ? '🎙️ Live transcription active (free & private)'
+      : '☁️ Cloud AI transcription active';
+    badge.style.color = 'var(--primary, #2D6A4F)'; badge.style.opacity = '1';
   } else {
     badge.textContent = '';
   }
 }
 
-function initWhisperWorker() {
-  try {
-    // Module workers need type:'module' so Transformers.js ESM imports work.
-    whisperWorker = new Worker('./assets/js/whisper-worker.js', { type: 'module' });
+// ── WEB SPEECH API: start continuous transcription ──────────────────────────
+// Returns a promise that resolves with the accumulated transcript when stopped.
+function startWebSpeechTranscription() {
+  return new Promise((resolve) => {
+    if (!webSpeechSupported) { resolve(null); return; }
 
-    // Global listener ONLY handles model lifecycle events (loading, progress, ready, error).
-    // It intentionally does NOT handle 'complete' or 'transcribing' — those are handled
-    // exclusively by the per-request promise inside the recording stop handler.
-    whisperWorker.addEventListener('message', (e) => {
-      const { type, message, progress, file, cached } = e.data;
-      if (type === 'loading') {
-        whisperLoading = true;
-        // Show different badge depending on whether it's a fresh download or cache hit
-        if (cached) {
-          updateWhisperBadge('cache');   // fast — loading from browser storage
-        } else {
-          updateWhisperBadge('loading'); // slow — downloading for the first time
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const rec = new SR();
+    webSpeechRecognition = rec;
+    webSpeechTranscript = '';
+
+    rec.lang = 'en-US';
+    rec.continuous = true;
+    rec.interimResults = false; // only accumulate final results
+    rec.maxAlternatives = 1;
+
+    rec.onresult = (e) => {
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        if (e.results[i].isFinal) {
+          webSpeechTranscript += e.results[i][0].transcript + ' ';
         }
-        console.log('[Whisper]', message);
       }
-      if (type === 'downloading') {
-        updateWhisperBadge('downloading');
-      }
-      if (type === 'progress') {
-        console.log(`[Whisper] Downloading ${file}: ${progress}%`);
-        updateWhisperBadge('downloading', progress);
-      }
-      if (type === 'ready') {
-        whisperReady = true;
-        whisperLoading = false;
-        updateWhisperBadge('ready');
-        console.log('[Whisper] ✅ Model ready — transcription is free!');
-      }
-      // Only set whisperReady=false for errors during the LOAD phase.
-      // Errors during transcription are handled by the per-request promise.
-      if (type === 'error' && !whisperReady) {
-        whisperLoading = false;
-        updateWhisperBadge('');
-        console.warn('[Whisper] Load error:', e.data.error);
-      }
-    });
+    };
 
-    // Show loading state immediately so user sees feedback right away
-    updateWhisperBadge('loading');
+    // Resolve with whatever was collected when recognition ends
+    rec.onend = () => resolve(webSpeechTranscript.trim() || null);
+    rec.onerror = (e) => {
+      console.warn('[WebSpeech] Error:', e.error);
+      resolve(null); // fall back to server transcription
+    };
 
-    // Start loading the model immediately in the background.
-    // By the time the user finishes speaking, it will likely be ready.
-    whisperWorker.postMessage({ type: 'load' });
-  } catch (err) {
-    console.warn('[Whisper] Could not start worker (likely unsupported browser):', err);
-    whisperWorker = null;
-    updateWhisperBadge('');
-  }
+    try { rec.start(); } catch(e) { resolve(null); }
+  });
 }
 
-// Convert a recorded audio Blob → Float32Array at 16 kHz (what Whisper expects).
-// Uses a separate AudioContext (whisperAudioCtx) to avoid conflicting with the
-// global audioCtx used by sound effects (playTick, playWhoosh, playDing).
-async function audioBlobToFloat32(blob) {
-  // Guard: reject empty blobs before they crash the AudioContext decoder
-  if (!blob || blob.size === 0) {
-    throw new Error('Audio blob is empty — nothing was recorded.');
+function stopWebSpeechTranscription() {
+  if (webSpeechRecognition) {
+    try { webSpeechRecognition.stop(); } catch(e) {}
+    webSpeechRecognition = null;
   }
-
-  const arrayBuffer = await blob.arrayBuffer();
-
-  // Use a SEPARATE AudioContext — never reuse the global audioCtx which is
-  // shared with the sound effects system and may be in a different state.
-  const whisperAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  let decoded;
-  try {
-    decoded = await whisperAudioCtx.decodeAudioData(arrayBuffer);
-  } finally {
-    // Always close this temporary context to release the OS audio handle
-    whisperAudioCtx.close();
-  }
-
-  // Guard: zero-duration audio would crash OfflineAudioContext with length=0
-  if (!decoded || decoded.duration < 0.1) {
-    throw new Error('Recording too short to process (less than 0.1 seconds).');
-  }
-
-  // Resample to exactly 16 kHz using OfflineAudioContext.
-  const TARGET_SR = 16000;
-  const frameCount = Math.ceil(decoded.duration * TARGET_SR);
-  const offlineCtx = new OfflineAudioContext(1, frameCount, TARGET_SR);
-  const source = offlineCtx.createBufferSource();
-  source.buffer = decoded;
-  source.connect(offlineCtx.destination);
-  source.start(0);
-  const resampled = await offlineCtx.startRendering();
-  return resampled.getChannelData(0);
-}
-
-// ── LAZY LOAD: Only init Whisper when user actually clicks Record ──────────
-// This makes the practice page load instantly instead of blocking on a
-// 39MB model download / cache read on every page visit.
-// lazyInitWhisper() is called the FIRST TIME the record button is clicked.
-let _whisperInitialized = false;
-function lazyInitWhisper() {
-  // Disabled for now to prevent downloading the Whisper model in the user's browser due to high latency.
-  // The system will always fall back to the cloud/server-side transcription.
-  console.log('[Whisper] Browser-side model download disabled to improve latency. Falling back to server-side AI.');
 }
 
 // ─── AI CONFIG & FILTER STATE ───────────────────────────
@@ -886,6 +814,8 @@ function closeModal() {
 }
 
 let audioChunks = [];
+let recordingStartTime = 0; // tracks when recording started (ms)
+const MIN_RECORDING_MS = 15000; // 15-second minimum recording
 
 let analysisTimestamps = [];
 
@@ -901,17 +831,22 @@ recordBtn.addEventListener("click", async () => {
       return;
     }
 
-    // ── LAZY INIT WHISPER on first record click ──
-    lazyInitWhisper();
-
     // ── START RECORDING ──
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       mediaRecorder = new MediaRecorder(stream);
       audioChunks = [];
+      recordingStartTime = Date.now();
       mediaRecorder.addEventListener("dataavailable", event => { audioChunks.push(event.data); });
 
+      // Start Web Speech API transcription in parallel with the MediaRecorder
+      let webSpeechPromise = startWebSpeechTranscription();
+      updateWhisperBadge('ready');
+
       mediaRecorder.addEventListener("stop", async () => {
+        // Stop Web Speech recognition and grab its transcript
+        stopWebSpeechTranscription();
+        const wsTranscript = await webSpeechPromise;
         const audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
 
         // ── Build topic / image context ──
@@ -930,36 +865,13 @@ recordBtn.addEventListener("click", async () => {
         }
 
         // ── TRANSCRIPTION ──
-        // Try in-browser Whisper first (free, fast, no rate limits).
-        // Fall back to sending raw audio to the server if the worker isn't ready.
-        let transcript = null;
-        let usedBrowserWhisper = false;
+        // Use Web Speech API transcript if available (free, no server cost).
+        // Fall back to sending raw audio to the server for Groq Whisper.
+        let transcript = wsTranscript || null;
+        const usedBrowserSpeech = !!transcript;
 
-        if (whisperWorker && whisperReady) {
-          try {
-            recordStatus.textContent = '🧠 Transcribing locally… (on your device, free!)';
-
-            // Convert blob to 16 kHz Float32Array for Transformers.js
-            const float32Audio = await audioBlobToFloat32(audioBlob);
-
-            // Send audio to the worker and await the transcript
-            transcript = await new Promise((resolve, reject) => {
-              const onMsg = (e) => {
-                if (e.data.type === 'complete') { whisperWorker.removeEventListener('message', onMsg); resolve(e.data.text); }
-                if (e.data.type === 'error')    { whisperWorker.removeEventListener('message', onMsg); reject(new Error(e.data.error)); }
-              };
-              whisperWorker.addEventListener('message', onMsg);
-              // Transfer the buffer for zero-copy performance
-              whisperWorker.postMessage({ type: 'transcribe', audio: float32Audio }, [float32Audio.buffer]);
-            });
-
-            usedBrowserWhisper = true;
-            console.log('[Whisper] Transcript (browser):', transcript);
-          } catch (workerErr) {
-            console.warn('[Whisper] Worker failed, falling back to server:', workerErr);
-            transcript = null;
-          }
-
+        if (usedBrowserSpeech) {
+          console.log('[WebSpeech] Transcript:', transcript);
         }
 
         // ── SCORING ──
@@ -975,11 +887,11 @@ recordBtn.addEventListener("click", async () => {
           const idToken = await user.getIdToken();
 
           let bodyObj = {};
-          if (usedBrowserWhisper && transcript) {
+          if (usedBrowserSpeech && transcript) {
             // 🌟 Path A: Send only the text — zero Whisper API cost!
             bodyObj = { transcript, topic: currentTopic, imageUrl: currentImageUrl, idToken };
           } else {
-            // 🔄 Path B: Legacy — send audio so the server runs Whisper
+            // 🔄 Path B: Fallback — send audio so the server runs Groq Whisper
             const reader = new FileReader();
             const base64data = await new Promise((res) => {
               reader.onloadend = () => res(reader.result.split(',')[1]);
@@ -1055,16 +967,24 @@ recordBtn.addEventListener("click", async () => {
       recordStatus.textContent = '⚠️ Microphone access denied. Cannot record.';
     }
   } else {
-    // ── STOP ──
+    // ── STOP: enforce 15-second minimum ──
+    const elapsed = Date.now() - recordingStartTime;
+    if (elapsed < MIN_RECORDING_MS) {
+      const remaining = Math.ceil((MIN_RECORDING_MS - elapsed) / 1000);
+      recordStatus.innerHTML = `<span style="color:#D4580A;font-weight:bold;">⏱️ Too short!</span><br>Please speak for at least <strong>15 seconds</strong> so the AI can give you a proper analysis. Keep going for ${remaining} more second${remaining !== 1 ? 's' : ''}!`;
+      return; // don't stop — let user keep speaking
+    }
+
     if (mediaRecorder) {
       mediaRecorder.stop();
       mediaRecorder.stream.getTracks().forEach(t => t.stop());
     }
+    stopWebSpeechTranscription();
     isRecording = false;
-    recordBtn.textContent = whisperReady ? '🔄 Transcribing…' : '🔄 Analysing…';
+    recordBtn.textContent = '🔄 Analysing…';
     recordBtn.disabled = true;
-    recordStatus.textContent = whisperReady
-      ? '🧠 Transcribing on your device (free & private)…'
+    recordStatus.textContent = usedBrowserSpeech
+      ? '🧠 Transcribed free via your browser! Scoring with AI…'
       : 'Processing your speech with AI…';
   }
 });

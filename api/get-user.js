@@ -7,7 +7,7 @@
  */
 
 import { verifyFirebaseIdToken } from '../shared/auth-helper.js';
-import { query } from '../shared/db.js';
+import { query, withTransaction } from '../shared/db.js';
 import { setCorsHeaders, safeError } from '../shared/middleware.js';
 
 export const config = { api: { bodyParser: { sizeLimit: '512kb' } } };
@@ -75,53 +75,51 @@ export default async function handler(req, res) {
           const oldUserRes = await query('SELECT * FROM public.users WHERE uid = $1', [oldUid]);
           const oldUser = oldUserRes.rows[0];
 
-          await query('BEGIN');
-          
-          // 1. Insert temporary record with new UID
-          await query(
-            `INSERT INTO public.users (
-              uid, name, email, gender, avatar_bg, aura_points, streak, total_yaps, 
-              created_at, avatar_seed, linkedin_url, instagram_url, username, 
-              email_reminders, push_subscription, last_practice_date
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)`,
-            [
-              uid,
-              oldUser.name,
-              `temp_${uid}_${oldUser.email}`,
-              oldUser.gender,
-              oldUser.avatar_bg,
-              oldUser.aura_points,
-              oldUser.streak,
-              oldUser.total_yaps,
-              oldUser.created_at,
-              oldUser.avatar_seed,
-              oldUser.linkedin_url,
-              oldUser.instagram_url,
-              oldUser.username ? `temp_${uid}_${oldUser.username}` : null,
-              oldUser.email_reminders,
-              oldUser.push_subscription,
-              oldUser.last_practice_date
-            ]
-          );
+          await withTransaction(async (client) => {
+            // 1. Insert temporary record with new UID
+            await client.query(
+              `INSERT INTO public.users (
+                uid, name, email, gender, avatar_bg, aura_points, streak, total_yaps, 
+                created_at, avatar_seed, linkedin_url, instagram_url, username, 
+                email_reminders, push_subscription, last_practice_date
+              ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)`,
+              [
+                uid,
+                oldUser.name,
+                `temp_${uid}_${oldUser.email}`,
+                oldUser.gender,
+                oldUser.avatar_bg,
+                oldUser.aura_points,
+                oldUser.streak,
+                oldUser.total_yaps,
+                oldUser.created_at,
+                oldUser.avatar_seed,
+                oldUser.linkedin_url,
+                oldUser.instagram_url,
+                oldUser.username ? `temp_${uid}_${oldUser.username}` : null,
+                oldUser.email_reminders,
+                oldUser.push_subscription,
+                oldUser.last_practice_date
+              ]
+            );
 
-          // 2. Transfer practice sessions to new UID
-          await query('UPDATE public.practice_sessions SET user_id = $1 WHERE user_id = $2', [uid, oldUid]);
+            // 2. Transfer practice sessions to new UID
+            await client.query('UPDATE public.practice_sessions SET user_id = $1 WHERE user_id = $2', [uid, oldUid]);
 
-          // 3. Delete old record
-          await query('DELETE FROM public.users WHERE uid = $1', [oldUid]);
+            // 3. Delete old record
+            await client.query('DELETE FROM public.users WHERE uid = $1', [oldUid]);
 
-          // 4. Restore original email and username
-          await query(
-            'UPDATE public.users SET email = $1, username = $2 WHERE uid = $3',
-            [oldUser.email, oldUser.username, uid]
-          );
+            // 4. Restore original email and username
+            await client.query(
+              'UPDATE public.users SET email = $1, username = $2 WHERE uid = $3',
+              [oldUser.email, oldUser.username, uid]
+            );
+          });
 
-          await query('COMMIT');
           console.log(`[get-user] Constraint-safe migration successful for email=${verifiedUser.email}`);
         } catch (txErr) {
-          await query('ROLLBACK');
           console.error('[get-user] Transaction migration failed:', txErr.message);
-          throw txErr;
+          // withTransaction already rolled back — do not rethrow, let user still load
         }
       }
     }
@@ -132,11 +130,11 @@ export default async function handler(req, res) {
         u.*,
         (SELECT COUNT(*) + 1 FROM public.users WHERE aura_points > u.aura_points) as rank,
         COALESCE(
-          (SELECT json_agg(d) FROM (
-             SELECT DISTINCT date::date::text as d
+          (SELECT json_agg(date_str) FROM (
+             SELECT DISTINCT date::date::text AS date_str
              FROM practice_sessions 
              WHERE user_id = u.uid
-             ORDER BY d ASC
+             ORDER BY date_str ASC
            ) sub), 
           '[]'::json
         ) as practice_dates,

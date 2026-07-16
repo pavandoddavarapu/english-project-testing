@@ -35,6 +35,26 @@ export async function query(text, params) {
   return res;
 }
 
+/**
+ * Run multiple queries inside a single transaction on a dedicated client.
+ * Usage: await withTransaction(async (client) => { await client.query(...); ... });
+ */
+export async function withTransaction(fn) {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const result = await fn(client);
+    await client.query('COMMIT');
+    return result;
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
+
 // Startup Migration: Ensure users table has all required columns and indexes
 (async () => {
   try {

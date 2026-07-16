@@ -547,6 +547,8 @@
       }
       const result = await res.json();
       console.log('[Tracker] Backend save OK. Streak:', result.streak, '| Aura:', result.aura);
+      // Invalidate dashboard cache so heatmap refreshes on next visit
+      localStorage.removeItem(`speakup-user-data-${user.id}`);
       return result;
     }
 

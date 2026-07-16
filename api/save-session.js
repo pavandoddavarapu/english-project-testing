@@ -88,10 +88,11 @@ export default async function handler(req, res) {
       `UPDATE public.users 
        SET aura_points = aura_points + 10,
            total_yaps = total_yaps + 1,
-           streak = $2
+           streak = $2,
+           last_practice_date = $3
        WHERE uid = $1
        RETURNING aura_points, streak`,
-      [uid, newStreak]
+      [uid, newStreak, todayDateStr]
     );
 
     const updatedStats = updateRes.rows[0];

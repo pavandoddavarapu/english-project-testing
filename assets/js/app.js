@@ -825,12 +825,24 @@ recordBtn.addEventListener("click", async () => {
           analysisTimestamps.push(Date.now());
           recordStatus.textContent = '🔄 Analysing speech…';
 
-          // Get Firebase Auth token
-          const user = window.auth ? window.auth.currentUser : null;
+          // Get Auth token
+          let user = null;
+          let idToken = null;
+
+          if (window.supabase) {
+            const { data: { session } } = await window.supabase.auth.getSession();
+            user = session?.user;
+            idToken = session?.access_token;
+          } else if (window.auth) {
+            user = window.auth.currentUser;
+            if (user) {
+              idToken = await user.getIdToken();
+            }
+          }
+
           if (!user) {
             throw new Error('Please log in to analyze your speech.');
           }
-          const idToken = await user.getIdToken();
 
           // Always send raw audio — Groq Whisper transcribes on the server
           const reader = new FileReader();
@@ -1273,14 +1285,26 @@ async function sendChatMessage() {
   showTyping();
   
   try {
-    const user = window.auth ? window.auth.currentUser : null;
+    let user = null;
+    let idToken = null;
+
+    if (window.supabase) {
+      const { data: { session } } = await window.supabase.auth.getSession();
+      user = session?.user;
+      idToken = session?.access_token;
+    } else if (window.auth) {
+      user = window.auth.currentUser;
+      if (user) {
+        idToken = await user.getIdToken();
+      }
+    }
+
     if (!user) {
       hideTyping();
       appendMessage("bot", "Hey there! Please log in first to chat with me. 🎤");
       chatHistory.pop();
       return;
     }
-    const idToken = await user.getIdToken();
 
     const res = await fetch("/api/chat", {
       method: "POST",

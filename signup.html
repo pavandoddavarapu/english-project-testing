@@ -672,11 +672,16 @@
         // If email verification is disabled in Supabase, we get a session immediately.
         // If not, data.session will be null and the user must verify their email.
         const session = data.session;
-        await initializeUserProfile(session || { access_token: 'confirmation-pending', user: data.user }, name, gender, linkedin, instagram, usernameVal);
-        
         if (session) {
+          // We have a real session — initialize the profile now
+          await initializeUserProfile(session, name, gender, linkedin, instagram, usernameVal);
           window.location.href = redirectUrl;
         } else {
+          // Email confirmation required — store signup data, profile will init after verification
+          localStorage.setItem('speakup_signup_username', usernameVal);
+          localStorage.setItem('speakup_signup_gender', gender);
+          localStorage.setItem('speakup_signup_linkedin', linkedin);
+          localStorage.setItem('speakup_signup_instagram', instagram);
           alert("Sign up successful! Please check your email to confirm your account and log in.");
           window.location.href = 'login.html';
         }

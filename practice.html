@@ -290,9 +290,20 @@
       </div>
 
       <div class="filters-row hidden" id="filters-interview">
-        <div class="filter-pill active-filter">
-          <span>🌟 Top 50 Behavioral</span>
-          <span class="arrow">▼</span>
+        <div class="filter-dropdown-container" id="interview-category-dropdown-container">
+          <button class="filter-pill dropdown-toggle" id="interview-category-toggle">
+            <span id="interview-category-label">💼 Behavioral</span>
+            <span class="arrow" id="interview-category-arrow">▼</span>
+          </button>
+          <div class="filter-dropdown-menu hidden scrollable-menu" id="interview-category-menu">
+            <button class="filter-option active" data-value="behavioral">💼 Behavioral <span class="check">✓</span></button>
+            <button class="filter-option" data-value="technical">💻 Technical <span class="check hidden">✓</span></button>
+            <button class="filter-option" data-value="sales">📈 Sales <span class="check hidden">✓</span></button>
+            <button class="filter-option" data-value="hr">🤝 HR &amp; People <span class="check hidden">✓</span></button>
+            <button class="filter-option" data-value="management">🧭 Management <span class="check hidden">✓</span></button>
+            <button class="filter-option" data-value="finance">💰 Finance <span class="check hidden">✓</span></button>
+            <button class="filter-option" data-value="marketing">📣 Marketing <span class="check hidden">✓</span></button>
+          </div>
         </div>
       </div>
 

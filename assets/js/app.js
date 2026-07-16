@@ -19,16 +19,85 @@ const RANDOM_TOPICS = [
   { above: "Mindset", main: "Optimism is a superpower that anyone can cultivate.", below: "Routine is the enemy of creativity." },
 ];
 
-const INTERVIEW_TOPICS = [
-  { above: "Behavioral", main: "Tell me about a time you successfully managed a project from start to finish.", below: "Why do you want to work here?" },
-  { above: "Leadership", main: "Describe a situation where you had to lead without authority.", below: "How do you handle disagreement with a teammate?" },
-  { above: "Problem-Solving", main: "Walk me through a difficult problem you solved at work.", below: "What's your approach to handling tight deadlines?" },
-  { above: "Teamwork", main: "Tell me about a time you had to collaborate with someone very different from you.", below: "How do you build trust within a team?" },
-  { above: "Adaptability", main: "Describe a time when you had to quickly adapt to major change.", below: "How do you stay motivated during challenging projects?" },
-  { above: "Communication", main: "Tell me about a time you had to explain a complex topic to a non-expert.", below: "How do you give constructive feedback?" },
-  { above: "Initiative", main: "Give an example of when you went above and beyond your job description.", below: "What's a project you started on your own initiative?" },
-  { above: "Conflict", main: "Tell me about a time you handled a conflict with a difficult client or colleague.", below: "How do you manage stress in high-pressure situations?" },
-];
+const INTERVIEW_BANK = {
+  behavioral: [
+    { above: "Behavioral", main: "Tell me about a time you successfully managed a project from start to finish.", below: "Why do you want to work here?" },
+    { above: "Leadership", main: "Describe a situation where you had to lead without authority.", below: "How do you handle disagreement with a teammate?" },
+    { above: "Problem-Solving", main: "Walk me through a difficult problem you solved at work.", below: "What's your approach to handling tight deadlines?" },
+    { above: "Teamwork", main: "Tell me about a time you had to collaborate with someone very different from you.", below: "How do you build trust within a team?" },
+    { above: "Adaptability", main: "Describe a time when you had to quickly adapt to major change.", below: "How do you stay motivated during challenging projects?" },
+    { above: "Communication", main: "Tell me about a time you had to explain a complex topic to a non-expert.", below: "How do you give constructive feedback?" },
+    { above: "Initiative", main: "Give an example of when you went above and beyond your job description.", below: "What's a project you started on your own initiative?" },
+    { above: "Conflict", main: "Tell me about a time you handled a conflict with a difficult client or colleague.", below: "How do you manage stress in high-pressure situations?" },
+    { above: "Failure", main: "Tell me about your biggest professional failure and what you learned from it.", below: "How do you bounce back after making a mistake?" },
+    { above: "Self-Awareness", main: "What is your greatest weakness and how are you actively working on it?", below: "How do you respond to criticism?" },
+  ],
+  technical: [
+    { above: "System Design", main: "How would you design a URL shortener like bit.ly from scratch?", below: "What trade-offs did you consider?" },
+    { above: "Problem-Solving", main: "Explain the difference between REST and GraphQL APIs and when you'd choose each.", below: "What is your experience with microservices?" },
+    { above: "Debugging", main: "Walk me through how you would debug a production system that is running slowly.", below: "What monitoring tools do you use?" },
+    { above: "Architecture", main: "How do you ensure scalability when designing a database schema?", below: "Explain the CAP theorem in simple terms." },
+    { above: "Code Quality", main: "What does clean code mean to you and how do you enforce it in a team?", below: "What is your approach to code reviews?" },
+    { above: "Security", main: "What are the top 3 security vulnerabilities every developer must know, and how do you prevent them?", below: "How have you handled sensitive user data in past projects?" },
+    { above: "DevOps", main: "Explain CI/CD pipelines and how you have set one up previously.", below: "What's your experience with Docker and Kubernetes?" },
+    { above: "Data Structures", main: "When would you choose a hash map over a binary tree and why?", below: "Describe a time your choice of data structure improved performance." },
+    { above: "Machine Learning", main: "Explain how you would approach building a recommendation system.", below: "How do you handle class imbalance in a dataset?" },
+    { above: "Cloud", main: "Compare AWS, GCP, and Azure — which would you pick for a new startup and why?", below: "What cloud services have you used in production?" },
+  ],
+  sales: [
+    { above: "Pitching", main: "Pitch our product to me as if I am a skeptical CFO with a tight budget.", below: "How do you tailor your pitch to different stakeholders?" },
+    { above: "Objection Handling", main: "A prospect says 'Your price is too high.' Walk me through your exact response.", below: "What is the most common objection you face and how do you overcome it?" },
+    { above: "Discovery", main: "How do you uncover a prospect's real pain points when they are guarded?", below: "What questions do you always ask in a first discovery call?" },
+    { above: "Closing", main: "Describe your go-to closing technique and why it works for you.", below: "How do you handle a prospect who keeps postponing the decision?" },
+    { above: "Prospecting", main: "How do you build a cold outreach sequence that actually gets replies?", below: "What's your best tip for writing a cold email subject line?" },
+    { above: "Relationship", main: "Tell me about a deal that took over 6 months to close and how you kept the momentum going.", below: "How do you maintain relationships with existing clients?" },
+    { above: "Metrics", main: "What sales KPIs do you track daily and why are they important?", below: "How do you analyze a lost deal to improve future performance?" },
+    { above: "Negotiation", main: "Describe a negotiation where you had to give a discount while protecting margin.", below: "What's your approach when a prospect plays you against a competitor?" },
+  ],
+  hr: [
+    { above: "Culture Fit", main: "How do you assess whether a candidate is the right cultural fit for a company?", below: "Describe the ideal team culture you work best in." },
+    { above: "Compensation", main: "A candidate's salary expectation is 30% above your budget. How do you handle this?", below: "How do you explain a compensation package beyond just salary?" },
+    { above: "Conflict", main: "Two senior employees are in a prolonged conflict affecting the team. Walk me through your resolution process.", below: "When is it necessary to escalate a workplace conflict to leadership?" },
+    { above: "Retention", main: "A high performer walks into your office and says they are leaving. What do you do?", below: "What initiatives have you implemented to improve employee retention?" },
+    { above: "Policy", main: "How do you communicate an unpopular company policy change to employees?", below: "Describe a time you had to enforce a policy that you personally disagreed with." },
+    { above: "Performance", main: "Walk me through how you run a performance review conversation with an underperformer.", below: "How do you set OKRs or KPIs that actually motivate people?" },
+    { above: "Diversity", main: "What concrete steps have you taken to make your hiring process more inclusive?", below: "How do you measure the effectiveness of DEI initiatives?" },
+    { above: "Onboarding", main: "Describe the ideal onboarding experience for a new senior hire.", below: "How do you ensure new employees feel welcomed and productive from day one?" },
+  ],
+  management: [
+    { above: "Vision", main: "How do you set a team vision that gets everyone genuinely excited and aligned?", below: "How do you communicate strategy downward to individual contributors?" },
+    { above: "Delegation", main: "Describe how you decide what to delegate and what to keep.", below: "Tell me about a time delegation went wrong and what you learned." },
+    { above: "Performance", main: "How do you handle a previously high-performing employee who is suddenly underperforming?", below: "What does a good performance improvement plan look like?" },
+    { above: "Decision Making", main: "Walk me through a difficult business decision you made with incomplete information.", below: "How do you balance data-driven decisions with gut instinct?" },
+    { above: "Hiring", main: "What is your hiring process for a critical senior role on your team?", below: "What's the biggest hiring mistake you've made and what did you learn?" },
+    { above: "Cross-Functional", main: "How do you align multiple teams with competing priorities toward a shared goal?", below: "Describe a time you had to influence without authority across departments." },
+    { above: "Scaling", main: "How do you maintain company culture as a team rapidly scales from 10 to 100 people?", below: "What processes break first during hyper-growth and how do you fix them?" },
+    { above: "Feedback", main: "How do you create a culture of candid, upward feedback in your team?", below: "Tell me about a time you received difficult feedback from a direct report." },
+  ],
+  finance: [
+    { above: "Valuation", main: "Walk me through a DCF valuation — what are the key assumptions you scrutinize most?", below: "What are the biggest risks in any valuation model?" },
+    { above: "Financial Analysis", main: "A company has strong revenue growth but declining free cash flow. What does this tell you?", below: "Which financial ratio do you find most insightful and why?" },
+    { above: "Budgeting", main: "Describe how you approach the annual budgeting process at a mid-size company.", below: "How do you handle budget overruns mid-year?" },
+    { above: "Risk", main: "How do you assess and communicate financial risk to a non-finance audience?", below: "Describe a time you identified a financial risk that others had missed." },
+    { above: "M&A", main: "Walk me through the key steps of evaluating a potential acquisition target.", below: "What are the most common reasons M&A deals fail post-close?" },
+    { above: "Investment", main: "A client has 50 lakh to invest with a 10-year horizon. How would you approach their portfolio?", below: "How do you stay calm and advise clients during a market downturn?" },
+    { above: "Reporting", main: "How do you make monthly financial reports truly actionable for business leaders?", below: "What's the most important metric you track on a P&L and why?" },
+    { above: "Cost Reduction", main: "You are asked to find 20% cost savings without impacting core operations. How do you start?", below: "How do you ensure cost cuts don't damage company morale or quality?" },
+  ],
+  marketing: [
+    { above: "Strategy", main: "How would you develop a go-to-market strategy for a brand new B2B SaaS product?", below: "What's the first thing you do when you join a company as a marketing lead?" },
+    { above: "Branding", main: "How do you build a consistent brand voice across multiple channels and teams?", below: "Tell me about a brand repositioning you led or witnessed — what made it work?" },
+    { above: "Digital", main: "Our organic traffic dropped 40% after a Google algorithm update. Walk me through your recovery plan.", below: "What SEO strategies are you most confident in for 2025?" },
+    { above: "Campaigns", main: "Walk me through a marketing campaign you ran end-to-end — strategy to results.", below: "How do you measure the ROI of a brand awareness campaign?" },
+    { above: "Content", main: "How do you build a content strategy that generates leads, not just traffic?", below: "What content formats drive the highest engagement in your experience?" },
+    { above: "Growth", main: "Describe the most creative growth hack you have executed and what you learned.", below: "How do you identify the highest-leverage marketing channel for a new product?" },
+    { above: "Audience", main: "How do you research and define your ideal customer profile?", below: "Describe how you use customer personas in day-to-day marketing decisions." },
+    { above: "Paid Ads", main: "Our paid ad ROAS dropped from 4x to 1.5x. How do you diagnose and fix this?", below: "What is your budget allocation philosophy across paid channels?" },
+  ],
+};
+
+// Flat behavioral array for backward compat with any legacy references
+const INTERVIEW_TOPICS = INTERVIEW_BANK.behavioral;
 
 const VOCAB_WORDS = [
   { word: "Pie in the sky", pos: "idiom", meaning: "An unrealistic promise of future reward.", example: "Their compensation package is all pie in the sky — no actual guarantees.", angle: "Share a pie-in-the-sky promise you once believed and how you spotted them faster now." },
@@ -83,6 +152,7 @@ const CACHE_KEY = `speakup-daily-${TODAY}`;
 let DAILY_DATA = null;      // set by initDailyData()
 let selectedCategory = 'random';
 let selectedDifficulty = 'random';
+let selectedInterviewCategory = 'behavioral';
 
 // ─── AUDIO (Web Audio API) ──────────────────────────────
 let audioCtx = null;
@@ -247,13 +317,9 @@ function getRandomPool() {
 }
 
 function getInterviewPool() {
-  if (!DAILY_DATA || !DAILY_DATA.interview) return INTERVIEW_TOPICS;
-  let pool = DAILY_DATA.interview;
-  if (selectedDifficulty !== 'random') {
-    const f = pool.filter(t => t.difficulty === selectedDifficulty);
-    if (f.length) pool = f;
-  }
-  return pool;
+  // Use the selected category from INTERVIEW_BANK (defaults to behavioral)
+  const cat = selectedInterviewCategory || 'behavioral';
+  return INTERVIEW_BANK[cat] || INTERVIEW_BANK.behavioral;
 }
 
 function getVocabPool() {
@@ -413,6 +479,7 @@ function setupDropdown(containerId, toggleId, menuId, labelId) {
 
 setupDropdown("category-dropdown-container", "category-toggle", "category-menu", "category-label");
 setupDropdown("difficulty-dropdown-container", "difficulty-toggle", "difficulty-menu", "difficulty-label");
+setupDropdown("interview-category-dropdown-container", "interview-category-toggle", "interview-category-menu", "interview-category-label");
 
 // Track selected filter values for AI pool filtering
 document.querySelectorAll('#category-menu .filter-option').forEach(opt => {
@@ -420,6 +487,16 @@ document.querySelectorAll('#category-menu .filter-option').forEach(opt => {
 });
 document.querySelectorAll('#difficulty-menu .filter-option').forEach(opt => {
   opt.addEventListener('click', () => { selectedDifficulty = opt.dataset.value; });
+});
+// Track interview category selection and immediately respin question
+document.querySelectorAll('#interview-category-menu .filter-option').forEach(opt => {
+  opt.addEventListener('click', () => {
+    selectedInterviewCategory = opt.dataset.value;
+    if (currentTab === 'interview') {
+      const pool = getInterviewPool();
+      showTopic(pool[Math.floor(Math.random() * pool.length)]);
+    }
+  });
 });
 
 // Close dropdowns when clicking outside

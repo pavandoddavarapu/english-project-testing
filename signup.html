@@ -544,7 +544,7 @@
     const redirectUrl = urlParams.get('redirect') ? decodeURIComponent(urlParams.get('redirect')) : 'genz-streak-test.html';
 
     // If user is already logged in or session is established, redirect them directly to the dashboard
-    supabase.auth.onAuthStateChange(async (event, session) => {
+    async function handleSessionState(session) {
       const user = session?.user;
       if (user) {
         // Check if there is pending signup data in localStorage to initialize the profile
@@ -567,6 +567,14 @@
         }
         window.location.href = redirectUrl;
       }
+    }
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      handleSessionState(session);
+    });
+
+    supabase.auth.onAuthStateChange(async (event, session) => {
+      handleSessionState(session);
     });
 
     // Handle Google Sign Up

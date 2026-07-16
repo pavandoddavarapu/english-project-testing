@@ -367,10 +367,18 @@
     const redirectUrl = urlParams.get('redirect') ? decodeURIComponent(urlParams.get('redirect')) : 'genz-streak-test.html';
 
     // If user is already logged in or session is established, redirect them directly
-    supabase.auth.onAuthStateChange((event, session) => {
+    function handleRedirect(session) {
       if (session?.user) {
         window.location.href = redirectUrl;
       }
+    }
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      handleRedirect(session);
+    });
+
+    supabase.auth.onAuthStateChange((event, session) => {
+      handleRedirect(session);
     });
 
     function showLoginError(msg) {

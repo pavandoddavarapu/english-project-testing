@@ -1,3 +1,4 @@
+// Trigger redeployment with Vercel environment variables
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
 // The Supabase URL is mapped to your PostgreSQL/Supabase project reference:

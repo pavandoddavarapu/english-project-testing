@@ -30,6 +30,31 @@ export default async function handler(req, res) {
       return res.status(403).json({ error: 'Unauthorized: UID mismatch' });
     }
 
+    // Auto-migrate user from Firebase UID to Supabase UID by email
+    if (verifiedUser.email) {
+      const checkEmailRes = await query(
+        'SELECT uid FROM public.users WHERE LOWER(email) = LOWER($1) AND uid != $2',
+        [verifiedUser.email, uid]
+      );
+      if (checkEmailRes.rowCount > 0) {
+        const oldUid = checkEmailRes.rows[0].uid;
+        console.log(`[get-user] Migrating user email=${verifiedUser.email} from Firebase UID=${oldUid} to Supabase UID=${uid}`);
+        
+        try {
+          await query('BEGIN');
+          // Update matching practice sessions
+          await query('UPDATE public.practice_sessions SET user_id = $1 WHERE user_id = $2', [uid, oldUid]);
+          // Update user record
+          await query('UPDATE public.users SET uid = $1 WHERE LOWER(email) = LOWER($2)', [uid, verifiedUser.email]);
+          await query('COMMIT');
+          console.log(`[get-user] Migration successful for email=${verifiedUser.email}`);
+        } catch (txErr) {
+          await query('ROLLBACK');
+          console.error('[get-user] Transaction migration failed:', txErr.message);
+        }
+      }
+    }
+
     // 2. Query user, practice_dates and recent_sessions in a single optimized query
     const userRes = await query(`
       SELECT 

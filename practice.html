@@ -651,6 +651,14 @@
         if (typeof window._speakup_unwrap === 'function') window._speakup_unwrap();
         if (_timerObserver) { _timerObserver.disconnect(); _timerObserver = null; }
       }
+    }
+
+    // Connect to Supabase Auth state for session saving and widgets
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      handlePracticeSessionState(session);
+    });
+    supabase.auth.onAuthStateChange((event, session) => {
+      handlePracticeSessionState(session);
     });
   </script>
 

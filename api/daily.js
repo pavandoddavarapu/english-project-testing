@@ -75,7 +75,7 @@ export default async function handler(req, res) {
   const today = date || new Date().toISOString().slice(0, 10);
 
   const AI_PROMPT = `You are a daily content generator for "Speak Up!" — a casual English speech practice app for everyday people.
-Today: ${today}. Generate FRESH content. Return ONLY valid JSON (no markdown, no code fences):
+Today: ${today}. Generate FRESH, unique content every time. Return ONLY valid JSON (no markdown, no code fences):
 
 {
   "random": {
@@ -91,8 +91,16 @@ Today: ${today}. Generate FRESH content. Return ONLY valid JSON (no markdown, no
     "millennial": [same x4],
     "genz":       [same x4]
   },
-  "interview": [{"above":"category","main":"question","below":"tip or follow-up","difficulty":"easy|medium|hard"} x8],
-  "vocab": [{"word":"...","pos":"noun|verb|adjective|idiom|phrase|adverb","meaning":"...","example":"...","angle":"..."} x10]
+  "interview": {
+    "behavioral":  [{"above":"label","main":"question","below":"follow-up tip"}, ...6 items],
+    "technical":   [same x6],
+    "sales":       [same x6],
+    "hr":          [same x6],
+    "management":  [same x6],
+    "finance":     [same x6],
+    "marketing":   [same x6]
+  },
+  "vocab": [{"word":"...","pos":"noun|verb|adjective|idiom|phrase|adverb","meaning":"...","example":"...","angle":"..."} x12]
 }
 
 CRITICAL RULES FOR "random" SECTION — READ CAREFULLY:
@@ -104,7 +112,7 @@ CRITICAL RULES FOR "random" SECTION — READ CAREFULLY:
 - BAD examples (too hard): "Evaluate the epistemological implications of AI sentience", "Defend the paradox of contradiction as wisdom"
 - "easy" = 5-year-old can understand; "medium" = casual adult chat; "hard" = requires a little thought but still everyday language
 
-Per-category style:
+Per-category style for "random":
 - general: everyday life, opinions, habits, preferences — super casual
 - tech: simple tech opinions anyone has (phones, apps, social media, gaming)
 - finance: basic money topics (saving, spending, shopping habits)
@@ -117,9 +125,24 @@ Per-category style:
 - millennial: millennial life and culture topics (nostalgia, adulting struggles)
 - genz: gen-z trends, social media life, memes, digital culture (casual and fun)
 
-Other sections:
-- interview: behavioral STAR-method questions, warm and professional
-- vocab: mix of useful everyday words, idioms, and power phrases — not overly academic`;
+RULES FOR "interview" SECTION — CRITICAL:
+- Each category must have exactly 6 fresh, realistic interview questions
+- "above" = sub-topic label (e.g. "Leadership", "Pitching", "Valuation")
+- "main" = the actual interview question (clear and professional)
+- "below" = a practical follow-up or answering tip (1 sentence)
+- Make questions specific and thought-provoking, not generic
+- behavioral: STAR-method questions (teamwork, leadership, conflict, failure, adaptability)
+- technical: software/engineering (system design, debugging, architecture, cloud, security)
+- sales: pitching, objection handling, closing, prospecting, negotiation, pipeline
+- hr: hiring, retention, conflict resolution, DEI, onboarding, compensation
+- management: delegation, vision, decision-making, scaling, performance management
+- finance: valuation, budgeting, financial analysis, risk, M&A, investment strategy
+- marketing: GTM strategy, branding, SEO/paid ads, content, growth hacking, analytics
+
+RULES FOR "vocab" SECTION:
+- Mix of useful everyday words, idioms, power phrases, and business expressions
+- "angle" = a personal speaking prompt using the word (1 sentence)
+- Not overly academic — things people can actually use in conversation`;
 
   const GEMINI_KEY = process.env.GEMINI_API_KEY;
   const groqKeys = (process.env.GROQ_API_KEY || '').split(',').map(k => k.trim()).filter(Boolean);

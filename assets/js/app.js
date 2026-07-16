@@ -147,7 +147,7 @@ function updateWhisperBadge(state) {
 // ─── AI CONFIG & FILTER STATE ───────────────────────────
 // Keys are now securely stored in Vercel Environment Variables
 const TODAY = new Date().toISOString().slice(0, 10);
-const CACHE_KEY = `speakup-daily-${TODAY}`;
+const CACHE_KEY = `speakup-daily-v2-${TODAY}`; // v2: interview now categorized
 
 let DAILY_DATA = null;      // set by initDailyData()
 let selectedCategory = 'random';
@@ -317,8 +317,11 @@ function getRandomPool() {
 }
 
 function getInterviewPool() {
-  // Use the selected category from INTERVIEW_BANK (defaults to behavioral)
   const cat = selectedInterviewCategory || 'behavioral';
+  // Prefer AI-generated daily data; fall back to hardcoded bank
+  if (DAILY_DATA && DAILY_DATA.interview && Array.isArray(DAILY_DATA.interview[cat]) && DAILY_DATA.interview[cat].length) {
+    return DAILY_DATA.interview[cat];
+  }
   return INTERVIEW_BANK[cat] || INTERVIEW_BANK.behavioral;
 }
 

@@ -1374,7 +1374,8 @@
   <!-- FIREBASE & CORE CONTROLLER -->
   <script type="module">
     import { auth, db } from './assets/js/firebase-config.js';
-    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+    import { signInAnonymously } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+    import { supabase } from './assets/js/supabase-config.js';
     import { 
       doc, 
       setDoc, 
@@ -1432,38 +1433,44 @@
     const roomIdParam = urlParams.get('room');
 
     // ── 1. AUTH STATE CHECK & INITIALIZE ──
-    onAuthStateChanged(auth, async (user) => {
+    supabase.auth.onAuthStateChange(async (event, session) => {
+      const user = session?.user;
       if (!user) {
-        // Do NOT redirect — keep page public and indexable by Google
-        // Users who try to join a room will be prompted to login at that point
         return;
+      }
+
+      // Quietly sign in to Firebase Anonymously so Firestore signaling works
+      try {
+        await signInAnonymously(auth);
+      } catch (err) {
+        console.warn("[Firebase] Anonymous sign-in failed:", err.message);
       }
 
       // Fetch user profile from database to get correct username, avatar seed, and details
       try {
-        const idToken = await user.getIdToken();
+        const idToken = session.access_token;
         const res = await fetch('/api/get-user', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ idToken, uid: user.uid })
+          body: JSON.stringify({ idToken, uid: user.id })
         });
         if (!res.ok) throw new Error("Could not load user profile");
         const { exists, data } = await res.json();
         
         if (exists && data) {
           currentUserProfile = {
-            uid: user.uid,
-            name: data.name || user.displayName || 'Speaker',
-            username: data.username || user.uid.substring(0, 8),
+            uid: user.id,
+            name: data.name || user.user_metadata?.full_name || user.user_metadata?.name || 'Speaker',
+            username: data.username || user.id.substring(0, 8),
             avatar_seed: data.avatar_seed || 'Felix',
             avatar_bg: data.avatar_bg || 'b6e3f4'
           };
         } else {
           // Fallback if postgres profile not set yet
           currentUserProfile = {
-            uid: user.uid,
-            name: user.displayName || 'Speaker',
-            username: user.uid.substring(0, 8),
+            uid: user.id,
+            name: user.user_metadata?.full_name || user.user_metadata?.name || 'Speaker',
+            username: user.id.substring(0, 8),
             avatar_seed: 'Felix',
             avatar_bg: 'b6e3f4'
           };
@@ -1471,9 +1478,9 @@
       } catch (err) {
         console.warn("[Auth] Failed to load PostgreSQL user profile, utilizing fallback profile:", err.message);
         currentUserProfile = {
-          uid: user.uid,
-          name: user.displayName || 'Speaker',
-          username: user.uid.substring(0, 8),
+          uid: user.id,
+          name: user.user_metadata?.full_name || user.user_metadata?.name || 'Speaker',
+          username: user.id.substring(0, 8),
           avatar_seed: 'Felix',
           avatar_bg: 'b6e3f4'
         };

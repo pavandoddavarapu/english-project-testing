@@ -1120,15 +1120,33 @@
 
   <!-- AUTH SCRIPT -->
   <script type="module">
-    import { auth } from './assets/js/firebase-config.js';
-    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
-    onAuthStateChanged(auth, user => {
-      if (user) {
-        document.getElementById('nav-auth-links').innerHTML = `
+    import { supabase } from './assets/js/supabase-config.js';
+    
+    function updateUI() {
+      const links = document.getElementById('nav-auth-links');
+      const cta = document.getElementById('about-cta-btn');
+      if (links) {
+        links.innerHTML = `
           <a href="genz-streak-test.html" class="btn-nav-login">Dashboard</a>
           <a href="practice.html" class="btn-nav-join">Practice 🎤</a>`;
-        const cta = document.getElementById('about-cta-btn');
-        if (cta) { cta.href = 'practice.html'; cta.textContent = 'Go to Practice Area 🎤'; }
+      }
+      if (cta) {
+        cta.href = 'practice.html';
+        cta.textContent = 'Go to Practice Area 🎤';
+      }
+    }
+
+    // Check current session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        updateUI();
+      }
+    });
+
+    // Listen to changes
+    supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        updateUI();
       }
     });
   </script>

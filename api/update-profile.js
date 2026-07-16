@@ -19,7 +19,7 @@ export default async function handler(req, res) {
   if (!checkRateLimit(req, res, { maxRequests: 5, windowMs: 60_000 })) return;
 
   try {
-    const { idToken, uid, name, gender, avatar_bg, avatar_seed, linkedin_url, instagram_url, username, action, subscription } = req.body || {};
+    const { idToken, uid, name, gender, avatar_bg, avatar_seed, linkedin_url, instagram_url, username, action, subscription, enabled } = req.body || {};
 
     if (!idToken || !uid) {
       return res.status(400).json({ error: 'Missing idToken or uid' });

@@ -39,7 +39,7 @@ async function saveSubscription(user, idToken, subscription) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       idToken,
-      uid: user.uid,
+      uid: user.uid || user.id,
       subscription: subscription.toJSON(),
       action: 'push-subscribe',
     }),
@@ -55,7 +55,7 @@ async function removeSubscription(user, idToken) {
   await fetch('/api/update-profile', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ idToken, uid: user.uid, action: 'push-unsubscribe' }),
+    body: JSON.stringify({ idToken, uid: user.uid || user.id, action: 'push-unsubscribe' }),
   });
 }
 

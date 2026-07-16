@@ -460,8 +460,7 @@
   </script>
 
   <script type="module">
-    import { auth, provider } from './assets/js/firebase-config.js';
-    import { signInWithPopup, createUserWithEmailAndPassword, updateProfile, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+    import { supabase } from './assets/js/supabase-config.js';
 
     // ── Real-time username availability check ──
     let _usernameCheckTimer = null;
@@ -515,24 +514,18 @@
       }, 500);
     });
 
-    // If user is already logged in, redirect them directly to the dashboard
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        window.location.href = 'genz-streak-test.html';
-      }
-    });
-
     // Helper to create a user document in PostgreSQL if it doesn't exist
-    async function initializeUserProfile(user, name, gender, linkedin = '', instagram = '', username = '') {
+    async function initializeUserProfile(session, name, gender, linkedin = '', instagram = '', username = '') {
       console.log('[Signup] Initializing user profile via backend database...');
-      const idToken = await user.getIdToken();
+      const idToken = session.access_token;
+      const user = session.user;
       const res = await fetch('/api/get-user', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           idToken,
-          uid: user.uid,
-          displayName: name || user.displayName || "New Speaker",
+          uid: user.id,
+          displayName: name || user.user_metadata?.full_name || "New Speaker",
           email: user.email,
           gender: gender || 'prefer_not',
           linkedin_url: linkedin,
@@ -550,6 +543,32 @@
     const urlParams = new URLSearchParams(window.location.search);
     const redirectUrl = urlParams.get('redirect') ? decodeURIComponent(urlParams.get('redirect')) : 'genz-streak-test.html';
 
+    // If user is already logged in or session is established, redirect them directly to the dashboard
+    supabase.auth.onAuthStateChange(async (event, session) => {
+      const user = session?.user;
+      if (user) {
+        // Check if there is pending signup data in localStorage to initialize the profile
+        const usernameVal = localStorage.getItem('speakup_signup_username');
+        if (usernameVal) {
+          const gender = localStorage.getItem('speakup_signup_gender') || 'prefer_not';
+          const linkedin = localStorage.getItem('speakup_signup_linkedin') || '';
+          const instagram = localStorage.getItem('speakup_signup_instagram') || '';
+          
+          try {
+            await initializeUserProfile(session, user.user_metadata?.full_name || user.user_metadata?.name || 'New Speaker', gender, linkedin, instagram, usernameVal);
+          } catch (err) {
+            console.error('[Signup] Profile init failed:', err);
+          } finally {
+            localStorage.removeItem('speakup_signup_username');
+            localStorage.removeItem('speakup_signup_gender');
+            localStorage.removeItem('speakup_signup_linkedin');
+            localStorage.removeItem('speakup_signup_instagram');
+          }
+        }
+        window.location.href = redirectUrl;
+      }
+    });
+
     // Handle Google Sign Up
     document.getElementById('google-signup-btn').addEventListener('click', async () => {
       try {
@@ -558,12 +577,32 @@
           alert('Please enter a valid username (3-20 characters, letters/numbers/underscores only).');
           return;
         }
-        const result = await signInWithPopup(auth, provider);
+
+        // Check availability of username before redirect
+        const checkRes = await fetch(`/api/check-username?username=${encodeURIComponent(usernameVal)}`);
+        const checkData = await checkRes.json();
+        if (!checkData.available) {
+          alert('Username is taken. Please choose another.');
+          return;
+        }
+
         const gender = document.querySelector('input[name="gender"]:checked')?.value || 'prefer_not';
         const linkedin = document.getElementById('linkedin_url')?.value.trim() || '';
         const instagram = document.getElementById('instagram_url')?.value.trim() || '';
-        await initializeUserProfile(result.user, result.user.displayName, gender, linkedin, instagram, usernameVal);
-        window.location.href = redirectUrl;
+
+        // Persist details in localStorage to configure user profile after Google redirects back
+        localStorage.setItem('speakup_signup_username', usernameVal);
+        localStorage.setItem('speakup_signup_gender', gender);
+        localStorage.setItem('speakup_signup_linkedin', linkedin);
+        localStorage.setItem('speakup_signup_instagram', instagram);
+
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: window.location.origin + '/signup.html?redirect=' + encodeURIComponent(redirectUrl)
+          }
+        });
+        if (error) throw error;
       } catch (error) {
         console.error("Google Sign-Up Error:", error);
         alert(error.message);
@@ -591,20 +630,9 @@
       // ── Restrict signups to recognized personal email providers ──
       const domain = email.split('@')[1]?.toLowerCase();
       const allowedDomains = [
-        'gmail.com',
-        'yahoo.com',
-        'outlook.com',
-        'hotmail.com',
-        'live.com',
-        'msn.com',
-        'icloud.com',
-        'proton.me',
-        'protonmail.com',
-        'zoho.com',
-        'aol.com',
-        'ymail.com',
-        'gmx.com',
-        'mail.com'
+        'gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'live.com',
+        'msn.com', 'icloud.com', 'proton.me', 'protonmail.com', 'zoho.com',
+        'aol.com', 'ymail.com', 'gmx.com', 'mail.com'
       ];
 
       if (!allowedDomains.includes(domain)) {
@@ -618,10 +646,32 @@
       }
 
       try {
-        const result = await createUserWithEmailAndPassword(auth, email, password);
-        await updateProfile(result.user, { displayName: name });
-        await initializeUserProfile(result.user, name, gender, linkedin, instagram, usernameVal);
-        window.location.href = redirectUrl;
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              full_name: name
+            }
+          }
+        });
+        if (error) throw error;
+        
+        if (!data.user) {
+          throw new Error("Sign up completed, but no user was returned.");
+        }
+
+        // If email verification is disabled in Supabase, we get a session immediately.
+        // If not, data.session will be null and the user must verify their email.
+        const session = data.session;
+        await initializeUserProfile(session || { access_token: 'confirmation-pending', user: data.user }, name, gender, linkedin, instagram, usernameVal);
+        
+        if (session) {
+          window.location.href = redirectUrl;
+        } else {
+          alert("Sign up successful! Please check your email to confirm your account and log in.");
+          window.location.href = 'login.html';
+        }
       } catch (error) {
         console.error("Email Sign-Up Error:", error);
         alert(error.message);

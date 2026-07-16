@@ -193,11 +193,10 @@
     });
   </script>
   <script type="module">
-    import { auth } from './assets/js/firebase-config.js';
-    import { signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+    import { supabase } from './assets/js/supabase-config.js';
 
-    // Perform actual Firebase sign out when landing on this page
-    signOut(auth).then(() => {
+    // Perform actual Supabase sign out when landing on this page
+    supabase.auth.signOut().then(() => {
       localStorage.removeItem('speakup-last-uid');
       console.log("User successfully signed out.");
       setTimeout(() => {

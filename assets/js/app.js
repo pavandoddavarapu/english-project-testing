@@ -71,13 +71,8 @@ const whisperReady  = false;
 function updateWhisperBadge(state) {
   const badge = document.getElementById('whisper-badge');
   if (!badge) return;
-  badge.style.transition = 'opacity 0.3s';
-  if (state === 'ready') {
-    badge.textContent = '☁️ Groq Whisper transcription active (accurate & faithful)';
-    badge.style.color = 'var(--primary, #2D6A4F)'; badge.style.opacity = '1';
-  } else {
-    badge.textContent = '';
-  }
+  badge.textContent = '';
+  badge.style.display = 'none';
 }
 
 // ─── AI CONFIG & FILTER STATE ───────────────────────────
@@ -828,7 +823,7 @@ recordBtn.addEventListener("click", async () => {
         // ── SCORING ──
         try {
           analysisTimestamps.push(Date.now());
-          recordStatus.textContent = '📊 Transcribing & scoring your speech with Groq AI…';
+          recordStatus.textContent = '🔄 Analysing speech…';
 
           // Get Firebase Auth token
           const user = window.auth ? window.auth.currentUser : null;
@@ -927,7 +922,7 @@ recordBtn.addEventListener("click", async () => {
     isRecording = false;
     recordBtn.textContent = '🔄 Analysing…';
     recordBtn.disabled = true;
-    recordStatus.textContent = 'Processing your speech with Groq Whisper AI…';
+    recordStatus.textContent = '🔄 Analysing speech…';
   }
 });
 

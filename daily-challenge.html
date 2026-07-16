@@ -219,13 +219,13 @@
   </div>
 
   <script type="module">
-    import { auth } from './assets/js/firebase-config.js';
-    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+    import { supabase } from './assets/js/supabase-config.js';
 
     let todayTopic = '';
 
     // Auth state
-    onAuthStateChanged(auth, async (user) => {
+    supabase.auth.onAuthStateChange(async (event, session) => {
+      const user = session?.user;
       if (user) {
         document.getElementById('dash-btn').style.display = 'block';
         document.getElementById('login-btn').style.display = 'none';
@@ -233,7 +233,7 @@
         // Initialize streak fire widget
         try {
           const { initStreakFireWidget } = await import('./assets/js/streak-fire.js');
-          initStreakFireWidget(user);
+          initStreakFireWidget();
         } catch (e) {
           console.warn('[Challenge] Failed to init streak fire widget:', e);
         }

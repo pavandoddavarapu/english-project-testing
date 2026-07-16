@@ -1,44 +1,58 @@
 /**
  * api/auth-helper.js
  * 
- * Verifies Firebase ID Tokens using Google's public Firebase Identity Toolkit API.
- * This does not require any private service account keys or heavy SDKs.
+ * Verifies Supabase access tokens (JWTs) using Supabase's Auth API.
+ * This does not require any heavy SDKs.
  */
-
-const FIREBASE_API_KEY = "AIzaSyA-LXQhlPLmrzx_oOhWjo5skg6PnslE_m4"; // Public Firebase API Key
 
 /**
- * Verifies the user's Firebase ID token.
- * @param {string} idToken 
+ * Verify Supabase access token (JWT) by calling the Supabase Auth user endpoint.
+ * This does not require any heavy SDKs.
+ * @param {string} accessToken 
  * @returns {Promise<{uid: string, email: string, displayName: string}>}
  */
-export async function verifyFirebaseIdToken(idToken) {
-  if (!idToken) {
-    throw new Error('ID Token is required');
+export async function verifySupabaseToken(accessToken) {
+  if (!accessToken) {
+    throw new Error('Access Token is required');
   }
 
-  const url = `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${FIREBASE_API_KEY}`;
+  const supabaseUrl = process.env.SUPABASE_URL || "https://nwnqehaprqeygpbczbsv.supabase.co";
+  const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
+
+  if (!supabaseAnonKey) {
+    console.error("DB WARNING: SUPABASE_ANON_KEY is not configured in environment variables.");
+    throw new Error("Server authentication service is misconfigured");
+  }
+
+  const url = `${supabaseUrl}/auth/v1/user`;
   const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ idToken })
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${accessToken}`,
+      'apikey': supabaseAnonKey
+    }
   });
 
   if (!res.ok) {
-    const errData = await res.json().catch(() => ({}));
-    const errMsg = errData?.error?.message || `HTTP ${res.status}`;
-    throw new Error(`Firebase Auth verification failed: ${errMsg}`);
+    const errText = await res.text().catch(() => '');
+    throw new Error(`Authentication token verification failed (${res.status}): ${errText}`);
   }
 
-  const data = await res.json();
-  const user = data?.users?.[0];
-  if (!user) {
+  const user = await res.json();
+  if (!user || !user.id) {
     throw new Error('Invalid token or user not found');
   }
 
   return {
-    uid: user.localId,
+    uid: user.id,
     email: user.email,
-    displayName: user.displayName || ''
+    displayName: user.user_metadata?.full_name || user.user_metadata?.name || ''
   };
+}
+
+/**
+ * Wrapper for backward compatibility with existing API endpoints
+ */
+export async function verifyFirebaseIdToken(idToken) {
+  return verifySupabaseToken(idToken);
 }

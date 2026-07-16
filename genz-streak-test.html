@@ -1656,10 +1656,16 @@
 
   <!-- Profile settings logic is now handled in the main script module below -->
 
-  <!-- FIREBASE INTEGRATION -->
+  <!-- SUPABASE INTEGRATION -->
   <script type="module">
-    import { auth } from './assets/js/firebase-config.js';
-    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+    import { supabase } from './assets/js/supabase-config.js';
+
+    let currentUser = null;
+    const auth = {
+      get currentUser() {
+        return currentUser;
+      }
+    };
 
     // Global references for filtering
     window.allPracticeDates = [];
@@ -1836,19 +1842,20 @@
       saveBtn.textContent = 'Saving...';
 
       try {
-        const user = auth.currentUser;
+        const { data: { session } } = await supabase.auth.getSession();
+        const user = session?.user;
         if (!user) throw new Error('You must be signed in to update your profile.');
 
         const linkedinVal = document.getElementById('edit-profile-linkedin').value.trim();
         const instagramVal = document.getElementById('edit-profile-instagram').value.trim();
 
-        const idToken = await user.getIdToken();
+        const idToken = session.access_token;
         const response = await fetch('/api/update-profile', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             idToken,
-            uid: user.uid,
+            uid: user.id,
             name: nameVal,
             gender: _tempGender,
             avatar_bg: _tempBg,
@@ -1876,16 +1883,18 @@
         _currentUsername = updated.username || '';
         localStorage.setItem('speakup-avatar-seed', updated.avatar_seed);
 
-        // Update Firebase Profile Name
+        // Update Supabase Profile Name
         try {
-          const { updateProfile } = await import("https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js");
-          await updateProfile(user, { displayName: updated.name });
-        } catch (fbErr) {
-          console.warn('[Dashboard] Firebase auth profile name update failed:', fbErr.message);
+          const { error } = await supabase.auth.updateUser({
+            data: { full_name: updated.name }
+          });
+          if (error) throw error;
+        } catch (sbErr) {
+          console.warn('[Dashboard] Supabase auth profile name update failed:', sbErr.message);
         }
 
         // Update local storage cached object
-        const cacheKey = 'speakup-user-data-' + user.uid;
+        const cacheKey = 'speakup-user-data-' + user.id;
         const cached = localStorage.getItem(cacheKey);
         if (cached) {
           const data = JSON.parse(cached);
@@ -2396,18 +2405,21 @@
     async function loadFromBackend(user) {
       try {
         console.log('[Dashboard] Fetching data from backend...');
-        const idToken = await user.getIdToken();
+        const { data: { session } } = await supabase.auth.getSession();
+        const idToken = session?.access_token;
+        if (!idToken) throw new Error("No active session found.");
+
         const res = await fetch('/api/get-user', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ idToken, uid: user.uid })
+          body: JSON.stringify({ idToken, uid: user.id })
         });
         if (!res.ok) throw new Error(`/api/get-user returned ${res.status}`);
         const { exists, data: userData } = await res.json();
 
         if (exists && userData) {
           // Cache the data in localStorage for instant rendering next time
-          localStorage.setItem(`speakup-user-data-${user.uid}`, JSON.stringify(userData));
+          localStorage.setItem(`speakup-user-data-${user.id}`, JSON.stringify(userData));
           applyUserData(user, userData);
           console.log('[Dashboard] Backend load OK. Sessions:', (userData.recent_sessions||[]).length);
 
@@ -2434,7 +2446,7 @@
       } catch (err) {
         console.error('[Dashboard] Backend load failed:', err.message);
         // If there's no cache at all, render zeros
-        if (!localStorage.getItem(`speakup-user-data-${user.uid}`)) {
+        if (!localStorage.getItem(`speakup-user-data-${user.id}`)) {
           renderZeros();
         }
       }
@@ -2488,7 +2500,7 @@
       document.getElementById('profile-img').src =
         `https://api.dicebear.com/7.x/notionists/svg?seed=${_currentAvatarSeed}&backgroundColor=${_currentAvatarBg}`;
 
-      const displayName = userData.name || (user && user.displayName) || 'Speaker';
+      const displayName = userData.name || (user && (user.user_metadata?.full_name || user.user_metadata?.name)) || 'Speaker';
       const firstName   = displayName.split(' ')[0];
       document.getElementById('profile-name').innerText    = displayName;
       
@@ -2614,7 +2626,7 @@
 
       const shareUrl = _currentUsername
         ? `${window.location.origin}/dashboard?username=${_currentUsername}`
-        : `${window.location.origin}/dashboard?uid=${user.uid}`;
+        : `${window.location.origin}/dashboard?uid=${user.id}`;
 
       try {
         await navigator.clipboard.writeText(shareUrl);
@@ -2637,11 +2649,14 @@
       const user = auth.currentUser;
       if (!user) return;
       try {
-        const idToken = await user.getIdToken();
+        const { data: { session } } = await supabase.auth.getSession();
+        const idToken = session?.access_token;
+        if (!idToken) throw new Error("No active session found.");
+
         const res = await fetch('/api/update-profile', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ idToken, uid: user.uid, action: 'email-reminders', enabled })
+          body: JSON.stringify({ idToken, uid: user.id, action: 'email-reminders', enabled })
         });
         if (!res.ok) throw new Error('Failed to update email reminders');
         console.log('[Dashboard] Email reminders', enabled ? 'enabled' : 'disabled');
@@ -2658,7 +2673,10 @@
       const user = auth.currentUser;
       if (!user) return;
       try {
-        const idToken = await user.getIdToken();
+        const { data: { session } } = await supabase.auth.getSession();
+        const idToken = session?.access_token;
+        if (!idToken) throw new Error("No active session found.");
+
         if (enabled) {
           const { initPushNotifications } = await import('./assets/js/push-notifications.js');
           await initPushNotifications(user, idToken);
@@ -2718,22 +2736,24 @@
       loadPublicProfile(viewUid);
     }
 
-    onAuthStateChanged(auth, async (user) => {
+    supabase.auth.onAuthStateChange(async (event, session) => {
+      const user = session?.user;
+      currentUser = user;
+
       if (isPublicView) {
-        // In public view mode, we do not redirect or reload the dashboard with visitor's data
         if (user) {
-          localStorage.setItem('speakup-last-uid', user.uid);
+          localStorage.setItem('speakup-last-uid', user.id);
         }
         return;
       }
 
       if (user) {
-        localStorage.setItem('speakup-last-uid', user.uid);
+        localStorage.setItem('speakup-last-uid', user.id);
         // Show basic auth info immediately while data loads
-        document.getElementById('profile-name').innerText  = user.displayName || 'Speaker';
+        document.getElementById('profile-name').innerText  = user.user_metadata?.full_name || user.user_metadata?.name || 'Speaker';
 
         // Instant paint: Load from local storage if cached data exists
-        const cached = localStorage.getItem(`speakup-user-data-${user.uid}`);
+        const cached = localStorage.getItem(`speakup-user-data-${user.id}`);
         if (cached) {
           try {
             const cachedData = JSON.parse(cached);
@@ -2749,14 +2769,14 @@
         // ── Streak fire widget ───────────────────────────────────────────────
         try {
           const { initStreakFireWidget } = await import('./assets/js/streak-fire.js');
-          initStreakFireWidget(user);
+          initStreakFireWidget();
         } catch (e) {
           console.warn('[Dashboard] Failed to init streak fire widget:', e);
         }
 
         // ── Push notifications opt-in (runs once after login) ──────────────────
         try {
-          const idToken = await user.getIdToken();
+          const idToken = session.access_token;
           const { initPushNotifications } = await import('./assets/js/push-notifications.js');
           // Small delay so banner doesn't compete with page load animations
           setTimeout(() => initPushNotifications(user, idToken), 4000);

@@ -32,7 +32,7 @@
     {"@type":"WebPage","url":"https://speakupai.me/practice","name":"Practice English Speaking Online Free – AI Speech Feedback","description":"Free AI-powered English speaking practice with instant feedback on fluency, clarity and confidence. Daily topics, picture talk, interview prep.","speakable":{"@type":"SpeakableSpecification","cssSelector":["h1",".hero-sub","title"]},"mainEntityOfPage":"https://speakupai.me/practice","isPartOf":{"@id":"https://speakupai.me/#website"}},
     {"@type":"SoftwareApplication","name":"Speak Up! Practice","applicationCategory":"EducationApplication","operatingSystem":"Web Browser","url":"https://speakupai.me/practice","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"INR"},"featureList":["AI Speech Scoring","Fluency Analysis","Clarity Scoring","Confidence Scoring","Random Topics","Interview Prep","Picture Talk","Vocabulary Builder"]},
     {"@type":"FAQPage","mainEntity":[
-      {"@type":"Question","name":"How does AI score my English speaking?","acceptedAnswer":{"@type":"Answer","text":"Speak Up! uses Groq Whisper to transcribe your speech, then Groq Llama AI analyses the transcript and gives you a score from 0–100 on fluency (flow and pace), clarity (pronunciation and comprehension), and confidence (assertiveness and delivery)."}},
+      {"@type":"Question","name":"How does AI score my English speaking?","acceptedAnswer":{"@type":"Answer","text":"Speak Up! uses advanced speech recognition models to transcribe your speech, which is then analysed by our proprietary AI language models to generate a score from 0–100 on fluency (flow and pace), clarity (pronunciation and comprehension), and confidence (assertiveness and delivery)."}},
       {"@type":"Question","name":"What speaking modes are available?","acceptedAnswer":{"@type":"Answer","text":"Speak Up! has four practice modes: Random Topics (daily AI-generated topics), Interview Prep (HR and technical questions), Vocabulary Builder (use specific words in context), and Picture Talk (describe a scene spontaneously)."}},
       {"@type":"Question","name":"How long should I speak for a good score?","acceptedAnswer":{"@type":"Answer","text":"We recommend speaking for 30 to 60 seconds per session. This gives the AI enough data to analyse your fluency, clarity, and confidence accurately. Shorter responses may result in less detailed feedback."}}
     ]}
@@ -104,21 +104,31 @@
 
   <!-- Auth Script -->
   <script type="module">
-    import { auth } from './assets/js/firebase-config.js';
-    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+    import { supabase } from './assets/js/supabase-config.js';
 
-    onAuthStateChanged(auth, (user) => {
+    function handleSession(session) {
       const authBtn = document.getElementById('auth-btn');
-      if (user) {
-        authBtn.innerText = 'Dashboard';
-        authBtn.href = 'genz-streak-test.html';
-        window._speakup_user = user;
+      if (session?.user) {
+        if (authBtn) {
+          authBtn.innerText = 'Dashboard';
+          authBtn.href = 'genz-streak-test.html';
+        }
+        window._speakup_user = session.user;
       } else {
-        // Do NOT redirect — keep page public for SEO & unauthenticated users
-        authBtn.innerText = 'Login';
-        authBtn.href = 'login.html';
+        if (authBtn) {
+          authBtn.innerText = 'Login';
+          authBtn.href = 'login.html';
+        }
         window._speakup_user = null;
       }
+    }
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      handleSession(session);
+    });
+
+    supabase.auth.onAuthStateChange((event, session) => {
+      handleSession(session);
     });
   </script>
 
@@ -510,18 +520,26 @@
   <script src="assets/js/image-cache.js"></script>
   <script src="assets/js/app.js"></script>
 
-  <!-- Firebase & Core logic -->
+  <!-- Supabase & Core logic -->
   <script type="module">
-    import { auth } from './assets/js/firebase-config.js';
-    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+    import { supabase } from './assets/js/supabase-config.js';
 
     // ── PRIMARY: save via backend proxy (never blocked by ad blockers) ─────────
     async function saveViaBackend(user, sessionData) {
-      const idToken = await user.getIdToken(); // use cached token if valid
+      const { data: { session } } = await supabase.auth.getSession();
+      const idToken = session?.access_token;
+      if (!idToken) throw new Error("No active session found.");
+      
       const res = await fetch('/api/save-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idToken, uid: user.uid, sessionData, displayName: user.displayName || 'Speaker', email: user.email || '' })
+        body: JSON.stringify({
+          idToken,
+          uid: user.id,
+          sessionData,
+          displayName: user.user_metadata?.full_name || user.user_metadata?.name || 'Speaker',
+          email: user.email || ''
+        })
       });
       if (!res.ok) {
         const txt = await res.text();
@@ -616,19 +634,19 @@
       _timerObserver.observe(countdownEl, { childList: true, characterData: true, subtree: true });
     }
 
-    // ── Auth listener ──────────────────────────────────────────────────────────
-    onAuthStateChanged(auth, async (user) => {
+    // ── Auth state handler ─────────────────────────────────────────────────────
+    function handlePracticeSessionState(session) {
+      const user = session?.user;
       if (user) {
         interceptAnalysis(user);
         watchTimerCompletion(user);
 
         // Initialize streak fire widget
-        try {
-          const { initStreakFireWidget } = await import('./assets/js/streak-fire.js');
+        import('./assets/js/streak-fire.js').then(({ initStreakFireWidget }) => {
           initStreakFireWidget(user);
-        } catch (e) {
+        }).catch(e => {
           console.warn('[Practice] Failed to init streak fire widget:', e);
-        }
+        });
       } else {
         if (typeof window._speakup_unwrap === 'function') window._speakup_unwrap();
         if (_timerObserver) { _timerObserver.disconnect(); _timerObserver = null; }

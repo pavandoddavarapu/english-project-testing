@@ -1,3 +1,5 @@
+import { supabase } from './supabase-config.js';
+
 /**
  * streak-fire.js
  * 
@@ -5,7 +7,7 @@
  * Fetches user progress and today's challenge to light up the fire icon when solved.
  */
 
-export async function initStreakFireWidget(user) {
+export async function initStreakFireWidget() {
   const widget = document.getElementById('nav-streak-widget');
   const fireIcon = document.getElementById('nav-streak-fire');
   const countText = document.getElementById('nav-streak-count');
@@ -13,12 +15,16 @@ export async function initStreakFireWidget(user) {
   if (!widget || !fireIcon || !countText) return;
 
   try {
-    // 1. Fetch user data (streak & recent sessions)
-    const idToken = await user.getIdToken();
+    // 1. Fetch user session from Supabase
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+    const user = session.user;
+    const idToken = session.access_token;
+
     const userRes = await fetch('/api/get-user', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ idToken, uid: user.uid })
+      body: JSON.stringify({ idToken, uid: user.id })
     });
     if (!userRes.ok) throw new Error('Failed to fetch user profile');
     const { data: userData } = await userRes.json();

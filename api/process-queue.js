@@ -166,21 +166,21 @@ export default async function handler(req, res) {
         } else {
           const errText = await whisperRes.text();
           console.error(`[process-queue] Whisper error for taskId=${taskId}:`, errText);
-          throw new Error(`Groq Whisper returned status ${whisperRes.status}`);
+          throw new Error(`Speech recognition service error (${whisperRes.status})`);
         }
       } catch (whisperErr) {
-        console.warn(`[process-queue] All Groq keys failed for Whisper transcription:`, whisperErr.message);
+        console.warn(`[process-queue] All speech recognition keys failed:`, whisperErr.message);
 
         if (GEMINI_KEY) {
           try {
             cleanTranscription = await transcribeViaGemini(task.audio_base64, task.mime_type, GEMINI_KEY);
-            console.log(`[process-queue] Gemini 1.5 Flash transcription fallback succeeded.`);
+            console.log(`[process-queue] Gemini transcription fallback succeeded.`);
           } catch (geminiErr) {
             console.error(`[process-queue] Gemini transcription fallback also failed:`, geminiErr.message);
-            throw new Error(`Transcription failed: both Groq Whisper and Gemini fallback failed. Details: ${whisperErr.message} | ${geminiErr.message}`);
+            throw new Error(`Speech analysis failed. Please try again.`);
           }
         } else {
-          throw new Error(`Transcription failed on all Groq keys, and no Gemini API key is configured as fallback.`);
+          throw new Error(`Speech analysis is currently unavailable. Please try again later.`);
         }
       }
     }

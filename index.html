@@ -92,7 +92,7 @@
           "Group Discussion Rooms",
           "Practice Streaks",
           "Aura Points Gamification",
-          "On-device Whisper AI Transcription",
+          "AI Speech-to-Text",
           "No Download Required"
         ],
         "screenshot": "https://speakupai.me/assets/images/icon-512.png",
@@ -136,7 +136,7 @@
             "name": "How does AI English speaking practice work?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "You record yourself speaking about a daily topic or describe a picture. The on-device Whisper AI transcribes your speech, then Groq AI scores your fluency, clarity, and confidence and gives you personalised feedback in seconds."
+              "text": "You record yourself speaking about a daily topic or describe a picture. The AI transcribes your speech, scores your fluency, clarity, and confidence, and provides personalised feedback in seconds."
             }
           },
           {
@@ -256,7 +256,7 @@
       { "@type": "HowToStep", "position": 1, "name": "Sign in with Google", "text": "Create your free account in one click using Google Sign-In. No password needed.", "url": "https://speakupai.me/login" },
       { "@type": "HowToStep", "position": 2, "name": "Choose your practice mode", "text": "Pick from Random Topics, Interview Prep, Vocabulary, or Picture Talk based on what you want to improve.", "url": "https://speakupai.me/practice" },
       { "@type": "HowToStep", "position": 3, "name": "Spin for a topic", "text": "Click Spin to get an AI-generated speaking topic. Read it, think for 10 seconds, then start speaking.", "url": "https://speakupai.me/practice" },
-      { "@type": "HowToStep", "position": 4, "name": "Record your speech", "text": "Click Start Recording and speak for 30–60 seconds. The on-device Whisper AI transcribes your speech privately in the browser.", "url": "https://speakupai.me/practice" },
+      { "@type": "HowToStep", "position": 4, "name": "Record your speech", "text": "Click Start Recording and speak for 30–60 seconds. The AI transcribes your speech privately in the browser.", "url": "https://speakupai.me/practice" },
       { "@type": "HowToStep", "position": 5, "name": "Get your AI score and improve", "text": "Receive instant Fluency, Clarity, and Confidence scores plus personalised feedback. Practise daily to build your streak and watch your scores climb!", "url": "https://speakupai.me/practice" }
     ]
   }
@@ -2009,18 +2009,40 @@
 
   <!-- AUTH SCRIPT -->
   <script type="module">
-    import { auth } from './assets/js/firebase-config.js';
-    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
-    onAuthStateChanged(auth, user => {
-      if (user) {
-        document.getElementById('nav-auth-links').innerHTML = `
+    import { supabase } from './assets/js/supabase-config.js';
+    
+    function updateUI() {
+      const links = document.getElementById('nav-auth-links');
+      const hero = document.getElementById('hero-actions');
+      const cta = document.getElementById('cta-btn');
+      
+      if (links) {
+        links.innerHTML = `
           <a href="genz-streak-test.html" class="btn-nav-login">Dashboard</a>
           <a href="practice.html" class="btn-nav-join">Practice 🎤</a>`;
-        document.getElementById('hero-actions').innerHTML = `
+      }
+      if (hero) {
+        hero.innerHTML = `
           <a href="practice.html" class="btn-hero-main">Go Practice Now 🎤</a>
           <a href="genz-streak-test.html" class="btn-hero-ghost">My Dashboard ↗</a>`;
-        const cta = document.getElementById('cta-btn');
-        if (cta) { cta.href = 'practice.html'; cta.textContent = 'Go to Practice Area 🎤'; }
+      }
+      if (cta) {
+        cta.href = 'practice.html';
+        cta.textContent = 'Go to Practice Area 🎤';
+      }
+    }
+
+    // Check current session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        updateUI();
+      }
+    });
+
+    // Listen to changes
+    supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        updateUI();
       }
     });
   </script>

@@ -360,33 +360,18 @@
   </script>
 
   <script type="module">
-    import { auth, provider } from './assets/js/firebase-config.js';
-    import { signInWithPopup, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+    import { supabase } from './assets/js/supabase-config.js';
 
     // Get the redirect destination (if present)
     const urlParams = new URLSearchParams(window.location.search);
     const redirectUrl = urlParams.get('redirect') ? decodeURIComponent(urlParams.get('redirect')) : 'genz-streak-test.html';
 
-    // If user is already logged in, redirect them directly
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
+    // If user is already logged in or session is established, redirect them directly
+    supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
         window.location.href = redirectUrl;
       }
     });
-
-    // Friendly error message mapping
-    function getFriendlyError(code) {
-      const msgs = {
-        'auth/user-not-found': 'No account found with this email. Did you mean to sign up?',
-        'auth/wrong-password': 'Incorrect password. Please try again.',
-        'auth/invalid-credential': 'Invalid email or password. Please try again.',
-        'auth/too-many-requests': 'Too many attempts. Please wait a moment and try again.',
-        'auth/network-request-failed': 'Network error. Please check your connection.',
-        'auth/popup-closed-by-user': 'Sign-in popup was closed. Please try again.',
-        'auth/cancelled-popup-request': null // silent - user cancelled
-      };
-      return msgs[code] || null;
-    }
 
     function showLoginError(msg) {
       const el = document.getElementById('login-error');
@@ -399,13 +384,16 @@
       btn.disabled = true;
       btn.textContent = 'Signing in...';
       try {
-        await signInWithPopup(auth, provider);
-        window.location.href = redirectUrl;
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: window.location.origin + '/login.html?redirect=' + encodeURIComponent(redirectUrl)
+          }
+        });
+        if (error) throw error;
       } catch (error) {
         console.error("Google Sign-In Error:", error);
-        const msg = getFriendlyError(error.code);
-        if (msg) showLoginError(msg);
-      } finally {
+        showLoginError(error.message || "Failed to initialize Google Sign-in.");
         btn.disabled = false;
         btn.innerHTML = '<img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google Logo" class="google-logo"> Continue with Google';
       }
@@ -424,12 +412,15 @@
       btn.textContent = 'Signing in...';
 
       try {
-        await signInWithEmailAndPassword(auth, email, password);
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        });
+        if (error) throw error;
         window.location.href = redirectUrl;
       } catch (error) {
         console.error("Email Login Error:", error);
-        const msg = getFriendlyError(error.code) || error.message;
-        showLoginError(msg);
+        showLoginError(error.message || "Invalid email or password.");
       } finally {
         btn.disabled = false;
         btn.textContent = "Let's Yap 🗣️";

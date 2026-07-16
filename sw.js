@@ -64,6 +64,7 @@ self.addEventListener('fetch', event => {
     url.includes('jit.si') ||
     url.includes('ffmuc.net') ||
     url.includes('8x8.vc') ||
+    url.includes('supabase.co') ||
     url.includes('/api/')
   ) {
     return; // let the browser handle it normally

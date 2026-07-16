@@ -163,13 +163,13 @@ RULES FOR "vocab" SECTION:
     );
     if (cached.rows.length > 0) {
       const data = cached.rows[0].content;
-      // Validate it has the new interview object format (not old flat array)
-      if (data.interview && !Array.isArray(data.interview) && data.interview.behavioral) {
+      // Validate it has the new interview object format (not old flat array) and isn't the fallback
+      if (data.interview && !Array.isArray(data.interview) && data.interview.behavioral && data.__source__ !== 'Hardcoded Fallback') {
         console.log(`[daily] Serving v2 from DB cache for ${today}`);
         data.__source__ = 'DB Cache';
         return res.status(200).json(data);
       }
-      console.log(`[daily] DB cache has old format — regenerating with new schema`);
+      console.log(`[daily] DB cache has old format or is fallback — regenerating with new schema`);
     }
   } catch (dbCacheErr) {
     console.warn('[daily] DB cache read failed (table may not exist yet):', dbCacheErr.message);

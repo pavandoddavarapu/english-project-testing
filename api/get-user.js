@@ -41,16 +41,56 @@ export default async function handler(req, res) {
         console.log(`[get-user] Migrating user email=${verifiedUser.email} from Firebase UID=${oldUid} to Supabase UID=${uid}`);
         
         try {
+          const oldUserRes = await query('SELECT * FROM public.users WHERE uid = $1', [oldUid]);
+          const oldUser = oldUserRes.rows[0];
+
           await query('BEGIN');
-          // Update matching practice sessions
+          
+          // 1. Insert temporary record with new UID
+          await query(
+            `INSERT INTO public.users (
+              uid, name, email, gender, avatar_bg, aura_points, streak, total_yaps, 
+              created_at, avatar_seed, linkedin_url, instagram_url, username, 
+              email_reminders, push_subscription, last_practice_date
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)`,
+            [
+              uid,
+              oldUser.name,
+              `temp_${uid}_${oldUser.email}`,
+              oldUser.gender,
+              oldUser.avatar_bg,
+              oldUser.aura_points,
+              oldUser.streak,
+              oldUser.total_yaps,
+              oldUser.created_at,
+              oldUser.avatar_seed,
+              oldUser.linkedin_url,
+              oldUser.instagram_url,
+              oldUser.username ? `temp_${uid}_${oldUser.username}` : null,
+              oldUser.email_reminders,
+              oldUser.push_subscription,
+              oldUser.last_practice_date
+            ]
+          );
+
+          // 2. Transfer practice sessions to new UID
           await query('UPDATE public.practice_sessions SET user_id = $1 WHERE user_id = $2', [uid, oldUid]);
-          // Update user record
-          await query('UPDATE public.users SET uid = $1 WHERE LOWER(email) = LOWER($2)', [uid, verifiedUser.email]);
+
+          // 3. Delete old record
+          await query('DELETE FROM public.users WHERE uid = $1', [oldUid]);
+
+          // 4. Restore original email and username
+          await query(
+            'UPDATE public.users SET email = $1, username = $2 WHERE uid = $3',
+            [oldUser.email, oldUser.username, uid]
+          );
+
           await query('COMMIT');
-          console.log(`[get-user] Migration successful for email=${verifiedUser.email}`);
+          console.log(`[get-user] Constraint-safe migration successful for email=${verifiedUser.email}`);
         } catch (txErr) {
           await query('ROLLBACK');
           console.error('[get-user] Transaction migration failed:', txErr.message);
+          throw txErr;
         }
       }
     }

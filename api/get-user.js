@@ -16,7 +16,38 @@ export const maxDuration = 10;
 export default async function handler(req, res) {
   setCorsHeaders(req, res);
   if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+  if (req.method !== 'GET' && req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+
+  // Handle GET requests for username availability check
+  if (req.method === 'GET') {
+    try {
+      const { username } = req.query || {};
+      const cleanUsername = (username || '').trim().toLowerCase().substring(0, 20);
+
+      if (!cleanUsername) {
+        return res.status(400).json({ error: 'Missing username parameter' });
+      }
+
+      // Validate format
+      if (!/^[a-zA-Z0-9_]{3,20}$/.test(cleanUsername)) {
+        return res.status(200).json({ available: false, reason: 'Invalid format. Use 3-20 chars: letters, numbers, underscores.' });
+      }
+
+      // Check if taken
+      const result = await query(
+        'SELECT uid FROM public.users WHERE LOWER(username) = LOWER($1)',
+        [cleanUsername]
+      );
+
+      return res.status(200).json({
+        available: result.rowCount === 0,
+        reason: result.rowCount > 0 ? 'Username is already taken.' : null
+      });
+
+    } catch (err) {
+      return safeError(res, 500, err, '[get-user-username-check]');
+    }
+  }
 
   try {
     const { idToken, uid, displayName, email, gender, linkedin_url, instagram_url, username } = req.body || {};

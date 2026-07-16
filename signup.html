@@ -493,7 +493,7 @@
       
       _usernameCheckTimer = setTimeout(async () => {
         try {
-          const res = await fetch(`/api/check-username?username=${encodeURIComponent(val)}`);
+          const res = await fetch(`/api/get-user?username=${encodeURIComponent(val)}`);
           const data = await res.json();
           if (usernameInput.value.trim().toLowerCase() !== val) return; // stale
           if (data.available) {
@@ -587,7 +587,7 @@
         }
 
         // Check availability of username before redirect
-        const checkRes = await fetch(`/api/check-username?username=${encodeURIComponent(usernameVal)}`);
+        const checkRes = await fetch(`/api/get-user?username=${encodeURIComponent(usernameVal)}`);
         const checkData = await checkRes.json();
         if (!checkData.available) {
           alert('Username is taken. Please choose another.');

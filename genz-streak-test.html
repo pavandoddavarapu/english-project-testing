@@ -2833,7 +2833,7 @@
         
         _editUsernameCheckTimer = setTimeout(async () => {
           try {
-            const res = await fetch(`/api/check-username?username=${encodeURIComponent(val)}`);
+            const res = await fetch(`/api/get-user?username=${encodeURIComponent(val)}`);
             const data = await res.json();
             if (editUsernameInput.value.trim().toLowerCase() !== val) return; // stale
             

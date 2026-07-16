@@ -174,7 +174,7 @@ RULES FOR "vocab" SECTION:
   } catch (dbCacheErr) {
     console.warn('[daily] DB cache read failed (table may not exist yet):', dbCacheErr.message);
   }
-  // 2. Try Gemini Flash (handles larger JSON reliably)
+  // 2. Try Gemini Flash
   let generatedData = null;
   try {
     const geminiRes = await fetch(
@@ -184,11 +184,7 @@ RULES FOR "vocab" SECTION:
         headers: { 'Content-Type': 'application/json', 'X-goog-api-key': GEMINI_KEY },
         body: JSON.stringify({
           contents: [{ parts: [{ text: AI_PROMPT }] }],
-          generationConfig: {
-            temperature: 0.9,
-            maxOutputTokens: 16384,
-            responseMimeType: 'application/json'
-          }
+          generationConfig: { temperature: 0.85, maxOutputTokens: 16384 }
         })
       }
     );
@@ -196,13 +192,20 @@ RULES FOR "vocab" SECTION:
     if (geminiRes.ok) {
       const json = await geminiRes.json();
       let text = json.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      // Strip markdown fences if present
       const fence = text.match(/```(?:json)?\s*([\s\S]*?)```/);
       if (fence) text = fence[1];
-      generatedData = JSON.parse(text.trim());
-      generatedData.__source__ = 'Gemini Flash';
+      text = text.trim();
+      if (text) {
+        generatedData = JSON.parse(text);
+        generatedData.__source__ = 'Gemini Flash';
+        console.log('[daily] Gemini Flash succeeded');
+      } else {
+        console.warn('[daily] Gemini returned empty text');
+      }
     } else {
       const errText = await geminiRes.text();
-      console.warn(`Gemini failed (${geminiRes.status}):`, errText.slice(0, 200));
+      console.warn(`Gemini failed (${geminiRes.status}):`, errText.slice(0, 300));
     }
   } catch (e) {
     console.error('Gemini error:', e.message);
@@ -246,7 +249,135 @@ RULES FOR "vocab" SECTION:
   }
 
   if (!generatedData) {
-    return safeError(res, 500, new Error('All AI models failed for daily topics'), '[daily]');
+    // All AI failed — return hardcoded fallback so the page still works
+    console.error('[daily] All AI models failed — serving hardcoded fallback');
+    generatedData = {
+      __source__: 'Hardcoded Fallback',
+      random: {
+        general: [
+          { above: 'Opinion', main: 'Is it better to be an early bird or a night owl?', below: 'Which do you prefer and why?', difficulty: 'easy' },
+          { above: 'Life', main: 'What is one small habit that changed your life for the better?', below: 'How long did it take to build?', difficulty: 'easy' },
+          { above: 'Choice', main: 'Would you rather have a job you love with low pay or a job you hate with high pay?', below: 'What does money mean to you?', difficulty: 'medium' },
+          { above: 'Nostalgia', main: 'What is something from your childhood you wish still existed today?', below: 'Why do we miss things from the past?', difficulty: 'easy' },
+        ],
+        tech: [
+          { above: 'Phones', main: 'Has your smartphone made your life better or more stressful?', below: 'Can you go a day without it?', difficulty: 'easy' },
+          { above: 'Social Media', main: 'Which social media platform do you think is the most addictive and why?', below: 'Could you delete it for a month?', difficulty: 'easy' },
+          { above: 'AI', main: 'Do you think AI will take over most jobs in the next 10 years?', below: 'Which jobs are safe?', difficulty: 'medium' },
+          { above: 'Gaming', main: 'Are video games a waste of time or a legitimate hobby?', below: 'What makes something a worthy hobby?', difficulty: 'easy' },
+        ],
+        finance: [
+          { above: 'Saving', main: 'What is the best way to save money as a young person today?', below: 'What stops most people from saving?', difficulty: 'easy' },
+          { above: 'Spending', main: 'What is something you spent money on that turned out to be completely worth it?', below: 'How do you define value for money?', difficulty: 'easy' },
+          { above: 'Shopping', main: 'Do you prefer online shopping or going to a store? Why?', below: 'What are the downsides of your preferred method?', difficulty: 'easy' },
+          { above: 'Money Mindset', main: 'Is money the root of all evil or just a tool?', below: 'How should we teach kids about money?', difficulty: 'medium' },
+        ],
+        roast: [
+          { above: 'Roast', main: 'Roast the concept of waking up at 5am for productivity.', below: 'Make it funny but make a point.', difficulty: 'medium' },
+          { above: 'Roast', main: 'Roast people who post their gym selfies every single day.', below: 'Keep it light!', difficulty: 'easy' },
+          { above: 'Roast', main: 'Roast the idea that pineapple does not belong on pizza.', below: 'Defend the pineapple!', difficulty: 'easy' },
+          { above: 'Roast', main: 'Roast the modern obsession with being "busy" all the time.', below: 'What is the cost of busyness culture?', difficulty: 'medium' },
+        ],
+        pitch: [
+          { above: 'Pitch', main: 'Pitch the idea that naps should be mandatory at every workplace.', below: 'Use data or logic to support your case.', difficulty: 'medium' },
+          { above: 'Pitch', main: 'Convince me that Mondays should be completely banned.', below: 'What would happen to the week?', difficulty: 'easy' },
+          { above: 'Pitch', main: 'Pitch a world where everyone works only 4 days a week.', below: 'What are the economic benefits?', difficulty: 'medium' },
+          { above: 'Pitch', main: 'Convince me that learning to cook is more important than any degree.', below: 'Make the strongest case you can!', difficulty: 'easy' },
+        ],
+        defend: [
+          { above: 'Defend', main: 'Defend the unpopular opinion that texting is better than calling.', below: 'Counter the best argument against you.', difficulty: 'easy' },
+          { above: 'Defend', main: 'Defend the idea that mornings are overrated.', below: 'What does science say?', difficulty: 'easy' },
+          { above: 'Defend', main: 'Defend watching TV as a productive activity.', below: 'What can we actually learn from TV?', difficulty: 'medium' },
+          { above: 'Defend', main: 'Defend the opinion that fast food is not always a bad choice.', below: 'Make a reasonable case.', difficulty: 'easy' },
+        ],
+        eli5: [
+          { above: 'ELI5', main: 'Explain how the internet works to a 5-year-old.', below: 'Use a simple analogy.', difficulty: 'medium' },
+          { above: 'ELI5', main: 'Explain what inflation is as simply as possible.', below: 'Use an example from everyday life.', difficulty: 'medium' },
+          { above: 'ELI5', main: 'Explain why the sky is blue to someone who has never heard of science.', below: 'Make it fun and clear.', difficulty: 'easy' },
+          { above: 'ELI5', main: 'Explain what a password is to your grandparent who just got their first phone.', below: 'Keep it very simple!', difficulty: 'easy' },
+        ],
+        conspiracy: [
+          { above: 'Conspiracy', main: 'What if alarm clocks were invented by coffee companies to boost sales?', below: 'Make a fun case for it!', difficulty: 'easy' },
+          { above: 'Conspiracy', main: 'What if Mondays are a myth created by bosses to control workers?', below: 'Build your theory.', difficulty: 'easy' },
+          { above: 'Conspiracy', main: 'What if rainy days were secretly designed by umbrella companies?', below: 'Follow the money!', difficulty: 'easy' },
+          { above: 'Conspiracy', main: 'What if autocorrect errors are actually secret messages from our phones?', below: 'Decode the conspiracy!', difficulty: 'easy' },
+        ],
+        hottakes: [
+          { above: 'Hot Take', main: 'Skipping breakfast is actually healthier than eating it.', below: 'Defend your hot take!', difficulty: 'medium' },
+          { above: 'Hot Take', main: 'Group projects should be completely banned in schools.', below: 'Make your case.', difficulty: 'easy' },
+          { above: 'Hot Take', main: 'Social media has done more good than harm to society overall.', below: 'What evidence supports this?', difficulty: 'hard' },
+          { above: 'Hot Take', main: 'Homework is useless and should be abolished completely.', below: 'Be bold, be specific.', difficulty: 'easy' },
+        ],
+        millennial: [
+          { above: 'Millennial', main: 'Talk about how different childhood was before smartphones existed.', below: 'What did you do for fun?', difficulty: 'easy' },
+          { above: 'Millennial', main: 'Describe the adulting struggle that nobody warned you about.', below: 'Taxes? Cooking? Bills?', difficulty: 'easy' },
+          { above: 'Millennial', main: 'What is one thing millennials do better than any other generation?', below: 'Be proud of your generation!', difficulty: 'medium' },
+          { above: 'Millennial', main: 'Talk about a trend from the 2000s that you secretly miss.', below: 'Flip phones? MSN Messenger?', difficulty: 'easy' },
+        ],
+        genz: [
+          { above: 'Gen Z', main: 'Explain a Gen Z slang term to someone who has no idea what it means.', below: 'Make it funny and educational.', difficulty: 'easy' },
+          { above: 'Gen Z', main: 'Is TikTok actually educational or just a time-waster?', below: 'Give real examples.', difficulty: 'easy' },
+          { above: 'Gen Z', main: 'Talk about the pressure of building a personal brand as a young person today.', below: 'Is it worth it?', difficulty: 'medium' },
+          { above: 'Gen Z', main: 'What is the most overrated trend of the last two years?', below: 'Be specific and bold.', difficulty: 'easy' },
+        ],
+      },
+      interview: {
+        behavioral: [
+          { above: 'Leadership', main: 'Tell me about a time you led a team through a difficult situation.', below: 'Use the STAR method: Situation, Task, Action, Result.' },
+          { above: 'Conflict', main: 'Describe a disagreement with a colleague and how you resolved it.', below: 'Focus on what you learned from the experience.' },
+          { above: 'Failure', main: 'Tell me about your biggest professional mistake and what you learned.', below: 'Show growth, not blame.' },
+          { above: 'Initiative', main: 'Give an example of when you went above and beyond your job description.', below: 'Quantify the impact if possible.' },
+        ],
+        technical: [
+          { above: 'System Design', main: 'How would you design a scalable notification service for 10 million users?', below: 'Consider queues, databases, and delivery guarantees.' },
+          { above: 'Debugging', main: 'Walk me through how you debug a production issue at 2am.', below: 'Show your systematic process.' },
+          { above: 'Architecture', main: 'When would you choose a NoSQL database over a relational one?', below: 'Give real use-case examples.' },
+          { above: 'Code Quality', main: 'How do you ensure your code remains maintainable as the team grows?', below: 'Talk about reviews, documentation, and standards.' },
+        ],
+        sales: [
+          { above: 'Pitching', main: 'Pitch our product to me as if I am a skeptical VP of Finance.', below: 'Lead with ROI and risk reduction.' },
+          { above: 'Objection', main: "A prospect says 'We're happy with our current vendor.' How do you respond?", below: 'Acknowledge, explore, differentiate.' },
+          { above: 'Closing', main: 'What is your favourite closing technique and when do you use it?', below: 'Be specific about the scenario.' },
+          { above: 'Pipeline', main: 'How do you prioritize which leads to focus on each week?', below: 'Talk about scoring, intent signals, or ICP fit.' },
+        ],
+        hr: [
+          { above: 'Hiring', main: 'Walk me through how you conduct a first-round interview for a senior role.', below: 'What are the must-have signals you look for?' },
+          { above: 'Retention', main: 'A top performer says they are leaving. What do you do?', below: 'Show empathy before counter-offering.' },
+          { above: 'Culture', main: 'How do you build psychological safety in a team?', below: 'Give specific actions, not just principles.' },
+          { above: 'Performance', main: 'How do you handle a performance review with someone who disagrees with their rating?', below: 'Focus on facts and future goals.' },
+        ],
+        management: [
+          { above: 'Delegation', main: 'How do you decide what to delegate versus what to keep yourself?', below: 'Talk about trust, urgency, and development goals.' },
+          { above: 'Vision', main: 'How do you get a skeptical team excited about a new strategic direction?', below: 'Show how you involve people early.' },
+          { above: 'Scaling', main: 'What processes break first when a startup scales from 20 to 200 people?', below: 'Be specific about what you have seen break.' },
+          { above: 'Feedback', main: 'How do you create a culture where people give you honest upward feedback?', below: 'Show what you do with feedback when you receive it.' },
+        ],
+        finance: [
+          { above: 'Valuation', main: 'Walk me through a DCF model and the assumptions you scrutinize most.', below: 'Focus on WACC, terminal value, and growth rates.' },
+          { above: 'Analysis', main: 'A company has revenue growth but declining free cash flow. What does this signal?', below: 'Think about working capital and capex.' },
+          { above: 'Budgeting', main: 'How do you build an annual budget that actually gets followed?', below: 'Talk about buy-in, assumptions, and variance tracking.' },
+          { above: 'Risk', main: 'How do you present financial risk to a board that is not finance-savvy?', below: 'Simplify without losing accuracy.' },
+        ],
+        marketing: [
+          { above: 'GTM', main: 'How would you build a go-to-market strategy for a new SaaS product from scratch?', below: 'Start with ICP, then channel, then message.' },
+          { above: 'SEO', main: 'Our organic traffic dropped 30% after a Google update. Walk me through your response.', below: 'Talk about audit, content gap, and link profile.' },
+          { above: 'Growth', main: 'What is the most creative growth experiment you have ever run?', below: 'Share the hypothesis, test, and result.' },
+          { above: 'Brand', main: 'How do you maintain brand consistency across 10 different marketing channels?', below: 'Talk about guidelines, tools, and governance.' },
+        ],
+      },
+      vocab: [
+        { word: 'Tenacious', pos: 'adjective', meaning: 'Not giving up despite difficulty.', example: 'Her tenacious approach to learning English paid off in months.', angle: 'Describe a time you were tenacious about something.' },
+        { word: 'Empathy', pos: 'noun', meaning: 'Understanding and sharing the feelings of others.', example: 'Empathy made him a trusted leader in every team he joined.', angle: 'Talk about a time when empathy changed a situation for you.' },
+        { word: 'Serendipity', pos: 'noun', meaning: 'A happy and unexpected discovery by chance.', example: 'It was pure serendipity that led me to my dream career.', angle: 'Share a moment of serendipity that shaped your life.' },
+        { word: 'Candid', pos: 'adjective', meaning: 'Honest and straightforward, even if uncomfortable.', example: 'His candid feedback was hard to hear but helped me grow.', angle: 'Describe a time being candid was the right but difficult choice.' },
+        { word: 'Resilience', pos: 'noun', meaning: 'The ability to recover quickly from setbacks.', example: 'Resilience helped her rebuild after the startup failed.', angle: 'How have you built resilience in your own life?' },
+        { word: 'Paradigm shift', pos: 'noun phrase', meaning: 'A fundamental change in how we think about something.', example: 'Remote work caused a paradigm shift in office culture globally.', angle: 'Describe a paradigm shift you personally experienced.' },
+        { word: 'Eloquent', pos: 'adjective', meaning: 'Fluent, persuasive, and expressive in speech or writing.', example: 'Her eloquent speech moved the entire audience to tears.', angle: 'Talk about someone you find eloquent and what you admire about them.' },
+        { word: 'Proactive', pos: 'adjective', meaning: 'Acting before problems arise rather than reacting to them.', example: 'Being proactive about deadlines saved the project twice.', angle: 'Give an example of when being proactive made a real difference.' },
+        { word: 'Leverage', pos: 'verb', meaning: 'To use something to its maximum advantage.', example: 'She learned to leverage her network to find the right opportunities.', angle: 'How do you leverage your strongest skill in daily life?' },
+        { word: 'Nuance', pos: 'noun', meaning: 'A subtle difference in meaning, expression, or feeling.', example: 'Understanding cultural nuance is essential for global communication.', angle: 'Describe a situation where missing a nuance caused a misunderstanding.' },
+      ]
+    };
   }
 
   // 4. Save to DB cache — future requests and cold-starts skip the AI call entirely

@@ -240,9 +240,16 @@ async function initDailyData() {
   spinBtn.disabled = true;
 
   try {
-    const cached = localStorage.getItem(CACHE_KEY);
+    let cached = localStorage.getItem(CACHE_KEY);
+    let parsed = null;
     if (cached) {
-      DAILY_DATA = JSON.parse(cached);
+      try {
+        parsed = JSON.parse(cached);
+      } catch (e) {}
+    }
+
+    if (parsed && parsed.__source__ !== 'Hardcoded Fallback') {
+      DAILY_DATA = parsed;
       console.log(`✅ Loaded from Local Cache. Source was: ${DAILY_DATA.__source__}`);
     } else {
       DAILY_DATA = await fetchAIData();
